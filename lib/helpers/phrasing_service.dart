@@ -11,11 +11,14 @@ import 'session_timeline.dart';
 ///
 /// Testers default ON with hard gates. One Groq call per screen change.
 /// Prefetch is the already-chosen next template id only.
+///
+/// The Edge Function is not an escape hatch. Every network JSON still
+/// goes through [acceptGroqPhrasing] / [visibleHouseholdHowTo] before paint.
 class GroqPhrasingService {
   GroqPhrasingService({
     GroqPhrasingClient? client,
     this.enabled = kGroqPhrasingEnabledDefault,
-  }) : client = client ?? GroqOpenAiPhrasingClient();
+  }) : client = client ?? GroqPhrasingRuntimeClient();
 
   final GroqPhrasingClient client;
   final bool enabled;
@@ -32,6 +35,9 @@ class GroqPhrasingService {
   int get liveNetworkCalls {
     final fake = client;
     if (fake is FakeGroqPhrasingClient) {
+      return fake.liveNetworkCalls;
+    }
+    if (fake is FakePhraseFunctionClient) {
       return fake.liveNetworkCalls;
     }
     return 0;
@@ -68,6 +74,8 @@ class GroqPhrasingService {
     } catch (_) {
       return packaged;
     }
+    // Hard gate: never paint function/Groq JSON without the attach-map
+    // safety gate. Missing parse / validator fail → packaged.
     final accepted = acceptGroqPhrasing(request: request, parsed: parsed);
     final result = accepted ?? packaged;
     _cache[request.screenKey] = result;

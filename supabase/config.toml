@@ -1,0 +1,9 @@
+# Phrase Edge Function. Do not put GROQ_API_KEY in this file.
+# Set the secret in the Supabase dashboard (Project Settings → Edge Functions
+# → Secrets). Never paste the Groq key in git or PRs.
+#
+# verify_jwt stays on: the Flutter anon/publishable client sends Authorization.
+# The function never embeds or returns service_role.
+
+[functions.phrase]
+verify_jwt = true

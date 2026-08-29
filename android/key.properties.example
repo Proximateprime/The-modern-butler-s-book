@@ -1,0 +1,7 @@
+# Copy to android/key.properties on the machine that will sign a Play AAB later.
+# Do not commit key.properties, *.jks, or *.keystore.
+# Do not paste real passwords into a PR.
+storePassword=YOUR_STORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+storeFile=YOUR_UPLOAD_KEYSTORE.jks

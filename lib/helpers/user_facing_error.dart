@@ -67,7 +67,9 @@ abstract final class UserFacingCopy {
   static const firstRunPrivacyBody =
       'Names, appliances, photos, tools, and repair notes are for this book '
       'on this device.\n\n'
-      'Nothing is uploaded to a cloud account.';
+      'Nothing is uploaded to a cloud account.\n\n'
+      'Some on-screen wording may be sent to Groq through the butler backend '
+      'so the app can talk more clearly. Diagnosis stays on this device.';
   static const safetyDisclaimerTitle = 'Safety disclaimer';
   static const safetyDisclaimerBody =
       'This book is not a substitute for a licensed professional.\n\n'
@@ -109,6 +111,10 @@ abstract final class UserFacingCopy {
   static const privacyNoSkillProfiling =
       'Butler does not silently profile your skill. Tools and comfort are only '
       'what you choose to record. Skill never unlocks unsafe work.';
+  static const privacyPhrasingBackend =
+      'Some question and stop wording may be sent to Groq through the butler '
+      'backend so the app can talk more clearly. Household records stay on '
+      'this device. A language model never decides what is wrong.';
   static const guideLoading =
       'Loading the guide on this device…';
   static const brandTagline = 'A household repair book';

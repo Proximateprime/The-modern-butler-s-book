@@ -1,7 +1,12 @@
-# Secrets — never commit a Groq key or env file
+# Secrets — never commit a Groq key, env file, or Play signing material
 .env
 .env.*
 !.env.example
+*.jks
+*.keystore
+key.properties
+!key.properties.example
+!android/key.properties.example
 
 # Miscellaneous
 *.class

@@ -4,7 +4,7 @@
 /// - [phrasing_request.dart] — typed slots for the seven ON hooks
 /// - [phrasing_service.dart] — display strings only
 /// - [phrasing_safety_gate.dart] — attach-map gates
-/// - `lib/services/groq_phrasing_client.dart` — HTTP
+/// - `lib/services/groq_phrasing_client.dart` — Edge Function first, local Groq fallback
 library;
 
 export 'phrasing_request.dart';

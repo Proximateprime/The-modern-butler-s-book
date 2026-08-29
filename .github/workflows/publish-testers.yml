@@ -1,5 +1,7 @@
 # Rebuild hosted tester artifacts as packaged copy only.
-# Do not dart-define a phrasing key. Play Store is out.
+# Never pass a phrasing-provider key into the build.
+# Do not configure the butler function here — testers stay packaged if it is unset.
+# Play Store listing / store upload is out.
 name: Publish tester web and APK
 
 on:

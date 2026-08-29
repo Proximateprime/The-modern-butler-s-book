@@ -61,8 +61,10 @@ void main() {
 
     expect(find.byKey(const Key('first-run-page-privacy')), findsOneWidget);
     expect(find.text(UserFacingCopy.firstRunPrivacyTitle), findsOneWidget);
-    expect(find.textContaining('this device'), findsOneWidget);
+    expect(find.textContaining('this device'), findsWidgets);
     expect(find.textContaining('cloud account'), findsOneWidget);
+    expect(find.textContaining('Groq'), findsOneWidget);
+    expect(find.textContaining('butler backend'), findsOneWidget);
     expect(find.text('3 of 3'), findsOneWidget);
     expect(find.byKey(const Key('first-run-done-button')), findsOneWidget);
   });

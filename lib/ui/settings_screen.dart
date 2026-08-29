@@ -646,6 +646,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     key: const Key('settings-privacy-skill'),
                     style: text.bodyMedium?.copyWith(height: 1.45),
                   ),
+                  const SizedBox(height: 12),
+                  Text(
+                    UserFacingCopy.privacyPhrasingBackend,
+                    key: const Key('settings-privacy-phrasing'),
+                    style: text.bodyMedium?.copyWith(height: 1.45),
+                  ),
                 ],
               ),
             ),
