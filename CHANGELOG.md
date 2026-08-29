@@ -1,3 +1,15 @@
+## Phrase Other / describe type-in on question cards (2026-08-29)
+
+App **0.1.4+3**. Question-card Groq and the Other / describe type-in stay in
+sync from the same overlay. Chip id `Other / describe` remains the recorded
+prefix. Optional `describe_title` / `describe_hint` may ride the same JSON;
+missing extras stay packaged. Extra chip ids still rejected. One phrasing
+call per screen — not per keystroke. Groq does not remap typed notes or pick
+the next question. Mark’s later ask that Groq research a new problem with
+no chip yet is **out** of this pack. Safety gate / `visibleHouseholdHowTo`
+still run before paint. Play listing stays out. Details:
+[`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md).
+
 ## Hosted testers call phrase via public Supabase URL (2026-08-29)
 
 App **0.1.4+2**. GitHub Pages and the GitHub-release APK compile public

@@ -22,7 +22,11 @@ const CORS: Record<string, string> = {
 const SYSTEM_PROMPT =
   'You rephrase household repair copy. The engine already decided. ' +
   'Return JSON only with keys title, why_one_line, option_labels_only. ' +
+  'Optional describe_title and describe_hint may ride that same payload ' +
+  'as extra display strings for the Other / describe type-in. ' +
   'Use the same option ids — never invent a fourth option or new chip id. ' +
+  'Keep the Other / describe option id. Do not map typed notes onto ' +
+  'another chip. Do not pick the next question. ' +
   'Do not write how-to. Do not mention gas_train, live_voltage, or sealed. ' +
   'No confidence numbers. No streaming novels. ' +
   "Do not paraphrase frozen chrome: I'll repair, Call a pro, Most likely, " +
@@ -69,6 +73,8 @@ type PublicPhraseJson = {
   title?: string
   why_one_line?: string
   option_labels_only?: Record<string, string>
+  describe_title?: string
+  describe_hint?: string
 }
 
 const rateHits = new Map<string, { count: number; resetAt: number }>()
@@ -203,10 +209,16 @@ function publicPhraseJson(raw: string): PublicPhraseJson | null {
   if (!title && !why && Object.keys(labels).length === 0) {
     return null
   }
+  const describeTitle =
+    typeof obj.describe_title === 'string' ? obj.describe_title.trim() : ''
+  const describeHint =
+    typeof obj.describe_hint === 'string' ? obj.describe_hint.trim() : ''
   const out: PublicPhraseJson = {}
   if (title) out.title = title
   if (why) out.why_one_line = why
   if (Object.keys(labels).length > 0) out.option_labels_only = labels
+  if (describeTitle) out.describe_title = describeTitle
+  if (describeHint) out.describe_hint = describeHint
   return out
 }
 

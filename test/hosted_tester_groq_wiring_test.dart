@@ -35,10 +35,10 @@ GroqPhrasingRequest _questionRequest() {
 String _read(String path) => File(path).readAsStringSync();
 
 void main() {
-  test('version is 0.1.4+2', () {
+  test('version is 0.1.4+3', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+2');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+2'));
+    expect(kAppVersionLabel, '0.1.4+3');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+3'));
   });
 
   test('web phrasing client does not import dart:io', () {

@@ -22,6 +22,8 @@ GroqPhrasingAccepted? acceptGroqPhrasing({
   }
   final title = parsed.title?.trim();
   final why = parsed.whyOneLine?.trim();
+  final describeTitle = parsed.describeTitle?.trim();
+  final describeHint = parsed.describeHint?.trim();
   final labels = parsed.optionLabelsOnly;
 
   if (labels.isNotEmpty) {
@@ -44,6 +46,8 @@ GroqPhrasingAccepted? acceptGroqPhrasing({
   final fields = <String>[
     if (title != null && title.isNotEmpty) title,
     if (why != null && why.isNotEmpty) why,
+    if (describeTitle != null && describeTitle.isNotEmpty) describeTitle,
+    if (describeHint != null && describeHint.isNotEmpty) describeHint,
     ...labels.values,
   ];
   final requireOfficialStop = request.slot == PhrasingSlot.safetyStop ||
@@ -65,6 +69,14 @@ GroqPhrasingAccepted? acceptGroqPhrasing({
       _violatesGoldenChrome(
         packaged: request.packagedWhyOneLine,
         groq: why,
+      ) ||
+      _violatesGoldenChrome(
+        packaged: request.packagedDescribeTitle,
+        groq: describeTitle,
+      ) ||
+      _violatesGoldenChrome(
+        packaged: request.packagedDescribeHint,
+        groq: describeHint,
       )) {
     return null;
   }
@@ -114,6 +126,12 @@ GroqPhrasingAccepted? acceptGroqPhrasing({
       ...packaged.optionLabels,
       ...labels,
     },
+    describeTitle: (describeTitle != null && describeTitle.isNotEmpty)
+        ? describeTitle
+        : packaged.describeTitle,
+    describeHint: (describeHint != null && describeHint.isNotEmpty)
+        ? describeHint
+        : packaged.describeHint,
     fromGroq: true,
   );
 }

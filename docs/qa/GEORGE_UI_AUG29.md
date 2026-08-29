@@ -424,6 +424,40 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Other / describe type-in phrasing — 0.1.4+3 (do not reopen leftover)
+
+Same seven ON hooks. Groq still changes how we talk, not what we conclude.
+JSON remains `title` / `why_one_line` / `option_labels_only`. Optional
+`describe_title` / `describe_hint` may ride that same question-card payload
+as extra display strings for `_OptionalDescribeNoteDialog`. Extra keys
+ignored if missing. Extra chip ids still rejected.
+
+Chip id `Other / describe` is the engine id. Tap still submits the original
+id. Recorded answer stays `Other / describe` or `Other / describe: {note}`.
+Groq may rephrase the chip display label and the describe-dialog title/hint
+from the **same** question-card overlay (packaged first, swap nicer line).
+Voice / `isOtherDescribeChoice` still match the original id, not the Groq
+display string.
+
+One question-card phrasing call — not a call per letter, and not when the
+type-in opens. Groq must not map typed text onto a different chip or pick
+the next question. `QuestionSelectionService` stays no-LLM. Enrichment /
+runtime complete stays off. Inspect-step GOLDEN chips (Matches / OK) stay
+frozen. `GOLDEN_LABELS` **Call a pro** stays frozen. Voice-as-required stays
+locked.
+
+Safety gate / `visibleHouseholdHowTo` before paint. Timeout / 4xx / 5xx /
+leak / validator → packaged. No Groq key in git / CI / APK. No Settings
+paste-a-key. No Play listing. Tests: `test/other_describe_groq_phrasing_test.dart`
+(fake Groq only).
+
+**OUT of this pack (Mark clarified):** Groq pulling current/new information
+for a new problem that has no chip yet. That is not talk-only and is not
+this PR. This pack does not invent chips, does not pick the next question,
+does not map typed text onto a different chip, does not call Groq per
+keystroke, and does not turn on runtime enrichment / diagnosis. John
+REJECT if Groq starts choosing the next question or rewriting chip ids.
+
 ## Hosted-tester Groq wiring — 0.1.4+2 (do not reopen leftover)
 
 Pages + GitHub APK dart-define public `SUPABASE_URL` + `SUPABASE_ANON_KEY`

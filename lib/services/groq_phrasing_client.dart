@@ -231,6 +231,7 @@ class FakeGroqPhrasingClient implements GroqPhrasingClient {
     this.response,
     this.handler,
     this.throwTimeout = false,
+    this.holdUntil,
   });
 
   @override
@@ -239,6 +240,9 @@ class FakeGroqPhrasingClient implements GroqPhrasingClient {
   GroqPhrasingJson? response;
   GroqPhrasingJson? Function(GroqPhrasingRequest request)? handler;
   bool throwTimeout;
+
+  /// When set, [complete] waits here so tests can paint packaged first.
+  Completer<void>? holdUntil;
 
   final List<GroqPhrasingRequest> requests = [];
   int completeCalls = 0;
@@ -252,6 +256,10 @@ class FakeGroqPhrasingClient implements GroqPhrasingClient {
     completeCalls += 1;
     if (throwTimeout) {
       throw TimeoutException('groq-timeout');
+    }
+    final gate = holdUntil;
+    if (gate != null && !gate.isCompleted) {
+      await gate.future;
     }
     if (handler != null) {
       return handler!(request);

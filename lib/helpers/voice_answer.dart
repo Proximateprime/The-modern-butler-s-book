@@ -7,6 +7,7 @@ String normalizeVoiceTranscript(String raw) {
       .trim();
 }
 
+/// Voice / chip-id match on the original engine id, not a Groq display string.
 bool isOtherDescribeChoice(String choice) {
   return normalizeVoiceTranscript(choice).startsWith('other');
 }
