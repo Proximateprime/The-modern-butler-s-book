@@ -713,20 +713,20 @@ const List<Map<String, Object?>> _dryerBatch01Modes = [
       },
     ],
     'verificationAsk':
-        'With the door pressed firmly until it clicks, does Start still do nothing while the panel responds?',
+        'After firmly closing the door until it clicks, does the dryer now start normally when you press Start?',
     'verificationWhy':
-        'Separates a latch/switch problem from a dead-power or hum-motor pattern.',
+        'Confirms whether a door interlock / switch issue was blocking start. Never bypass the door switch.',
     'verificationSteps': [
       'Close the door until you feel/hear a firm click',
       'Confirm any panel lights or display still respond',
-      'Press Start and observe for silence vs hum vs normal start',
+      'Press Start and check whether the dryer starts normally',
       'Never bypass the door switch',
     ],
     'safeGuidanceBoundary': [
       'Never bypass the door switch or safety interlock',
       'Try a firm door click and verify panel response only',
       'Do not probe switch terminals live',
-      'If the latch is broken or Start still does nothing with a firm click, call a technician',
+      'If the latch is broken or Start still will not run after a firm click, escalate for switch/interlock service',
     ],
     'stopProfessionalConditions': [
       'Any plan to jumper/bypass the door switch',
@@ -1733,7 +1733,7 @@ const List<Map<String, Object?>> _dryerBatch01Modes = [
     'commonality': 'common',
     'safetyNotes':
         'Unplug before internal access. No beginner blower-housing teardown.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {

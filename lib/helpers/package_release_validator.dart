@@ -26,13 +26,16 @@ const List<String> riskyVerificationModeIds = [
 
 /// Confirmed must not unlock Fixed. Fail-closed: [allowResolvedWhenConfirmed]
 /// must be false. Heater-circuit id set + start-switch + start-capacitor +
-/// existing risky list. Import parse default stays false. Substring handoff
-/// copy is not this gate.
+/// internal-duct + blower-wheel + existing risky list. Prefer-professional
+/// is not an escape hatch. Import parse default stays false. Substring
+/// handoff copy is not this gate.
 Set<String> failClosedResolvedOnConfirmModeIds() {
   return {
     ...heaterCircuitDiyCannotCompleteLeaderIds,
     'start-switch-failure',
     'start-capacitor-or-start-assist-weak',
+    'internal-duct-lint-collapse',
+    'blower-wheel-obstruction',
     ...riskyVerificationModeIds,
   };
 }

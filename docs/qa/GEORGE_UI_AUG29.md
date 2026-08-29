@@ -289,3 +289,53 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+8**. First-run
 - **Given** a gated professional Primary (start-capacitor or gas-no-ignition), including when `closePathForFailureMode` is null (`isGatedProfessionalFailureMode` still true).
 - **Expect** **I'll repair** / **DIY ~** are not shown even if Parts & cost would otherwise quote a part. **Call a pro** stays GOLDEN_LABELS. Pro ~ only. Resettable thermal cutoff stays DIY.
 
+## Leftover-after-after-after pack — 0.1.3+9
+
+Fix only. Items 1–12, leftover, leftover-next, leftover-after, and leftover-after-after stay done; this pack does not reopen them. `GOLDEN_LABELS.md` **Call a pro** stays frozen. Worn rollers stay parked. Expert unplugged heater-panel stays parked. `motor-overheat-protector-open` stays DIY. Door-switch **Fixed** when a firm click starts the machine stays — this pack fixes ask polarity, not that eligibility flag. Door-switch is not in the gated set.
+
+App **0.1.3+9**. Tests: prior George UI files plus `test/george_ui_leftover_after_after_after_test.dart`.
+
+### Fixes
+
+1. **P1 door-switch-failure imported verificationAsk polarity.** Batch 01 JSON+dart ask is leftover-after F / built-in now-starts polarity: **After firmly closing the door until it clicks, does the dryer now start normally when you press Start?** Imported close path overwrites built-in via `registerImportedClosePath`. Confirmed = a firm click starts the machine → **Fixed**. Still-dead Start → Not confirmed → **Needs a professional**. `allowResolvedWhenConfirmed` stays **true**. Door-switch is not in `_gatedProfessionalFailureModeIds` or failClosed.
+
+2. **P1 internal-duct-lint-collapse.** `allowResolvedWhenConfirmed` false in Batch 02 JSON+dart. Id is on `_gatedProfessionalFailureModeIds` (id-based lamp, same as 0.1.3+8). Lamp **Check carefully**, not **Stop**. Pro-scope notice. **I'll repair** / **DIY ~** off. **Pro recommended**. Confirmed ≠ **Fixed**. `isProHandoffGuidanceStep` substring matching is not expanded.
+
+3. **P1 blower-wheel-obstruction.** Same close as item 2 (`allowResolvedWhenConfirmed` false + `_gatedProfessionalFailureModeIds`). Not worn-rollers.
+
+4. **P1 failClosedResolvedOnConfirmModeIds** includes `internal-duct-lint-collapse` and `blower-wheel-obstruction`. Prefer-professional is not an escape hatch. `riskyVerificationFindingsFor(dryer-core)` errors if those flags are true.
+
+### Leftover-after-after-after ledger
+
+- Door-switch eligibility flag is unchanged. Only the imported ask polarity flipped so Confirmed means now-starts.
+- Imported door-switch last boundary line does not use the `isProHandoffGuidanceStep` “call a technician” substring, so the now-starts confirm can still reach **Fixed**. Substring matching is not expanded.
+- Internal-duct and blower-wheel lamps are id-based gated professional, not Primary-as-hard-stop.
+- Fail-closed is the id set. Prefer-professional true does not allow Confirmed → Fixed.
+
+### Phone (Given / tap / expect) — leftover-after-after-after
+
+Phone or Android emulator, width about **360px**. Install **0.1.3+9**. First-run: **Skip** / **Get started** → **I understand**. Exact labels. Do not file GOLDEN_LABELS **Call a pro**.
+
+#### Q. Door switch
+
+- **Given** a dryer session whose Primary is door switch (`door-switch-failure`). Not burning smell.
+- **Expect** verification ask is now-starts (firm click then Start works), not “still do nothing.”
+- **Tap** **Confirmed** on a real start.
+- **Expect** **Fixed**.
+- **Tap** **Not confirmed** on still-dead Start (separate pass).
+- **Expect** not **Fixed** (**Needs a professional**). Lamp is not **Check carefully** from a door-switch gate.
+
+#### R. Internal duct
+
+- **Given** a dryer session whose Primary is `internal-duct-lint-collapse`. Not burning smell.
+- **Expect** lamp **Check carefully**, never **Stop**, never **Safe to continue**. **A full fix likely needs a pro**. **I'll repair** / **DIY ~** hidden. **Pro recommended**. **Fixed** not offered.
+
+#### S. Blower wheel
+
+- **Given** a dryer session whose Primary is `blower-wheel-obstruction`. Same expect as R. Not worn-rollers.
+
+#### T. Authoring-time / widget
+
+- **Given** dryer-core at authoring-time.
+- **Expect** failClosed includes `internal-duct-lint-collapse` and `blower-wheel-obstruction`; `riskyVerificationFindingsFor` errors if `allowResolvedWhenConfirmed` is true on them.
+
