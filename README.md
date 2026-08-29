@@ -18,7 +18,7 @@ flutter run
 
 Run the binder before release. See [`docs/FEATURE_FREEZE.md`](docs/FEATURE_FREEZE.md).
 
-Hosted testers (0.1.4+0; no Groq key — packaged copy):
+Hosted testers (0.1.4+0; packaged copy — CI never dart-defines a phrasing key):
 
 - Flutter web (phone browser; no rating-plate scan): https://proximateprime.github.io/The-modern-butler-s-book/
 - Sideload APK (full tester on a real phone): https://github.com/Proximateprime/The-modern-butler-s-book/releases/download/v0.1.4+0/modern-butlers-book-0.1.4+0.apk
