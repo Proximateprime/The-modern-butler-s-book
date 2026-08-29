@@ -373,6 +373,7 @@ typedef GroqPhrasingRequest = PhrasingRequest;
 ///
 /// Optional [describeTitle] / [describeHint] may ride the same question-card
 /// payload as extra display strings for the Other / describe type-in.
+/// `next_question` / invented chip ids are not applied — talk only.
 class GroqPhrasingJson {
   const GroqPhrasingJson({
     this.title,

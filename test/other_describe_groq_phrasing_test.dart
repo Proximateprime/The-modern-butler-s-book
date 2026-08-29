@@ -247,6 +247,66 @@ void main() {
     expect(fake.liveNetworkCalls, 0);
   });
 
+  test('REJECT: Groq cannot choose the next question or rewrite chip ids',
+      () async {
+    final package = KnowledgePackageRepository().loadById('dryer-core')!;
+    const picker = QuestionSelectionService();
+    final recorded = [
+      _dryerResponseEvidence('Other / describe: brand new smell no chip'),
+    ];
+    final engineNext = picker.suggestNext(
+      templates: package.evidenceTemplates,
+      recordedEvidence: recorded,
+    );
+    expect(engineNext?.id, isNot('thermal-fuse-open'));
+
+    final parsed = parseGroqPhrasingJson(
+      '{"title":"What happens when you press Start?",'
+      '"why_one_line":"$_safeWhy",'
+      '"option_labels_only":{"Other / describe":"Something else I noticed"},'
+      '"next_question":"thermal-fuse-open",'
+      '"new_chip":"Brand new smell"}',
+    );
+    expect(parsed, isNotNull);
+    expect(parsed!.optionLabelsOnly.keys, [kOtherDescribeChoiceId]);
+    expect(parsed.optionLabelsOnly.containsKey('Brand new smell'), isFalse);
+
+    final rewrittenId = acceptGroqPhrasing(
+      request: _questionRequest(),
+      parsed: const GroqPhrasingJson(
+        title: 'What happens when you press Start?',
+        whyOneLine: _safeWhy,
+        optionLabelsOnly: {
+          'Brand new smell': 'Brand new smell',
+        },
+      ),
+    );
+    expect(rewrittenId, isNull);
+
+    final fake = FakeGroqPhrasingClient(
+      handler: (request) {
+        expect(request.options, isNot(contains('Brand new smell')));
+        expect(request.options, contains(kOtherDescribeChoiceId));
+        expect(request.evidenceNeeded, isNot('thermal-fuse-open'));
+        return _relabeledOther;
+      },
+    );
+    final accepted =
+        await GroqPhrasingService(client: fake).phrase(_questionRequest());
+    expect(accepted.fromGroq, isTrue);
+    expect(accepted.optionLabels.containsKey('Brand new smell'), isFalse);
+    expect(
+      picker.suggestNext(
+        templates: package.evidenceTemplates,
+        recordedEvidence: recorded,
+      )?.id,
+      engineNext?.id,
+    );
+    expect(kRuntimeEnrichmentCallsEnabled, isFalse);
+    expect(fake.completeCalls, 1);
+    expect(fake.liveNetworkCalls, 0);
+  });
+
   test('inspect GOLDEN chips stay frozen', () {
     expect(kGoldenChromeFrozenLabels, contains(inspectMatchesOkChip));
     expect(kGoldenChromeFrozenLabels, contains(inspectDoesntMatchChip));

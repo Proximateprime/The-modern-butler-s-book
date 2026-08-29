@@ -451,6 +451,13 @@ leak / validator → packaged. No Groq key in git / CI / APK. No Settings
 paste-a-key. No Play listing. Tests: `test/other_describe_groq_phrasing_test.dart`
 (fake Groq only).
 
+**OUT of this pack (Mark clarified):** Groq pulling current/new information
+for a new problem that has no chip yet. That is not talk-only and is not
+this PR. This pack does not invent chips, does not pick the next question,
+does not map typed text onto a different chip, does not call Groq per
+keystroke, and does not turn on runtime enrichment / diagnosis. John
+REJECT if Groq starts choosing the next question or rewriting chip ids.
+
 ## Hosted-tester Groq wiring — 0.1.4+2 (do not reopen leftover)
 
 Pages + GitHub APK dart-define public `SUPABASE_URL` + `SUPABASE_ANON_KEY`
