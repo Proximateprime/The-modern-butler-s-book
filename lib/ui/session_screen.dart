@@ -894,7 +894,7 @@ class _SessionScreenState extends State<SessionScreen>
     }
     _phrasingScreenKey = request.screenKey;
     _phrasing = GroqPhrasingAccepted.packaged(request);
-    _phrasingNotifier.value = _phrasing;
+    _publishPhrasingOverlay(_phrasing);
     if (!widget.dependencies.groqPhrasing.shouldCallNetwork) {
       return;
     }
@@ -911,7 +911,7 @@ class _SessionScreenState extends State<SessionScreen>
     setState(() {
       _phrasing = accepted;
     });
-    _phrasingNotifier.value = accepted;
+    _publishPhrasingOverlay(accepted);
   }
 
   void _prefetchAlreadyChosenNext({
@@ -949,6 +949,18 @@ class _SessionScreenState extends State<SessionScreen>
         ),
       ),
     );
+  }
+
+  void _publishPhrasingOverlay(GroqPhrasingAccepted? accepted) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      if (identical(_phrasingNotifier.value, accepted)) {
+        return;
+      }
+      _phrasingNotifier.value = accepted;
+    });
   }
 
   GroqPhrasingAccepted? _overlayFor(String screenKey) {
@@ -1461,6 +1473,7 @@ class _SessionScreenState extends State<SessionScreen>
       if (!mounted || note == null) {
         return;
       }
+      final trimmed = note.trim();
       answer = recordedOtherDescribeAnswer(note);
       if (trimmed.isNotEmpty) {
         final liveSession =
@@ -1789,6 +1802,9 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   Future<String?> _askOptionalDescribeNote() {
+    if (!identical(_phrasingNotifier.value, _phrasing)) {
+      _phrasingNotifier.value = _phrasing;
+    }
     return showDialog<String>(
       context: context,
       builder: (dialogContext) => _OptionalDescribeNoteDialog(

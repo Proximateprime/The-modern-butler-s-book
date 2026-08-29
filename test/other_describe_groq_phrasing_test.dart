@@ -281,8 +281,15 @@ void main() {
     await openDryerSession(tester, deps, 'Other Relabel Household');
     await tester.pumpAndSettle();
 
-    expect(find.text('Something else I noticed'), findsOneWidget);
-    expect(find.byKey(const Key('answer-choice-other-describe')), findsOneWidget);
+    final otherChip = find.byKey(const Key('answer-choice-other-describe'));
+    expect(otherChip, findsOneWidget);
+    expect(
+      find.descendant(
+        of: otherChip,
+        matching: find.text('Something else I noticed'),
+      ),
+      findsOneWidget,
+    );
     expect(fake.completeCalls, 1);
     expect(fake.liveNetworkCalls, 0);
     expect(fake.requests.single.options, contains(kOtherDescribeChoiceId));
@@ -333,19 +340,38 @@ void main() {
       groqPhrasing: GroqPhrasingService(client: fake),
     );
     await openDryerSession(tester, deps, 'Other Overlay Household');
-    expect(find.byKey(const Key('answer-choice-other-describe')), findsOneWidget);
-    expect(find.text('Something else I noticed'), findsNothing);
+    final otherChip = find.byKey(const Key('answer-choice-other-describe'));
+    expect(otherChip, findsOneWidget);
+    expect(
+      find.descendant(
+        of: otherChip,
+        matching: find.text(kOtherDescribeChoiceId),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: otherChip,
+        matching: find.text('Something else I noticed'),
+      ),
+      findsNothing,
+    );
     expect(fake.completeCalls, 1);
 
     await tapVisible(tester, find.byKey(const Key('answer-choice-other-describe')));
-    expect(find.byKey(const Key('answer-other-note-title')), findsOneWidget);
-    expect(find.text(kPackagedDescribeDialogTitle), findsOneWidget);
-    expect(find.text('What else did you notice?'), findsNothing);
+    final dialogTitle = find.byKey(const Key('answer-other-note-title'));
+    expect(dialogTitle, findsOneWidget);
+    expect(
+      tester.widget<Text>(dialogTitle).data,
+      kPackagedDescribeDialogTitle,
+    );
 
     gate.complete();
     await tester.pumpAndSettle();
-    expect(find.text('What else did you notice?'), findsOneWidget);
-    expect(find.text(kPackagedDescribeDialogTitle), findsNothing);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('answer-other-note-title'))).data,
+      'What else did you notice?',
+    );
     expect(fake.completeCalls, 1);
 
     await tester.enterText(
