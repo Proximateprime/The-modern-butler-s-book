@@ -16,7 +16,7 @@
     Pages mouse hit-targets must match the painted Flutter surface.
     Without a locked viewport, an oversized first-frame canvas (bitmap
     pixels used as CSS size, often window height × devicePixelRatio)
-    makes the document scrollable. canvas.focus() then scroll-into-view
+    makes the document scrollable. Focusing that bitmap then scroll-into-view
     offsets pointer mapping by ~164px / 4 chip rows on a 656px pane at
     125% DPR — Burning smell paints where Won't start still hits.
     Keyboard Space is fine because it uses focus, not that pointer path.

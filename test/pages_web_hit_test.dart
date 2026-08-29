@@ -55,7 +55,7 @@ void main() {
     expect(index, contains("view.focus({ preventScroll: true })"));
     expect(index, contains('bindFlutterPointerHost'));
     expect(index, contains('flutter-first-frame'));
-    expect(index, isNot(contains('canvas.focus(')));
+    expect(index, isNot(contains('canvas.focus')));
     expect(index, isNot(contains('developer demo')));
     expect(
       _read('lib/ui/product_chrome.dart'),
@@ -128,8 +128,12 @@ void main() {
         deps,
         'Pages Short Hit',
         skipProblemStarter: false,
-        viewSize: const Size(800, 656),
       );
+      tester.view.physicalSize = const Size(800, 656);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('session-scroll-view')), findsOneWidget);
       final wontStart = find.byKey(const Key('starter-chip-will-not-start'));
@@ -148,29 +152,20 @@ void main() {
   testWidgets(
     '1.25 DPR still maps the painted Burning smell row to that chip',
     (tester) async {
+      final deps = AppDependencies(
+        clock: () => DateTime.utc(2026, 8, 29, 22, 10),
+      );
+      await openDryerSession(
+        tester,
+        deps,
+        'Pages DPR House',
+        skipProblemStarter: false,
+      );
       tester.view.devicePixelRatio = 1.25;
       tester.view.physicalSize = const Size(800 * 1.25, 656 * 1.25);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-
-      final deps = AppDependencies(
-        clock: () => DateTime.utc(2026, 8, 29, 22, 10),
-      );
-      await tester.pumpWidget(ModernButlerApp(dependencies: deps));
-      await tester.tap(find.byKey(const Key('create-household-button')));
       await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(const Key('household-name-field')),
-        'Pages DPR House',
-      );
-      await tester.tap(find.byKey(const Key('confirm-household-button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('add-dryer-button')));
-      await tester.pumpAndSettle();
-      await confirmAddAppliance(tester);
-      await tester.tap(find.text('Laundry Room Dryer'));
-      await tester.pumpAndSettle();
-      await startRepairFromDetail(tester);
 
       expect(find.byType(AppBar), findsWidgets);
       expect(find.byType(ButlerPageBody), findsWidgets);
