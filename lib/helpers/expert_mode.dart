@@ -7,7 +7,8 @@ export 'forbidden_guidance.dart'
         isBeginnerBlockedElectricalService,
         isSafetyLimitLanguage,
         sanitizeGuidanceSteps,
-        shouldHideGuidanceStep;
+        shouldHideGuidanceStep,
+        visibleHouseholdHowTo;
 
 /// Extra mechanical steps flagged `expert_ok` in the package. Never gas,
 /// sealed-system, refrigerant, live metering, or safety-bypass how-to —

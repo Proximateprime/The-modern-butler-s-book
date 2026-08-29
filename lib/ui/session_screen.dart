@@ -59,6 +59,7 @@ import 'error_banner.dart';
 import 'evidence_photo_thumb.dart';
 import 'guide_loading.dart';
 import 'how_we_got_here_tile.dart';
+import 'household_how_to_text.dart';
 import 'inspect_step_card.dart';
 import 'parts_cost_card.dart';
 import 'prior_root_cause_hint.dart';
@@ -2644,6 +2645,7 @@ class _SessionScreenState extends State<SessionScreen>
                       cameraStartDenied:
                           widget.dependencies.simulateMediaDenied,
                       offerLiveCamera: false,
+                      expertMode: widget.dependencies.expertMode,
                       whyAskBody: _whyAskBody(
                         template: activeObservation,
                         inspectStep: inspectStep,
@@ -2661,6 +2663,7 @@ class _SessionScreenState extends State<SessionScreen>
                   }
                   return _AnswerChoicePanel(
                   prompt: activeObservation,
+                  expertMode: widget.dependencies.expertMode,
                   whyAskBody: _whyAskBody(
                     template: activeObservation,
                     orderedFailureModes: orderedFailureModes,
@@ -3913,6 +3916,7 @@ class _SessionScreenState extends State<SessionScreen>
                     cameraStartDenied:
                         widget.dependencies.simulateMediaDenied,
                     offerLiveCamera: false,
+                    expertMode: widget.dependencies.expertMode,
                     whyAskBody: _whyAskBody(
                       template: _templateById(
                         decisionContext.package?.evidenceTemplates ?? const [],
@@ -4042,6 +4046,7 @@ class _SessionScreenState extends State<SessionScreen>
                   _SafeGuidanceCard(
                     steps: steps,
                     stepIndex: stepIndex,
+                    expertMode: widget.dependencies.expertMode,
                     comfort: widget.dependencies.repairComfort.levelFor(
                       widget.appliance.category,
                     ),
@@ -4115,6 +4120,7 @@ class _SessionScreenState extends State<SessionScreen>
                   closePath: closePath,
                   outcome: verificationOutcome,
                   enabled: !interactionsLocked,
+                  expertMode: widget.dependencies.expertMode,
                   answersVisible: _pendingCloseVerification != null,
                   onAnswer: _beginCloseVerification,
                   onChangeAnswer:
@@ -4891,10 +4897,12 @@ class _AnswerChoicePanel extends StatelessWidget {
     required this.onSaveFreeNote,
     required this.onMarkFreeNoteSuggestion,
     this.whyAskBody,
+    this.expertMode = false,
   });
 
   final EvidenceTemplate prompt;
   final String? whyAskBody;
+  final bool expertMode;
   final ValueChanged<String> onSelected;
   final VoidCallback onPickGallery;
   final VoidCallback onPickCamera;
@@ -4982,14 +4990,24 @@ class _AnswerChoicePanel extends StatelessWidget {
                 ),
               ),
             ),
-            if (observationGuidanceForTemplate(prompt.id) case final guidance?) ...[
+            if (visibleGuidanceDisplayBlock(
+                  observationGuidanceForTemplate(prompt.id),
+                  expertMode: expertMode,
+                )
+                case final guidance?) ...[
               const SizedBox(height: 12),
               _GuidanceBlockCard(
                 block: guidance,
                 compact: true,
+                expertMode: expertMode,
               ),
             ],
-            WhyAskThisTile(body: whyAskBody ?? ''),
+            WhyAskThisTile(
+              body: visibleHouseholdHowTo(
+                whyAskBody ?? '',
+                expertMode: expertMode,
+              ),
+            ),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
@@ -5520,6 +5538,7 @@ class _CloseVerificationCard extends StatelessWidget {
     required this.answersVisible,
     required this.onAnswer,
     this.onChangeAnswer,
+    this.expertMode = false,
   });
 
   final FailureModeClosePath closePath;
@@ -5528,6 +5547,7 @@ class _CloseVerificationCard extends StatelessWidget {
   final bool answersVisible;
   final ValueChanged<FailureModeClosePath> onAnswer;
   final VoidCallback? onChangeAnswer;
+  final bool expertMode;
 
   @override
   Widget build(BuildContext context) {
@@ -5570,6 +5590,7 @@ class _CloseVerificationCard extends StatelessWidget {
                 failureModeId: closePath.failureModeId,
               ),
               compact: true,
+              expertMode: expertMode,
             ),
             const SizedBox(height: 14),
             if (answered)
@@ -6103,6 +6124,7 @@ class _SafeGuidanceCard extends StatelessWidget {
     required this.onBack,
     this.onAlreadyChecked,
     this.comfort = RepairComfortLevel.standard,
+    this.expertMode = false,
   });
 
   final List<String> steps;
@@ -6112,6 +6134,7 @@ class _SafeGuidanceCard extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback? onAlreadyChecked;
   final RepairComfortLevel comfort;
+  final bool expertMode;
 
   @override
   Widget build(BuildContext context) {
@@ -6121,7 +6144,12 @@ class _SafeGuidanceCard extends StatelessWidget {
     final index = stepIndex.clamp(0, steps.length - 1);
     final step = steps[index];
     final scheme = Theme.of(context).colorScheme;
-    final block = guidanceForSafeStep(step);
+    final block = visibleGuidanceDisplayBlock(
+          guidanceForSafeStep(step),
+          expertMode: expertMode,
+        ) ??
+        guidanceForSafeStep(step);
+    final visibleStep = visibleHouseholdHowTo(step, expertMode: expertMode);
     final visibility = comfortStepVisibility(level: comfort, step: step);
     final safetyNeeded =
         visibility.showWhenToStop &&
@@ -6153,33 +6181,42 @@ class _SafeGuidanceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              block.what,
+            HouseholdHowToText(
+              text: block.what,
+              expertMode: expertMode,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             if (visibility.showFullStep &&
-                !_sameGuidanceLine(step, block.what) &&
-                !_sameGuidanceLine(step, block.how)) ...[
+                visibleStep.isNotEmpty &&
+                !_sameGuidanceLine(visibleStep, block.what) &&
+                !_sameGuidanceLine(visibleStep, block.how)) ...[
               const SizedBox(height: 8),
-              Text(step, style: Theme.of(context).textTheme.bodyLarge),
+              Text(visibleStep, style: Theme.of(context).textTheme.bodyLarge),
             ],
-            if (!_sameGuidanceLine(block.how, block.what)) ...[
+            if (block.how.isNotEmpty &&
+                !_sameGuidanceLine(block.how, block.what)) ...[
               const SizedBox(height: 8),
-              Text(block.how, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-            if (visibility.showResultMeans) ...[
-              const SizedBox(height: 8),
-              Text(
-                block.resultMeans,
-                key: Key('guidance-result-means-${index + 1}'),
+              HouseholdHowToText(
+                text: block.how,
+                expertMode: expertMode,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
-            if (safetyNeeded) ...[
+            if (visibility.showResultMeans && block.resultMeans.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(
-                block.whenToStop,
+              HouseholdHowToText(
+                key: Key('guidance-result-means-${index + 1}'),
+                text: block.resultMeans,
+                expertMode: expertMode,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+            if (safetyNeeded && block.whenToStop.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              HouseholdHowToText(
                 key: Key('guidance-when-to-stop-${index + 1}'),
+                text: block.whenToStop,
+                expertMode: expertMode,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -6299,13 +6336,17 @@ class _GuidanceBlockCard extends StatelessWidget {
   const _GuidanceBlockCard({
     required this.block,
     this.compact = false,
+    this.expertMode = false,
   });
 
   final GuidanceDisplayBlock block;
   final bool compact;
+  final bool expertMode;
 
   @override
   Widget build(BuildContext context) {
+    final shown = visibleGuidanceDisplayBlock(block, expertMode: expertMode) ??
+        block;
     final labelStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
       color: Theme.of(context).colorScheme.primary,
     );
@@ -6313,21 +6354,43 @@ class _GuidanceBlockCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('How to check', style: labelStyle),
-        const SizedBox(height: 6),
-        Text(block.how, style: bodyStyle),
-        if (!compact) ...[
-          const SizedBox(height: 4),
-          Text('What: ${block.what}', style: bodyStyle),
-          const SizedBox(height: 4),
-          Text('Result means: ${block.resultMeans}', style: bodyStyle),
-          const SizedBox(height: 4),
-          Text(
-            'Stop if: ${block.whenToStop}',
-            style: bodyStyle?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
+        if (shown.how.isNotEmpty) ...[
+          Text('How to check', style: labelStyle),
+          const SizedBox(height: 6),
+          HouseholdHowToText(
+            key: const Key('observation-how'),
+            text: shown.how,
+            expertMode: expertMode,
+            style: bodyStyle,
           ),
+        ],
+        if (!compact) ...[
+          if (shown.what.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            HouseholdHowToText(
+              text: 'What: ${shown.what}',
+              expertMode: expertMode,
+              style: bodyStyle,
+            ),
+          ],
+          if (shown.resultMeans.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            HouseholdHowToText(
+              text: 'Result means: ${shown.resultMeans}',
+              expertMode: expertMode,
+              style: bodyStyle,
+            ),
+          ],
+          if (shown.whenToStop.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            HouseholdHowToText(
+              text: 'Stop if: ${shown.whenToStop}',
+              expertMode: expertMode,
+              style: bodyStyle?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
         ],
       ],
     );

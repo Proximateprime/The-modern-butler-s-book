@@ -4,6 +4,28 @@ import 'failure_mode_standing.dart';
 import 'thermal_reset_scope.dart';
 import 'visual_guide.dart';
 
+/// Heater-circuit leaders that cannot finish as beginner DIY.
+///
+/// Lamp is Check carefully (`professional`); Confirmed does not unlock
+/// Fixed. Not a hard stop. Door-switch and resettable thermal cutoff are
+/// not in this set.
+const Set<String> heaterCircuitDiyCannotCompleteLeaderIds = {
+  'thermal-fuse-open',
+  'heating-element-failed',
+  'high-limit-thermostat-open',
+  'cycling-thermostat-failed',
+  'cycling-thermostat-stuck-open',
+  'cycling-thermostat-stuck-closed',
+  'relay-or-control-no-heat-output',
+  'thermistor-fault-electronic',
+  'timer-advanced-no-heat-portion',
+};
+
+bool isHeaterCircuitDiyCannotCompleteLeader(String? failureModeId) {
+  return failureModeId != null &&
+      heaterCircuitDiyCannotCompleteLeaderIds.contains(failureModeId);
+}
+
 /// Dedicated verification answer labels for the close path.
 const List<String> closeVerificationChoices = [
   'Confirmed',
@@ -280,7 +302,7 @@ const Map<String, FailureModeClosePath> _dryerClosePaths = {
       'If clothes stay cold / no warmth returns, call a qualified technician '
           'for heating-element service.',
     ],
-    allowResolvedWhenConfirmed: true,
+    allowResolvedWhenConfirmed: false,
     preferProfessionalWhenNotConfirmed: true,
   ),
   'electric-supply-connection-fault': FailureModeClosePath(
@@ -971,10 +993,11 @@ CloseResolveEligibility closeResolveEligibility({
   }
 
   if (verificationOutcome == VerificationOutcome.supported) {
-    if (path.allowResolvedWhenConfirmed) {
-      return CloseResolveEligibility.allowResolved;
+    if (isHeaterCircuitDiyCannotCompleteLeader(primaryFailureModeId) ||
+        !path.allowResolvedWhenConfirmed) {
+      return CloseResolveEligibility.needsProfessional;
     }
-    return CloseResolveEligibility.needsProfessional;
+    return CloseResolveEligibility.allowResolved;
   }
 
   // Not confirmed.

@@ -608,7 +608,7 @@
       "difficultyNotes": "Element testing and replacement are professional tasks. Beginners only confirm settings, tumble, and external plug condition.",
       "commonality": "high",
       "safetyNotes": "Do not guide beginners through live electrical testing of the heater circuit.",
-      "allowResolvedWhenConfirmed": true,
+      "allowResolvedWhenConfirmed": false,
       "preferProfessionalWhenNotConfirmed": true
     },
     {

@@ -1,4 +1,5 @@
 import 'easy_airflow_checks.dart';
+import 'forbidden_guidance.dart';
 
 /// Structured user-facing guidance for a check or safe step.
 class GuidanceDisplayBlock {
@@ -22,6 +23,29 @@ const _defaultWhenToStop =
 /// Plain-language HOW for observation prompts.
 GuidanceDisplayBlock? observationGuidanceForTemplate(String templateId) {
   return _observationGuidance[templateId];
+}
+
+/// Safety Validator on a display block. Forbidden how-to is emptied so
+/// the UI must not paint it. Prohibition lines stay.
+GuidanceDisplayBlock? visibleGuidanceDisplayBlock(
+  GuidanceDisplayBlock? block, {
+  required bool expertMode,
+}) {
+  if (block == null) {
+    return null;
+  }
+  return GuidanceDisplayBlock(
+    what: visibleHouseholdHowTo(block.what, expertMode: expertMode),
+    how: visibleHouseholdHowTo(block.how, expertMode: expertMode),
+    resultMeans: visibleHouseholdHowTo(
+      block.resultMeans,
+      expertMode: expertMode,
+    ),
+    whenToStop: visibleHouseholdHowTo(
+      block.whenToStop,
+      expertMode: expertMode,
+    ),
+  );
 }
 
 /// Enriches close-path / safe-guidance steps for display.

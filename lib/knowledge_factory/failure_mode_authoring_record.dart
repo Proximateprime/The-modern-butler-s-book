@@ -32,7 +32,7 @@ class FailureModeAuthoringRecord {
     required this.commonality,
     required this.safetyNotes,
     this.schemaVersion = '1.0',
-    this.allowResolvedWhenConfirmed = true,
+    this.allowResolvedWhenConfirmed = false,
     this.preferProfessionalWhenNotConfirmed = true,
     List<VisualGuideAnchor> visualGuides = const [],
     List<PartCostEstimate> partsEstimates = const [],
@@ -186,8 +186,7 @@ class FailureModeAuthoringRecord {
       difficultyNotes: json['difficultyNotes'] as String? ?? '',
       commonality: json['commonality'] as String? ?? 'common',
       safetyNotes: json['safetyNotes'] as String? ?? '',
-      allowResolvedWhenConfirmed:
-          json['allowResolvedWhenConfirmed'] as bool? ?? true,
+      allowResolvedWhenConfirmed: parseAllowResolvedWhenConfirmed(json),
       preferProfessionalWhenNotConfirmed:
           json['preferProfessionalWhenNotConfirmed'] as bool? ?? true,
       visualGuides: List<dynamic>.from(
@@ -362,4 +361,13 @@ void validateFailureModeAuthoringRecord(
 
 bool _isSlug(String value) {
   return RegExp(r'^[a-z0-9]+(?:-[a-z0-9]+)*$').hasMatch(value);
+}
+
+/// Omitted [allowResolvedWhenConfirmed] is false (pro-handoff default).
+/// Explicit `true` only on DIY-completable paths (e.g. resettable cutoff).
+bool parseAllowResolvedWhenConfirmed(Map<String, dynamic> json) {
+  if (!json.containsKey('allowResolvedWhenConfirmed')) {
+    return false;
+  }
+  return json['allowResolvedWhenConfirmed'] == true;
 }

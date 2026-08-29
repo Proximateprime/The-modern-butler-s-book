@@ -29,11 +29,15 @@ class SafetyStop {
 /// `professional` from [sessionSafetyLevelFor] so the lamp is Check carefully):
 /// - `electric-supply-connection-fault`, `motor-failure`
 /// - any close path with `allowResolvedWhenConfirmed: false` (e.g. thermal fuse)
+/// - heater-circuit DIY-cannot-complete leaders (heating-element, high-limit,
+///   cycling thermostat, relay/control, thermistor, timer heat segment)
 ///
 /// Not hard-stopped by Primary alone (soft close path available):
-/// - `heating-element-failed` — identify mode; no live testing guidance
+/// - `heating-element-failed` — identify mode; lamp professional; Confirmed
+///   does not unlock Fixed; no live testing guidance
 /// - `thermal-fuse-open` — beginner-safe lint/vent checks first; never bypass
 /// - `dusty-lint-smell` — non-hazard odor; still escalate if smell type changes
+/// Door-switch Fixed when a firm click starts the machine is unchanged.
 /// Safety Invariants win over symptom seeding and the interview: if this
 /// function returns a stop, the Session screen must not continue ordinary
 /// questions (including starter chips treated as normal evidence).
@@ -81,6 +85,9 @@ bool isGatedProfessionalFailureMode(String? failureModeId) {
     return false;
   }
   if (_gatedProfessionalFailureModeIds.contains(failureModeId)) {
+    return true;
+  }
+  if (isHeaterCircuitDiyCannotCompleteLeader(failureModeId)) {
     return true;
   }
   final path = closePathForFailureMode(failureModeId);
