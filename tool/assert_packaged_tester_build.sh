@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Hosted testers must stay on the missing-key / packaged-copy path.
-# Never dart-define a phrasing provider key into web or APK.
-# Never ship a Groq key or Play keystore in git.
+# Hosted testers may compile public SUPABASE_URL + SUPABASE_ANON_KEY.
+# Never dart-define GROQ_API_KEY. Never ship a Groq key or Play keystore.
+# Never dart-define service_role.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -15,7 +15,12 @@ if [[ -f .env ]] || compgen -G '.env.*' >/dev/null; then
 fi
 
 if env | grep -E '^GROQ' >/dev/null; then
-  echo "Refusing: phrasing-provider env is set. Testers use packaged copy." >&2
+  echo "Refusing: GROQ env is set. Groq key stays on the Edge Function." >&2
+  exit 1
+fi
+
+if env | grep -E 'SERVICE_ROLE' >/dev/null; then
+  echo "Refusing: service_role must not appear in the build environment." >&2
   exit 1
 fi
 
@@ -31,8 +36,12 @@ if git grep -nI -E "$TOKEN_RE" -- ':!.git' >/dev/null; then
   exit 1
 fi
 
-if git grep -nI -E -- 'dart-define=.?GROQ_API_KEY' -- '.github' >/dev/null; then
-  echo "Refusing: phrasing key must not be passed into CI builds." >&2
+# Allowed: --dart-define=SUPABASE_URL and --dart-define=SUPABASE_ANON_KEY
+# (public project URL + anon/publishable JWT). Not secrets.
+# Forbidden: GROQ_API_KEY and any service_role dart-define.
+if git grep -nI -E -- 'dart-define=.?(GROQ_API_KEY|SUPABASE_SERVICE_ROLE|SERVICE_ROLE)' \
+    -- '.github' >/dev/null; then
+  echo "Refusing: Groq key or service_role must not be passed into CI builds." >&2
   exit 1
 fi
 

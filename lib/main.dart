@@ -10,7 +10,11 @@ import 'ui/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ensureButlerSupabase();
+  try {
+    await ensureButlerSupabase();
+  } catch (_) {
+    // Backend init must never block runApp. Packaged copy if it fails.
+  }
   final dependencies = await AppDependencies.createPersisted();
   runApp(ModernButlerApp(dependencies: dependencies));
 }

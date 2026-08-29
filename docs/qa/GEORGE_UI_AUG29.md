@@ -424,3 +424,11 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Hosted-tester Groq wiring — 0.1.4+2 (do not reopen leftover)
+
+Pages + GitHub APK dart-define public `SUPABASE_URL` + `SUPABASE_ANON_KEY`
+only. Web POST uses package:http (conditional imports; no dart:io). Init
+failures are swallowed before `runApp`. Same seven ON hooks and pre-paint
+safety gate. In-memory rate limit stays parked. See
+[`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
+

@@ -18,12 +18,12 @@ flutter run
 
 Run the binder before release. See [`docs/FEATURE_FREEZE.md`](docs/FEATURE_FREEZE.md).
 
-Hosted testers (0.1.4+0; packaged copy — CI never dart-defines a phrasing key):
+Hosted testers (0.1.4+2; public Supabase URL + anon only — CI never dart-defines Groq):
 
 - Flutter web (phone browser; no rating-plate scan): https://proximateprime.github.io/The-modern-butler-s-book/
-- Sideload APK (full tester on a real phone): https://github.com/Proximateprime/The-modern-butler-s-book/releases/download/v0.1.4+0/modern-butlers-book-0.1.4+0.apk
+- Sideload APK (full tester on a real phone): https://github.com/Proximateprime/The-modern-butler-s-book/releases/download/v0.1.4+2/modern-butlers-book-0.1.4+2.apk
 
-Play Store listing is out. This tree is **0.1.4+1** Play-ready plumbing only — no App Bundle upload and no Console listing.
+Play Store listing is out. This tree is **0.1.4+2** hosted-tester Groq wiring — no App Bundle upload and no Console listing.
 
 ## Groq phrasing (Play-ready)
 
@@ -36,8 +36,9 @@ key in git, PRs, or chat.
 
 - Anon/publishable Supabase keys may ship in the app.
 - Local `--dart-define=GROQ_API_KEY` is for Mark’s machine only.
-- Hosted Pages, GitHub APK, CI, and Play artifacts must not pass that define.
-- Missing function / timeout / 4xx / 5xx / safety-gate fail → packaged copy.
+- Hosted Pages and the GitHub APK dart-define public `SUPABASE_URL` +
+  `SUPABASE_ANON_KEY` only. They must not pass `GROQ_API_KEY`.
+- Missing function / timeout / 4xx / 5xx / leak / safety-gate fail → packaged copy.
 - Some on-screen wording may be sent to Groq through the butler backend.
   Household records stay on this device. A language model never decides what
   is wrong.
@@ -47,7 +48,7 @@ See [`docs/qa/PLAY_READY_GROQ.md`](docs/qa/PLAY_READY_GROQ.md).
 ## Play signing later (not now)
 
 `applicationId` stays `com.example.modern_butlers_book`. `versionCode` follows
-`pubspec.yaml` (`0.1.4+1`).
+`pubspec.yaml` (`0.1.4+2`).
 
 When a store AAB is wanted later:
 

@@ -1,6 +1,5 @@
-# Rebuild hosted tester artifacts as packaged copy only.
-# Never pass a phrasing-provider key into the build.
-# Do not configure the butler function here — testers stay packaged if it is unset.
+# Rebuild hosted tester artifacts with public Supabase URL + anon only.
+# Never pass GROQ_API_KEY or a Groq-shaped token into the build.
 # Play Store listing / store upload is out.
 name: Publish tester web and APK
 
@@ -30,6 +29,12 @@ concurrency:
   group: ${{ github.event_name == 'pull_request' && format('publish-testers-pr-{0}', github.event.pull_request.number) || 'publish-testers' }}
   cancel-in-progress: true
 
+# Public The Modern Butlers book project. These are not secrets.
+# Groq stays on the Edge Function. Do not dart-define GROQ.
+env:
+  SUPABASE_URL: https://zfwmrqnywhspgzqmkokn.supabase.co
+  SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmd21ycW55d2hzcGd6cW1rb2tuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyNTAxNzIsImV4cCI6MjA5OTgyNjE3Mn0.ETQYufqyG8nKum1TzO0VSCtv9QnGs0k0164OuGTRK8U
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -37,7 +42,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Packaged-copy gate (no live phrasing key)
+      - name: Packaged-copy gate (no Groq key)
         run: bash tool/assert_packaged_tester_build.sh
 
       - name: Java (APK)
@@ -55,11 +60,13 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
-      - name: Build Flutter web (no dart-define)
+      - name: Build Flutter web (public SUPABASE dart-defines only)
         run: |
           set -euo pipefail
           bash tool/assert_packaged_tester_build.sh
-          flutter build web --release --base-href "/The-modern-butler-s-book/"
+          flutter build web --release --base-href "/The-modern-butler-s-book/" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
           touch build/web/.nojekyll
           bash tool/assert_packaged_tester_build.sh --scan-web
 
@@ -104,11 +111,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash tool/sync_pages_web.sh --commit
 
-      - name: Build sideload APK (debug signing, no dart-define)
+      - name: Build sideload APK (debug signing, public SUPABASE dart-defines only)
         run: |
           set -euo pipefail
           bash tool/assert_packaged_tester_build.sh
-          flutter build apk --release
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
 
       - name: Scan APK then attach to version-tag release
         env:
@@ -126,6 +135,6 @@ jobs:
           fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --title "$TAG" \
-              --notes "Tester sideload APK ${VERSION}. Debug-signed. Not Play Store. Packaged copy only."
+              --notes "Tester sideload APK ${VERSION}. Debug-signed. Not Play Store. Calls phrase via public Supabase URL; Groq key stays on the server."
           fi
           gh release upload "$TAG" "$ASSET" --clobber
