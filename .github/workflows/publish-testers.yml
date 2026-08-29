@@ -1,0 +1,109 @@
+# Rebuild hosted tester artifacts. No Groq key, no .env, no dart-define secrets.
+# Missing GROQ_API_KEY is required: testers see packaged copy.
+name: Publish tester web and APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish-testers
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java (APK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build Flutter web (no dart-define Groq key)
+        run: |
+          set -euo pipefail
+          flutter build web --release --base-href "/The-modern-butler-s-book/"
+          touch build/web/.nojekyll
+          if find build/web -type f \( -name '*.js' -o -name '*.json' -o -name '*.html' \) \
+              -print0 | xargs -0 grep -E -n 'GROQ_API_KEY=|gsk_[A-Za-z0-9]{20,}'; then
+            echo "Refusing to publish: Groq-like secret in web build" >&2
+            exit 1
+          fi
+
+      - name: Deploy gh-pages (Flutter web, Jekyll off)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          force_orphan: true
+          enable_jekyll: false
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Prefer gh-pages or Actions as Pages source
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/pages" \
+            -H "Accept: application/vnd.github+json" \
+            --input - <<'EOF' || true
+          {"source":{"branch":"gh-pages","path":"/"}}
+          EOF
+
+      - name: Upload Pages artifact
+        continue-on-error: true
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+      - name: Deploy Pages (when source is GitHub Actions)
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Sync Flutter web onto main for legacy Pages (main /)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash tool/sync_pages_web.sh --commit
+
+      - name: Build sideload APK (debug signing, no dart-define Groq key)
+        run: flutter build apk --release
+
+      - name: Attach APK to version-tag release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="$(awk '/^version:/{print $2; exit}' pubspec.yaml)"
+          TAG="v${VERSION}"
+          ASSET="modern-butlers-book-${VERSION}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "$ASSET"
+          if strings "$ASSET" | grep -E 'GROQ_API_KEY=|gsk_[A-Za-z0-9]{20,}'; then
+            echo "Refusing to upload: Groq-like secret in APK" >&2
+            exit 1
+          fi
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TAG" \
+              --notes "Tester sideload APK ${VERSION}. Debug-signed. Not Play Store. No Groq key."
+          fi
+          gh release upload "$TAG" "$ASSET" --clobber
