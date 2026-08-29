@@ -6,6 +6,9 @@ import '../helpers/close_path_phase.dart';
 /// repositories; this only remembers which question/verification panel was
 /// open, problem-starter confirmation, and guidance step completion for
 /// Continue repair.
+///
+/// Groq may phrase a “Last time we knew…” line from this snapshot plus
+/// evidence. It must not write these fields.
 class SessionUiResumeState {
   const SessionUiResumeState({
     this.pendingObservationTemplateId,

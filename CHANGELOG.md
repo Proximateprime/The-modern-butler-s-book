@@ -1,3 +1,7 @@
+## Groq phrasing pack (2026-08-29)
+
+App **0.1.4+0**. Groq rephrases seven ON household surfaces (question, stop, pro handoff, Speak Human diagnosis, Confirm ≠ Fixed, resume, comfort). The engine still decides template ids, ranking, and Fixed eligibility. Missing key / timeout / validator fail stay on packaged copy. No Settings paste-a-key field. Details: [`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md).
+
 ## Device-test fix pack (2026-08-25)
 
 App **0.1.1+2**, dryer-core **1.4.2**. Real-APK feedback: **Review what you checked** no longer undoes diagnosis; resettable thermal cutoff vs pro-only fuse; multi-select first symptoms; easier-first dual hypotheses; brick-risk warnings; local maintenance notify + hide empty manufacturer cards; enrichment store stub (not live diagnosis). Details: [`docs/qa/TEST_FEEDBACK_AUG25.md`](docs/qa/TEST_FEEDBACK_AUG25.md).

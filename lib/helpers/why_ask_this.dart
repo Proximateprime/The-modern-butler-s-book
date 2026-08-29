@@ -71,6 +71,7 @@ const Map<String, String> whyAskAuthoredByTemplateId = {
 ///
 /// Always returns a non-empty body when [template], [inspectStep], or
 /// [templateId] is set. Does not rank, diagnose, or call an LLM.
+/// Packaged source of truth — Groq may rephrase the displayed line only.
 WhyAskThisExplanation whyAskThisQuestion({
   EvidenceTemplate? template,
   InspectStep? inspectStep,

@@ -14,6 +14,11 @@ extension RepairComfortLevelLabel on RepairComfortLevel {
 }
 
 /// Household-chosen step detail per appliance domain.
+///
+/// Groq maps [RepairComfortLevel.moreDetail] → cautious,
+/// [RepairComfortLevel.standard] → normal, [RepairComfortLevel.shorter] →
+/// short for phrasing only. Groq does not change this profile. Shorter still
+/// keeps safety-critical unplug / never / do not.
 class RepairComfortProfile {
   const RepairComfortProfile({
     this.learnPreferences = false,

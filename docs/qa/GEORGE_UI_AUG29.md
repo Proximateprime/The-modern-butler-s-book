@@ -339,3 +339,63 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+9**. First-run
 - **Given** dryer-core at authoring-time.
 - **Expect** failClosed includes `internal-duct-lint-collapse` and `blower-wheel-obstruction`; `riskyVerificationFindingsFor` errors if `allowResolvedWhenConfirmed` is true on them.
 
+## Groq phrasing pack — 0.1.4+0
+
+Talk like a tech; engine still decides. Items 1–12, leftover, leftover-next, leftover-after, leftover-after-after, and leftover-after-after-after stay done; this pack does not reopen them. `GOLDEN_LABELS.md` **Call a pro** stays frozen. Worn rollers stay parked. Expert unplugged heater-panel stays parked. `motor-overheat-protector-open` stays DIY. Voice-as-required stays locked (reuse the same strings; no second personality).
+
+App **0.1.4+0**. Tests: prior George UI files plus `test/george_ui_groq_phrasing_test.dart`. Fake Groq only — zero live network.
+
+Groq changes how we talk, not what we conclude. Packaged strings paint first; the nicer line swaps in when Groq arrives (no blank card). JSON only: `title`, `why_one_line`, `option_labels_only`. Same ids — never a fourth option or new chip id. One Groq call per screen change. Prefetch is the already-chosen next template id’s wording only — not Module 3.7 full branch cache. Never stream a novel into the question slot. Timeout / missing key / validator fail → packaged. Banned: `gas_train`, `live_voltage`, `sealed`. Groq output must pass existing `forbidden_guidance` / `visibleHouseholdHowTo`. How-to body stays off (validator owns gas / live mains / sealed).
+
+Client: OpenAI-compatible POST `https://api.groq.com/openai/v1/chat/completions` model `llama-3.1-8b-instant`. Key from `--dart-define=GROQ_API_KEY` / `String.fromEnvironment('GROQ_API_KEY')`. Never commit a key, `.env`, or secret. Missing key is a required path (packaged copy). No Settings paste-a-key field.
+
+### Seven ON (testers default) with hard gates
+
+1. **Question card.** Rephrase authored title + `whyAskThisQuestion` / `whyAskAuthoredByTemplateId`. Does not pick template id or chips. `QuestionSelectionService` “No ranking mutation, persistence, or LLM” stays true. `whyAskThisQuestion` remains packaged source of truth.
+
+2. **Safety/stop.** Shorten `UserFacingCopy.safetyStopOfficial` / `safetyStopDisplayCopy` only if unplug, ventilate, and don’t keep running all remain. Else packaged. Never hide or soften the Stop banner.
+
+3. **ProHandoff.** One paragraph they can read to a tech from `formatProHandoffSummary` + observed / not done. Not a diagnosis. Heading **Read this to a technician**.
+
+4. **Diagnosis summary.** **Speak Human** — **Most likely** / **Why** / **What you saw** / **Next step**. Confidence bands only. No numbers. Ranked FMs already exist — ranking is not changed.
+
+5. **Confirm ≠ Fixed.** Groq may phrase “We confirmed the part is open. The dryer still isn’t fixed until heat returns.” Must not flip `allowResolvedWhenConfirmed` or offer **Fixed** when the engine says not Fixed.
+
+6. **Resume.** Phrase `SessionUiResumeState` + evidence only (**Last time we knew…**). Do not write resume state.
+
+7. **Skill/comfort.** `RepairComfortLevel` moreDetail / standard / shorter as they exist (Groq tokens cautious / normal / short). Groq does not change `RepairComfortProfile`. Shorter still keeps safety-critical unplug / never / do not.
+
+### OFF (do not attach)
+
+Next-question picker; confidence numbers; chip ids / allowed answers; how-to internals; camera/OCR as diagnosis; household memory writes; every keystroke / every chip tap; empty-state essay; post-verify success copy; reminder copy; history tile subtitle (light attach stays off for first testers).
+
+### Phone (Given / tap / expect) — 0.1.4+0 Groq phrasing
+
+Phone or Android emulator, width about **360px**. Install **0.1.4+0**. First-run: **Skip** / **Get started** → **I understand**. Exact labels. Missing-key path is the default install (packaged copy). Do not file GOLDEN_LABELS **Call a pro**.
+
+#### U. Question card (missing key)
+
+- **Given** a new dryer session, skip starter, first question visible.
+- **Expect** authored question title (not a slug) and **Why ask this?** packaged body. No blank card. Chips keep existing ids.
+
+#### V. Safety stop (missing key)
+
+- **Given** hazard-signs starter confirmed (burning smell).
+- **Expect** banner title **Needs a professional**. Body still unplug / ventilate / do not keep running (`Stop. Unplug if it is safe, ventilate, and do not keep running the machine. Call a professional.`). Banner is not hidden.
+
+#### W. Speak Human + Confirm ≠ Fixed
+
+- **Given** a dryer session whose Primary is thermal fuse (`thermal-fuse-open`) on **Most likely**.
+- **Expect** **Speak Human** with **Most likely** / **Why** / **What you saw** / **Next step**. No `%`.
+- **Given** verification Confirmed on a path with `allowResolvedWhenConfirmed` false.
+- **Expect** `We confirmed the part is open. The dryer still isn’t fixed until heat returns.` **Fixed** is not offered.
+
+#### X. Resume + ProHandoff + comfort
+
+- **Given** Continue repair after leaving mid-session.
+- **Expect** **Last time we knew…** plus evidence. Resume fields are not rewritten by Groq.
+- **Given** **Needs a professional** → technician handoff.
+- **Expect** **Read this to a technician** one paragraph (observed / not done). Not a diagnosis. Full preview still present.
+- **Given** Settings step detail **Shorter steps** on a safety-critical unplug step.
+- **Expect** unplug / never / do not still visible.
+

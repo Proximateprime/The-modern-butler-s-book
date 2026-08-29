@@ -1,5 +1,6 @@
 import '../models/evidence.dart';
 import 'dryer_close_path.dart';
+import 'groq_phrasing.dart';
 import 'user_facing_error.dart';
 
 /// Deterministic hard-stop result for the Session screen safety gate.
@@ -47,12 +48,18 @@ class SafetyStop {
 /// function returns a stop, the Session screen must not continue ordinary
 /// questions (including starter chips treated as normal evidence).
 /// Household-facing actions shown on every hard-stop path (chip, type, voice).
-String safetyStopOfficialCopy() => UserFacingCopy.safetyStopOfficial;
+///
+/// Groq may shorten [UserFacingCopy.safetyStopOfficial] only when unplug,
+/// ventilate, and don’t keep running all remain. Else packaged.
+String safetyStopOfficialCopy({String? groqShortened}) {
+  return phrasedSafetyStopOfficial(groqShortened: groqShortened);
+}
 
 /// Banner / cue body: why we stopped, then the official actions.
-String safetyStopDisplayCopy(SafetyStop stop) {
+/// Never hides or softens the Stop banner.
+String safetyStopDisplayCopy(SafetyStop stop, {String? groqShortenedOfficial}) {
   final why = stop.reason.trim();
-  final official = UserFacingCopy.safetyStopOfficial;
+  final official = safetyStopOfficialCopy(groqShortened: groqShortenedOfficial);
   if (why.isEmpty || official.contains(why) || why == official) {
     return official;
   }

@@ -7,6 +7,8 @@ import '../models/knowledge_package.dart';
 /// Thin deterministic boundary for next-question selection.
 ///
 /// Wraps [suggestNextObservation]. No ranking mutation, persistence, or LLM.
+/// Groq phrasing must not be called from here — it does not pick template id
+/// or chips.
 class QuestionSelectionService {
   const QuestionSelectionService();
 

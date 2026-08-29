@@ -52,6 +52,7 @@ import '../services/repair_session_repository.dart';
 import '../services/session_coordinator.dart';
 import '../services/voice_answer.dart';
 import '../services/voice_answer_speech.dart';
+import '../services/groq_phrasing_service.dart';
 import 'app_theme.dart';
 
 /// In-memory composition root for the developer UI.
@@ -74,6 +75,7 @@ class AppDependencies {
     Listenable? onlineListenable,
     MaintenanceNotifier? maintenanceNotifier,
     EnrichmentProvider? enrichmentProvider,
+    GroqPhrasingService? groqPhrasing,
   }) {
     late final AppDependencies dependencies;
     void onChanged() => dependencies._schedulePersist();
@@ -110,6 +112,7 @@ class AppDependencies {
       onlineListenable: onlineListenable,
       maintenanceNotifier: maintenanceNotifier ?? SilentMaintenanceNotifier(),
       enrichmentProvider: enrichmentProvider ?? const StubEnrichmentProvider(),
+      groqPhrasing: groqPhrasing ?? GroqPhrasingService(),
     );
     return dependencies;
   }
@@ -158,6 +161,7 @@ class AppDependencies {
     this.onlineListenable,
     required this.maintenanceNotifier,
     required this.enrichmentProvider,
+    required this.groqPhrasing,
   }) : _store = store,
        _clock = clock,
        _isOnline = isOnline;
@@ -173,6 +177,7 @@ class AppDependencies {
   final VoiceAnswerListener voiceAnswer;
   final MaintenanceNotifier maintenanceNotifier;
   final EnrichmentProvider enrichmentProvider;
+  final GroqPhrasingService groqPhrasing;
   final Listenable? onlineListenable;
   final LocalDomainStore? _store;
   final DateTime Function() _clock;

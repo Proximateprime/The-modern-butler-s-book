@@ -1,3 +1,8 @@
+# Secrets — never commit a Groq key or env file
+.env
+.env.*
+!.env.example
+
 # Miscellaneous
 *.class
 *.log

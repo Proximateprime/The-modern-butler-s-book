@@ -39,6 +39,7 @@ import '../helpers/visual_guide.dart';
 import '../helpers/voice_answer.dart';
 import '../helpers/warranty_hint.dart';
 import '../helpers/why_ask_this.dart';
+import '../helpers/groq_phrasing.dart';
 import '../knowledge_factory/failure_mode_authoring_registry.dart';
 import '../models/appliance.dart';
 import '../models/decision_context.dart';
@@ -124,6 +125,11 @@ class _SessionScreenState extends State<SessionScreen>
   final Set<String> _opportunisticAcceptedLabels = {};
   bool _voiceListening = false;
   bool _voiceHazardConfirm = false;
+  GroqPhrasingAccepted? _phrasing;
+  String? _phrasingScreenKey;
+  bool _showResumeKnew = false;
+  String? _resumeKnewLine;
+  String? _prefetchedNextTemplateId;
   List<FreeObservationSuggestion> _freeObservationSuggestions = const [];
   final TextEditingController _starterFreeTextController =
       TextEditingController();
@@ -291,6 +297,13 @@ class _SessionScreenState extends State<SessionScreen>
         ..clear()
         ..addAll(resume?.easierPathsExhausted ?? const []);
       _starterLimitedGuidance = resume?.starterLimitedGuidance == true;
+      if (resume != null && !resume.isEmpty) {
+        _showResumeKnew = true;
+        _resumeKnewLine = packagedResumeKnewLine(
+          state: resume,
+          evidence: decisionContext.evidence,
+        );
+      }
       _opportunisticAcceptedLabels
         ..clear()
         ..addAll(resume?.opportunisticAcceptedLabels ?? const []);
@@ -830,6 +843,131 @@ class _SessionScreenState extends State<SessionScreen>
       remainingModes: remaining,
       packageModes: packageModes,
     ).body;
+  }
+
+  RepairComfortLevel get _comfortLevel {
+    return widget.dependencies.repairComfort.levelFor(
+      widget.appliance.category,
+    );
+  }
+
+  String _lastObsLine(List<Evidence> evidence) {
+    if (evidence.isEmpty) {
+      return '';
+    }
+    final last = evidence.last;
+    return '${last.templateId ?? last.observation}: ${last.answer ?? ''}';
+  }
+
+  GroqPhrasingRequest _questionPhrasingRequest({
+    required EvidenceTemplate template,
+    required String whyEngine,
+    required List<Evidence> evidence,
+    bool prefetchOnly = false,
+  }) {
+    final options = answerChoicesFor(template);
+    return GroqPhrasingRequest(
+      hook: GroqPhrasingHook.questionCard,
+      family: widget.appliance.category,
+      energy: groqEnergyTokenFromAppliance(widget.appliance),
+      state: 'evidence',
+      comfort: groqComfortToken(_comfortLevel),
+      evidenceNeeded: template.id,
+      options: options,
+      lastObs: _lastObsLine(evidence),
+      whyEngine: whyEngine,
+      safety: 'none',
+      packagedTitle: observationPromptTitle(template),
+      packagedWhyOneLine: whyEngine,
+      packagedOptionLabels: {for (final id in options) id: id},
+      prefetchOnly: prefetchOnly,
+    );
+  }
+
+  void _ensurePhrasing(GroqPhrasingRequest request) {
+    if (_phrasingScreenKey == request.screenKey && _phrasing != null) {
+      return;
+    }
+    _phrasingScreenKey = request.screenKey;
+    _phrasing = GroqPhrasingAccepted.packaged(request);
+    if (!widget.dependencies.groqPhrasing.shouldCallNetwork) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_swapPhrasing(request));
+    });
+  }
+
+  Future<void> _swapPhrasing(GroqPhrasingRequest request) async {
+    final accepted = await widget.dependencies.groqPhrasing.phrase(request);
+    if (!mounted || _phrasingScreenKey != request.screenKey) {
+      return;
+    }
+    setState(() {
+      _phrasing = accepted;
+    });
+  }
+
+  void _prefetchAlreadyChosenNext({
+    required String templateId,
+    required List<EvidenceTemplate> templates,
+    required List<Evidence> evidence,
+    required List<FailureMode> orderedFailureModes,
+    required Map<String, FailureModeStanding> standings,
+    required List<FailureMode> packageModes,
+  }) {
+    if (_prefetchedNextTemplateId == templateId) {
+      return;
+    }
+    final template = _templateById(templates, templateId);
+    if (template == null) {
+      return;
+    }
+    _prefetchedNextTemplateId = templateId;
+    if (!widget.dependencies.groqPhrasing.shouldCallNetwork) {
+      return;
+    }
+    final why = _whyAskBody(
+      template: template,
+      orderedFailureModes: orderedFailureModes,
+      standings: standings,
+      packageModes: packageModes,
+    );
+    unawaited(
+      widget.dependencies.groqPhrasing.prefetchAlreadyChosenNext(
+        _questionPhrasingRequest(
+          template: template,
+          whyEngine: why,
+          evidence: evidence,
+          prefetchOnly: true,
+        ),
+      ),
+    );
+  }
+
+  GroqPhrasingAccepted? _overlayFor(String screenKey) {
+    if (_phrasing != null && _phrasing!.screenKey == screenKey) {
+      return _phrasing;
+    }
+    return null;
+  }
+
+  String? _confirmNotFixedLine({
+    required FailureModeClosePath? closePath,
+    required VerificationOutcome verificationOutcome,
+    GroqPhrasingAccepted? overlay,
+  }) {
+    if (closePath == null ||
+        verificationOutcome != VerificationOutcome.supported ||
+        closePath.allowResolvedWhenConfirmed) {
+      return null;
+    }
+    if (overlay != null &&
+        overlay.screenKey.startsWith('confirmNotFixed|') &&
+        overlay.whyOneLine.trim().isNotEmpty) {
+      return overlay.whyOneLine;
+    }
+    return kConfirmNotFixedPackaged;
   }
 
   ClosePathPhase _phaseAfterInspectComplete(FailureModeClosePath closePath) {
@@ -1746,6 +1884,22 @@ class _SessionScreenState extends State<SessionScreen>
         }
       });
       _persistUiResume();
+      if (!keepCurrentQuestion) {
+        final nextContext =
+            widget.dependencies.buildDecisionContext(session.id);
+        final nextReasoning = _evaluateReasoning(nextContext);
+        final nextId = nextReasoning?.suggestedNextTemplateId;
+        if (nextId != null && nextId != prompt.id) {
+          _prefetchAlreadyChosenNext(
+            templateId: nextId,
+            templates: nextContext.package?.evidenceTemplates ?? const [],
+            evidence: nextContext.evidence,
+            orderedFailureModes: nextReasoning?.orderedFailureModes ?? const [],
+            standings: nextReasoning?.standings ?? const {},
+            packageModes: nextContext.package?.failureModes ?? const [],
+          );
+        }
+      }
     } on StateError catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(userFacingErrorMessage(error))),
@@ -2311,6 +2465,103 @@ class _SessionScreenState extends State<SessionScreen>
           excludeSessionId: widget.sessionId,
         );
 
+    GroqPhrasingRequest? phrasingRequest;
+    if (safetyStop != null) {
+      phrasingRequest = GroqPhrasingRequest(
+        hook: GroqPhrasingHook.safetyStop,
+        family: widget.appliance.category,
+        energy: groqEnergyTokenFromAppliance(widget.appliance),
+        state: 'stop',
+        comfort: groqComfortToken(_comfortLevel),
+        evidenceNeeded: 'safety-stop',
+        options: const [],
+        lastObs: _lastObsLine(decisionContext.evidence),
+        whyEngine: UserFacingCopy.safetyStopOfficial,
+        safety: 'stop_unplug',
+        packagedTitle: safetyStop.reason,
+        packagedWhyOneLine: UserFacingCopy.safetyStopOfficial,
+        safetyCritical: true,
+      );
+    } else if (_showResumeKnew &&
+        _resumeKnewLine != null &&
+        _phrasingScreenKey == null) {
+      phrasingRequest = GroqPhrasingRequest(
+        hook: GroqPhrasingHook.resume,
+        family: widget.appliance.category,
+        energy: groqEnergyTokenFromAppliance(widget.appliance),
+        state: 'evidence',
+        comfort: groqComfortToken(_comfortLevel),
+        evidenceNeeded: 'resume',
+        options: const [],
+        lastObs: _lastObsLine(decisionContext.evidence),
+        whyEngine: _resumeKnewLine!,
+        safety: 'none',
+        packagedTitle: kResumeKnewLead,
+        packagedWhyOneLine: _resumeKnewLine!,
+      );
+    } else if (showClosePath &&
+        verificationOutcome == VerificationOutcome.supported &&
+        !closePath.allowResolvedWhenConfirmed) {
+      phrasingRequest = GroqPhrasingRequest(
+        hook: GroqPhrasingHook.confirmNotFixed,
+        family: widget.appliance.category,
+        energy: groqEnergyTokenFromAppliance(widget.appliance),
+        state: 'verify',
+        comfort: groqComfortToken(_comfortLevel),
+        evidenceNeeded: closePath.failureModeId,
+        options: const [],
+        lastObs: _lastObsLine(decisionContext.evidence),
+        whyEngine: kConfirmNotFixedPackaged,
+        safety: 'none',
+        packagedTitle: kConfirmNotFixedPackaged,
+        packagedWhyOneLine: kConfirmNotFixedPackaged,
+        allowResolvedWhenConfirmed: false,
+        offersFixed: false,
+      );
+    } else if (showClosePath &&
+        _closePathPhase == ClosePathPhase.conclusion) {
+      phrasingRequest = GroqPhrasingRequest(
+        hook: GroqPhrasingHook.diagnosisSummary,
+        family: widget.appliance.category,
+        energy: groqEnergyTokenFromAppliance(widget.appliance),
+        state: 'guidance',
+        comfort: groqComfortToken(_comfortLevel),
+        evidenceNeeded: primaryFailureModeId ?? 'diagnosis',
+        options: const [],
+        lastObs: _lastObsLine(decisionContext.evidence),
+        whyEngine: primaryHypothesis?.label ?? '',
+        safety: 'none',
+        packagedTitle: primaryHypothesis?.label ?? 'Most likely',
+        packagedWhyOneLine: leaderWhyFromStandings(
+              orderedIds:
+                  orderedFailureModes.map((mode) => mode.id).toList(),
+              orderedLabels:
+                  orderedFailureModes.map((mode) => mode.label).toList(),
+              standings: standings,
+              preferredLabel: primaryHypothesis?.label,
+            ) ??
+            'Based on your answers — not a certainty or a percentage.',
+      );
+    } else if (activeObservation != null) {
+      final whyEngine = _whyAskBody(
+        template: activeObservation,
+        inspectStep: _inspectStepForTemplate(activeObservation.id),
+        orderedFailureModes: orderedFailureModes,
+        standings: standings,
+        packageModes: package.failureModes,
+      );
+      phrasingRequest = _questionPhrasingRequest(
+        template: activeObservation,
+        whyEngine: whyEngine,
+        evidence: decisionContext.evidence,
+      );
+    }
+    if (phrasingRequest != null) {
+      _ensurePhrasing(phrasingRequest);
+    }
+    final phrasingOverlay =
+        phrasingRequest == null ? null : _overlayFor(phrasingRequest.screenKey);
+
     return Scaffold(
       appBar: SessionChromeBar(
         applianceName: widget.appliance.name,
@@ -2342,6 +2593,17 @@ class _SessionScreenState extends State<SessionScreen>
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
+            ],
+            if (_showResumeKnew && _resumeKnewLine != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                (phrasingOverlay != null &&
+                        phrasingOverlay.screenKey.startsWith('resume|'))
+                    ? phrasingOverlay.whyOneLine
+                    : _resumeKnewLine!,
+                key: const Key('resume-knew-banner'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ],
             if (_resumeFailed) ...[
               const SizedBox(height: 16),
@@ -2423,7 +2685,16 @@ class _SessionScreenState extends State<SessionScreen>
             if (safetyStop != null) ...[
               const SizedBox(height: 16),
               _SafetyStopBanner(
-                reason: safetyStopDisplayCopy(safetyStop),
+                reason: safetyStopDisplayCopy(
+                  safetyStop,
+                  groqShortenedOfficial:
+                      phrasingOverlay != null &&
+                              phrasingOverlay.screenKey.startsWith(
+                                'safetyStop|',
+                              )
+                          ? phrasingOverlay.whyOneLine
+                          : null,
+                ),
               ),
             ],
             if (!isTerminal &&
@@ -2463,6 +2734,7 @@ class _SessionScreenState extends State<SessionScreen>
                 isTerminal: isTerminal,
                 interactionsLocked: interactionsLocked,
                 rankingLeaderLabel: outcome?.rankingLeaderLabel,
+                phrasingOverlay: phrasingOverlay,
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -2638,6 +2910,22 @@ class _SessionScreenState extends State<SessionScreen>
                   final inspectStep = _inspectStepForTemplate(
                     activeObservation.id,
                   );
+                  final packagedWhy = _whyAskBody(
+                    template: activeObservation,
+                    inspectStep: inspectStep,
+                    orderedFailureModes: orderedFailureModes,
+                    standings: standings,
+                    packageModes: package.failureModes,
+                  );
+                  final questionOverlay =
+                      phrasingOverlay != null &&
+                              phrasingOverlay.screenKey.contains(
+                                activeObservation.id,
+                              )
+                          ? phrasingOverlay
+                          : null;
+                  final displayedWhy =
+                      questionOverlay?.whyOneLine ?? packagedWhy;
                   if (inspectStep != null) {
                     return InspectStepCard(
                       step: inspectStep,
@@ -2646,13 +2934,7 @@ class _SessionScreenState extends State<SessionScreen>
                           widget.dependencies.simulateMediaDenied,
                       offerLiveCamera: false,
                       expertMode: widget.dependencies.expertMode,
-                      whyAskBody: _whyAskBody(
-                        template: activeObservation,
-                        inspectStep: inspectStep,
-                        orderedFailureModes: orderedFailureModes,
-                        standings: standings,
-                        packageModes: package.failureModes,
-                      ),
+                      whyAskBody: displayedWhy,
                       onChip:
                           (chip) => _submitInterviewInspectChip(
                             step: inspectStep,
@@ -2664,12 +2946,9 @@ class _SessionScreenState extends State<SessionScreen>
                   return _AnswerChoicePanel(
                   prompt: activeObservation,
                   expertMode: widget.dependencies.expertMode,
-                  whyAskBody: _whyAskBody(
-                    template: activeObservation,
-                    orderedFailureModes: orderedFailureModes,
-                    standings: standings,
-                    packageModes: package.failureModes,
-                  ),
+                  displayTitle: questionOverlay?.title,
+                  optionLabels: questionOverlay?.optionLabels,
+                  whyAskBody: displayedWhy,
                   emphasize: recommendedPrimary == null,
                   selectedAnswer: selectedAnswerForActive,
                   isRevising: isRevisingEvidence,
@@ -3537,6 +3816,7 @@ class _SessionScreenState extends State<SessionScreen>
     required bool isTerminal,
     required bool interactionsLocked,
     required String? rankingLeaderLabel,
+    GroqPhrasingAccepted? phrasingOverlay,
   }) {
     if (!showClosePath || closePath == null) {
       return [
@@ -3549,7 +3829,14 @@ class _SessionScreenState extends State<SessionScreen>
         const SizedBox(height: 12),
         _CurrentConclusionCard(primaryLabel: primaryHypothesis?.label),
         const SizedBox(height: 12),
-        _VerificationStatusCard(resolveEligibility: resolveEligibility),
+        _VerificationStatusCard(
+          resolveEligibility: resolveEligibility,
+          confirmNotFixedLine: _confirmNotFixedLine(
+            closePath: closePath,
+            verificationOutcome: verificationOutcome,
+            overlay: phrasingOverlay,
+          ),
+        ),
         const SizedBox(height: 16),
         _endSessionCta(
           eligibility: resolveEligibility,
@@ -3600,6 +3887,64 @@ class _SessionScreenState extends State<SessionScreen>
               children: [
                 const BookSectionLabel('Most likely'),
                 const SizedBox(height: 8),
+                _SpeakHumanCard(
+                  diagnosis: applySpeakHumanOverlay(
+                    packaged: packagedSpeakHuman(
+                      primaryLabel: primaryHypothesis?.label,
+                      why: leaderWhyFromStandings(
+                        orderedIds:
+                            orderedFailureModes.map((mode) => mode.id).toList(),
+                        orderedLabels:
+                            orderedFailureModes.map((mode) => mode.label).toList(),
+                        standings: standings,
+                        preferredLabel: primaryHypothesis?.label,
+                      ),
+                      observations: sessionTimelineObservations(
+                        decisionContext.evidence,
+                      ),
+                      nextStep: _closePathNextActionDetail(
+                        verificationOutcome: verificationOutcome,
+                        resolveEligibility: resolveEligibility,
+                      ),
+                      confidenceBand: () {
+                        final id = primaryHypothesis?.failureModeId;
+                        if (id == null) {
+                          return null;
+                        }
+                        final standing = standings[id];
+                        if (standing == null) {
+                          return null;
+                        }
+                        return householdStandingPhrase(
+                          standing: standing,
+                          surface:
+                              ConfidenceDisplaySurface.diagnosisSummary,
+                        );
+                      }(),
+                    ),
+                    overlay:
+                        phrasingOverlay != null &&
+                                phrasingOverlay.screenKey.startsWith(
+                                  'diagnosisSummary|',
+                                )
+                            ? phrasingOverlay
+                            : null,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (_confirmNotFixedLine(
+                      closePath: closePath,
+                      verificationOutcome: verificationOutcome,
+                      overlay: phrasingOverlay,
+                    )
+                    case final confirmLine?) ...[
+                  Text(
+                    confirmLine,
+                    key: const Key('confirm-not-fixed-line'),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 if (primaryHypothesis != null)
                   _PrimaryHypothesisBanner(
                     label: primaryHypothesis.label,
@@ -4897,11 +5242,15 @@ class _AnswerChoicePanel extends StatelessWidget {
     required this.onSaveFreeNote,
     required this.onMarkFreeNoteSuggestion,
     this.whyAskBody,
+    this.displayTitle,
+    this.optionLabels,
     this.expertMode = false,
   });
 
   final EvidenceTemplate prompt;
   final String? whyAskBody;
+  final String? displayTitle;
+  final Map<String, String>? optionLabels;
   final bool expertMode;
   final ValueChanged<String> onSelected;
   final VoidCallback onPickGallery;
@@ -4982,7 +5331,9 @@ class _AnswerChoicePanel extends StatelessWidget {
             KeyedSubtree(
               key: const Key('answer-choice-prompt'),
               child: Text(
-                observationPromptTitle(prompt),
+                displayTitle?.trim().isNotEmpty == true
+                    ? displayTitle!.trim()
+                    : observationPromptTitle(prompt),
                 key: Key('observation-prompt-${prompt.id}'),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontSize: 18,
@@ -5016,6 +5367,7 @@ class _AnswerChoicePanel extends StatelessWidget {
                 for (final choice in choices)
                   _AnswerChoiceButton(
                     choice: choice,
+                    displayLabel: optionLabels?[choice],
                     isSelected:
                         normalizedSelected != null &&
                         normalizedSelected ==
@@ -5164,16 +5516,20 @@ class _AnswerChoiceButton extends StatelessWidget {
     required this.choice,
     required this.isSelected,
     required this.onPressed,
+    this.displayLabel,
   });
 
   final String choice;
+  final String? displayLabel;
   final bool isSelected;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final child = Text(choice);
+    final child = Text(
+      displayLabel?.trim().isNotEmpty == true ? displayLabel!.trim() : choice,
+    );
     final key = Key('answer-choice-${answerChoiceKeySuffix(choice)}');
     final style = OutlinedButton.styleFrom(
       minimumSize: const Size(0, 48),
@@ -5397,9 +5753,11 @@ class _PrimaryHypothesisBanner extends StatelessWidget {
 class _VerificationStatusCard extends StatelessWidget {
   const _VerificationStatusCard({
     required this.resolveEligibility,
+    this.confirmNotFixedLine,
   });
 
   final CloseResolveEligibility resolveEligibility;
+  final String? confirmNotFixedLine;
 
   @override
   Widget build(BuildContext context) {
@@ -5419,7 +5777,81 @@ class _VerificationStatusCard extends StatelessWidget {
       key: const Key('verification-status-card'),
       child: Padding(
         padding: const EdgeInsets.all(18),
-        child: Text(message, key: const Key('verification-status-message')),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(message, key: const Key('verification-status-message')),
+            if (confirmNotFixedLine != null &&
+                confirmNotFixedLine!.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                confirmNotFixedLine!,
+                key: const Key('confirm-not-fixed-line'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SpeakHumanCard extends StatelessWidget {
+  const _SpeakHumanCard({required this.diagnosis});
+
+  final SpeakHumanDiagnosis diagnosis;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Card(
+      key: const Key('speak-human-card'),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(kSpeakHumanHeading, style: text.titleSmall),
+            const SizedBox(height: 10),
+            Text(kSpeakHumanMostLikelyLabel, style: text.labelLarge),
+            Text(
+              diagnosis.mostLikely,
+              key: const Key('speak-human-most-likely'),
+              style: text.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(kSpeakHumanWhyLabel, style: text.labelLarge),
+            Text(
+              diagnosis.why,
+              key: const Key('speak-human-why'),
+              style: text.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(kSpeakHumanSawLabel, style: text.labelLarge),
+            Text(
+              diagnosis.whatYouSaw,
+              key: const Key('speak-human-what-you-saw'),
+              style: text.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(kSpeakHumanNextLabel, style: text.labelLarge),
+            Text(
+              diagnosis.nextStep,
+              key: const Key('speak-human-next-step'),
+              style: text.bodyMedium,
+            ),
+            if (diagnosis.confidenceBand != null &&
+                diagnosis.confidenceBand!.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                diagnosis.confidenceBand!,
+                key: const Key('speak-human-confidence'),
+                style: text.bodySmall,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
