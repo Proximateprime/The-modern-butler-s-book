@@ -47,13 +47,39 @@ class FirstRunScreen extends StatefulWidget {
 class _FirstRunScreenState extends State<FirstRunScreen> {
   int _page = 0;
   bool _busy = false;
+  final FocusNode _skipFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // First tap after splash must land. Autofocus + explicit post-frame
+    // focus so the Skip control is the first-frame gesture target.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _skipFocus.requestFocus();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _skipFocus.dispose();
+    super.dispose();
+  }
 
   Future<void> _finish() async {
     if (_busy) {
       return;
     }
     setState(() => _busy = true);
-    await widget.onFinished();
+    try {
+      await widget.onFinished();
+    } catch (_) {
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -66,10 +92,21 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
     return Scaffold(
       key: const Key('first-run-screen'),
       appBar: AppBar(
-        title: const Wordmark(),
+        title: const FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Wordmark(compact: true),
+        ),
         actions: [
           TextButton(
             key: const Key('first-run-skip-button'),
+            focusNode: _skipFocus,
+            autofocus: true,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(64, 48),
+              tapTargetSize: MaterialTapTargetSize.padded,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
             onPressed: _busy ? null : _finish,
             child: const Text('Skip'),
           ),

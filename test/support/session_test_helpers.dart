@@ -11,6 +11,49 @@ Future<void> prepareTallSurface(WidgetTester tester) async {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
+/// Hosted Pages short viewport (~656 logical px) George walked.
+Future<void> prepareShortViewport(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(390, 656);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+/// Opens the demoted evidence / notes group when a finder lives inside it.
+Future<void> revealSessionSecondaryIfNeeded(
+  WidgetTester tester,
+  Finder finder,
+) async {
+  final more = find.byKey(const Key('session-secondary-details'));
+  if (more.evaluate().isEmpty) {
+    return;
+  }
+  final nested = find.descendant(of: more, matching: finder);
+  if (nested.evaluate().isEmpty) {
+    return;
+  }
+  if (finder.hitTestable().evaluate().isNotEmpty) {
+    return;
+  }
+  final scrollable = find.byKey(const Key('session-scroll-view'));
+  final scrollFinder = scrollable.evaluate().isNotEmpty
+      ? find.descendant(of: scrollable, matching: find.byType(Scrollable))
+      : find.byType(Scrollable);
+  if (more.hitTestable().evaluate().isEmpty &&
+      scrollFinder.evaluate().isNotEmpty) {
+    await tester.scrollUntilVisible(more, 120, scrollable: scrollFinder.first);
+    await tester.pumpAndSettle();
+  }
+  if (finder.hitTestable().evaluate().isNotEmpty) {
+    return;
+  }
+  if (more.hitTestable().evaluate().isEmpty) {
+    return;
+  }
+  await tester.tap(more);
+  await tester.pumpAndSettle();
+}
+
 Future<void> confirmAddAppliance(WidgetTester tester) async {
   final save = find.byKey(const Key('add-appliance-save-button'));
   if (save.evaluate().isEmpty) {
@@ -25,8 +68,16 @@ Future<void> openDryerSession(
   AppDependencies dependencies,
   String householdName, {
   bool skipProblemStarter = true,
+  Size? viewSize,
 }) async {
-  await prepareTallSurface(tester);
+  if (viewSize != null) {
+    tester.view.physicalSize = viewSize;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  } else {
+    await prepareTallSurface(tester);
+  }
   await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
   await tester.tap(find.byKey(const Key('create-household-button')));
   await tester.pumpAndSettle();
@@ -215,6 +266,7 @@ Future<void> scrollSettingsUntil(WidgetTester tester, Key key) async {
 }
 
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+  await revealSessionSecondaryIfNeeded(tester, finder);
   final enclosing = find.ancestor(
     of: finder,
     matching: find.byType(Scrollable),

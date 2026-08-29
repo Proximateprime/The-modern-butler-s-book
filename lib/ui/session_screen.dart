@@ -2585,6 +2585,21 @@ class _SessionScreenState extends State<SessionScreen>
     final phrasingOverlay =
         phrasingRequest == null ? null : _overlayFor(phrasingRequest.screenKey);
 
+    final pinnedStopBanner = safetyStop == null
+        ? null
+        : _SafetyStopBanner(
+            reason: safetyStopDisplayCopy(
+              safetyStop,
+              groqShortenedOfficial:
+                  phrasingOverlay != null &&
+                          phrasingOverlay.screenKey.startsWith(
+                            'safetyStop|',
+                          )
+                      ? phrasingOverlay.whyOneLine
+                      : null,
+            ),
+          );
+
     return Scaffold(
       appBar: SessionChromeBar(
         applianceName: widget.appliance.name,
@@ -2602,10 +2617,27 @@ class _SessionScreenState extends State<SessionScreen>
         )}',
         onExit: () => Navigator.of(context).maybePop(),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.zero,
-        child: ButlerPageBody(
-          child: Column(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (pinnedStopBanner != null)
+            Material(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: ButlerPageBody(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                child: pinnedStopBanner,
+              ),
+            ),
+          Expanded(
+            child: SingleChildScrollView(
+              key: const Key('session-scroll-view'),
+              primary: true,
+              padding: EdgeInsets.zero,
+              child: ButlerPageBody(
+                padding: pinnedStopBanner != null
+                    ? const EdgeInsets.fromLTRB(20, 4, 20, 32)
+                    : const EdgeInsets.fromLTRB(20, 12, 20, 32),
+                child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -2705,21 +2737,7 @@ class _SessionScreenState extends State<SessionScreen>
                 evidenceCount: decisionContext.evidence.length,
               ),
             ],
-            if (safetyStop != null) ...[
-              const SizedBox(height: 16),
-              _SafetyStopBanner(
-                reason: safetyStopDisplayCopy(
-                  safetyStop,
-                  groqShortenedOfficial:
-                      phrasingOverlay != null &&
-                              phrasingOverlay.screenKey.startsWith(
-                                'safetyStop|',
-                              )
-                          ? phrasingOverlay.whyOneLine
-                          : null,
-                ),
-              ),
-            ],
+            if (safetyStop != null) const SizedBox(height: 8),
             if (!isTerminal &&
                 effectiveInvestigationStopped &&
                 safetyStop == null) ...[
@@ -3044,25 +3062,6 @@ class _SessionScreenState extends State<SessionScreen>
                 );
                 },
               ),
-                if (alternateObservations.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  _OtherObservationsPicker(
-                    prompts: alternateObservations,
-                    enabled: !interactionsLocked,
-                    photoVisible: !_photoCaptureOff,
-                    onSelected: _beginAnswerPrompt,
-                    onPickGallery:
-                        () => _pickEvidencePhoto(
-                          origin: EvidencePhotoOrigin.gallery,
-                          standalone: true,
-                        ),
-                    onPickCamera:
-                        () => _pickEvidencePhoto(
-                          origin: EvidencePhotoOrigin.camera,
-                          standalone: true,
-                        ),
-                  ),
-                ],
               ] else if (prompts.isEmpty)
                 const Text(
                   UserFacingCopy.emptyRepairQuestions,
@@ -3121,210 +3120,219 @@ class _SessionScreenState extends State<SessionScreen>
               ),
             ],
             const SizedBox(height: 28),
-            _SecondarySection(
-              key: const ValueKey('section-evidence'),
-              child: ExpansionTile(
-                key: const Key('evidence-history-tile'),
-                title: Text(
-                  'Evidence history (${decisionContext.evidence.length})',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+            _SessionSecondaryDetails(
+              children: [
+                if (alternateObservations.isNotEmpty &&
+                    safetyStop == null &&
+                    !isTerminal)
+                  _OtherObservationsPicker(
+                    prompts: alternateObservations,
+                    enabled: !interactionsLocked,
+                    photoVisible: !_photoCaptureOff,
+                    onSelected: _beginAnswerPrompt,
+                    onPickGallery:
+                        () => _pickEvidencePhoto(
+                          origin: EvidencePhotoOrigin.gallery,
+                          standalone: true,
+                        ),
+                    onPickCamera:
+                        () => _pickEvidencePhoto(
+                          origin: EvidencePhotoOrigin.camera,
+                          standalone: true,
+                        ),
                   ),
-                ),
-                subtitle: Text(
-                  decisionContext.evidence.isEmpty
-                      ? UserFacingCopy.emptyEvidence
-                      : 'Tap an answer to change it',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                children: [
-                  if (decisionContext.evidence.isEmpty)
-                    const ListTile(
-                        title: Text(
-                          UserFacingCopy.emptyEvidence,
-                          key: Key('empty-evidence-message'),
-                        ),
-                    )
-                  else
-                    for (final evidenceItem
-                        in decisionContext.evidence.reversed)
-                      ListTile(
-                        dense: true,
-                        enabled:
-                            !interactionsLocked &&
-                            isInterviewObservationEvidence(evidenceItem),
-                        leading: Icon(
-                          Icons.check_circle_outline,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(
-                          evidenceItem.answer == null
-                              ? evidenceItem.observation
-                              : 'Answer: ${evidenceItem.answer}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        subtitle:
-                            evidenceItem.answer == null
-                                ? null
-                                : Text(
-                                  evidenceItem.observation,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                        trailing:
-                            evidenceItem.localPhotoPath == null ||
-                                    evidenceItem.localPhotoPath!.isEmpty
-                                ? null
-                                : EvidencePhotoThumb(
-                                  key: Key(
-                                    'evidence-history-photo-${evidenceItem.id}',
-                                  ),
-                                  path: evidenceItem.localPhotoPath!,
-                                ),
-                        onTap:
-                            interactionsLocked ||
-                                    !isInterviewObservationEvidence(evidenceItem)
-                                ? null
-                                : () => _beginReviseEvidence(
-                                  evidence: evidenceItem,
-                                  templates: prompts,
-                                ),
-                      ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (safetyStop == null && !isTerminal)
-              _SecondarySection(
-                key: const ValueKey('section-failure-modes'),
-                child: ExpansionTile(
-                  key: const Key('failure-modes-tile'),
+                ExpansionTile(
+                  key: const Key('evidence-history-tile'),
                   title: Text(
-                    'Browse failure modes',
+                    'Evidence history (${decisionContext.evidence.length})',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   subtitle: Text(
-                    recommendedPrimary != null
-                        ? 'Optional — a recommendation is already shown above'
-                        : 'Optional — set Primary manually if needed',
+                    decisionContext.evidence.isEmpty
+                        ? UserFacingCopy.emptyEvidence
+                        : 'Tap an answer to change it',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   children: [
-                    if (package.failureModes.isEmpty)
+                    if (decisionContext.evidence.isEmpty)
                       const ListTile(
                         title: Text(
-                          UserFacingCopy.emptyFailureModes,
-                          key: Key('empty-failure-modes-message'),
+                          UserFacingCopy.emptyEvidence,
+                          key: Key('empty-evidence-message'),
                         ),
                       )
                     else
-                      for (final failureMode in orderedFailureModes)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: _FailureModeTile(
-                            failureMode: failureMode,
-                            isPrimary: failureMode.id == primaryFailureModeId,
-                            standing:
-                                standings[failureMode.id] ??
-                                const FailureModeStanding(
-                                  supportCount: 0,
-                                  excludeCount: 0,
-                                ),
-                            isClearLeader:
-                                clearLeaderId == failureMode.id &&
-                                failureMode.id != primaryFailureModeId,
-                            showStandingChrome: false,
-                            enabled: !interactionsLocked,
-                            onSelected:
-                                () => _selectPrimaryFailureMode(failureMode),
+                      for (final evidenceItem
+                          in decisionContext.evidence.reversed)
+                        ListTile(
+                          dense: true,
+                          enabled:
+                              !interactionsLocked &&
+                              isInterviewObservationEvidence(evidenceItem),
+                          leading: Icon(
+                            Icons.check_circle_outline,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          title: Text(
+                            evidenceItem.answer == null
+                                ? evidenceItem.observation
+                                : 'Answer: ${evidenceItem.answer}',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          subtitle:
+                              evidenceItem.answer == null
+                                  ? null
+                                  : Text(
+                                    evidenceItem.observation,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                          trailing:
+                              evidenceItem.localPhotoPath == null ||
+                                      evidenceItem.localPhotoPath!.isEmpty
+                                  ? null
+                                  : EvidencePhotoThumb(
+                                    key: Key(
+                                      'evidence-history-photo-${evidenceItem.id}',
+                                    ),
+                                    path: evidenceItem.localPhotoPath!,
+                                  ),
+                          onTap:
+                              interactionsLocked ||
+                                      !isInterviewObservationEvidence(
+                                        evidenceItem,
+                                      )
+                                  ? null
+                                  : () => _beginReviseEvidence(
+                                    evidence: evidenceItem,
+                                    templates: prompts,
+                                  ),
+                        ),
+                  ],
+                ),
+                if (safetyStop == null && !isTerminal)
+                  ExpansionTile(
+                    key: const Key('failure-modes-tile'),
+                    title: Text(
+                      'Browse failure modes',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    subtitle: Text(
+                      recommendedPrimary != null
+                          ? 'Optional — a recommendation is already shown above'
+                          : 'Optional — set Primary manually if needed',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    children: [
+                      if (package.failureModes.isEmpty)
+                        const ListTile(
+                          title: Text(
+                            UserFacingCopy.emptyFailureModes,
+                            key: Key('empty-failure-modes-message'),
+                          ),
+                        )
+                      else
+                        for (final failureMode in orderedFailureModes)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _FailureModeTile(
+                              failureMode: failureMode,
+                              isPrimary:
+                                  failureMode.id == primaryFailureModeId,
+                              standing:
+                                  standings[failureMode.id] ??
+                                  const FailureModeStanding(
+                                    supportCount: 0,
+                                    excludeCount: 0,
+                                  ),
+                              isClearLeader:
+                                  clearLeaderId == failureMode.id &&
+                                  failureMode.id != primaryFailureModeId,
+                              showStandingChrome: false,
+                              enabled: !interactionsLocked,
+                              onSelected:
+                                  () => _selectPrimaryFailureMode(failureMode),
+                            ),
+                          ),
+                    ],
+                  ),
+                ExpansionTile(
+                  key: const Key('package-summary-tile'),
+                  title: Text(
+                    'About this guide',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  children: [_PackageSummaryCard(package: package)],
+                ),
+                ExpansionTile(
+                  key: const Key('hypotheses-tile'),
+                  title: Text(
+                    'Working notes (${decisionContext.currentHypotheses.length})',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  children: [
+                    if (decisionContext.currentHypotheses.isEmpty)
+                      const ListTile(
+                        title: Text(
+                          UserFacingCopy.emptyHypotheses,
+                          key: Key('empty-hypotheses-message'),
+                        ),
+                      )
+                    else
+                      for (final hypothesis
+                          in decisionContext.currentHypotheses)
+                        ListTile(
+                          key: Key('hypothesis-${hypothesis.id}'),
+                          title: Text(hypothesis.label),
+                          subtitle: Text(
+                            switch (hypothesis.status) {
+                              HypothesisStatus.confirmed => 'Primary',
+                              HypothesisStatus.ruledOut => 'Ruled out',
+                              HypothesisStatus.active => 'Still possible',
+                            },
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ),
                   ],
                 ),
-              ),
-            if (safetyStop == null && !isTerminal) const SizedBox(height: 8),
-            _SecondarySection(
-              key: const ValueKey('section-package'),
-              child: ExpansionTile(
-                key: const Key('package-summary-tile'),
-                title: Text(
-                  'About this guide',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+                ExpansionTile(
+                  key: const Key('decision-context-tile'),
+                  title: Text(
+                    'Session details',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
-                ),
-                children: [_PackageSummaryCard(package: package)],
-              ),
-            ),
-            const SizedBox(height: 8),
-            _SecondarySection(
-              key: const ValueKey('section-hypotheses'),
-              child: ExpansionTile(
-                key: const Key('hypotheses-tile'),
-                title: Text(
-                  'Working notes (${decisionContext.currentHypotheses.length})',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+                  subtitle: Text(
+                    'Evidence count: ${decisionContext.evidence.length}',
+                    key: const Key('context-evidence-count'),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                ),
-                children: [
-                  if (decisionContext.currentHypotheses.isEmpty)
-                    const ListTile(
+                  children: [
+                    ListTile(
+                      key: const Key('decision-context-summary'),
                       title: Text(
-                        UserFacingCopy.emptyHypotheses,
-                        key: Key('empty-hypotheses-message'),
+                        'State: ${_stateLabel(decisionContext.currentState)}',
                       ),
-                    )
-                  else
-                    for (final hypothesis in decisionContext.currentHypotheses)
-                      ListTile(
-                        key: Key('hypothesis-${hypothesis.id}'),
-                        title: Text(hypothesis.label),
-                        subtitle: Text(
-                          switch (hypothesis.status) {
-                            HypothesisStatus.confirmed => 'Primary',
-                            HypothesisStatus.ruledOut => 'Ruled out',
-                            HypothesisStatus.active => 'Still possible',
-                          },
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
+                      subtitle: Text(
+                        _safetyLevelLine(decisionContext.safetyLevel),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            _SecondarySection(
-              key: const ValueKey('section-decision-context'),
-              child: ExpansionTile(
-                key: const Key('decision-context-tile'),
-                title: Text(
-                  'Session details',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                subtitle: Text(
-                  'Evidence count: ${decisionContext.evidence.length}',
-                  key: const Key('context-evidence-count'),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                children: [
-                  ListTile(
-                    key: const Key('decision-context-summary'),
-                    title: Text(
-                      'State: ${_stateLabel(decisionContext.currentState)}',
                     ),
-                    subtitle: Text(
-                      _safetyLevelLine(decisionContext.safetyLevel),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             if (outcome == null &&
@@ -3337,8 +3345,11 @@ class _SessionScreenState extends State<SessionScreen>
                 isTerminal: isTerminal,
               ),
           ],
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -4944,21 +4955,34 @@ class _ProblemStarterPanel extends StatelessWidget {
   }
 }
 
-class _SecondarySection extends StatelessWidget {
-  const _SecondarySection({super.key, required this.child});
+/// Quiet dump for history / notes / guide. Default collapsed so the
+/// primary path stays: current question, Why ask this?, chips.
+class _SessionSecondaryDetails extends StatelessWidget {
+  const _SessionSecondaryDetails({required this.children});
 
-  final Widget child;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
+    if (children.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.7)),
+    return ExpansionTile(
+      key: const Key('session-secondary-details'),
+      initiallyExpanded: false,
+      maintainState: true,
+      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+      title: Text(
+        'More about this session',
+        style: text.titleSmall?.copyWith(color: scheme.onSurfaceVariant),
       ),
-      child: child,
+      subtitle: Text(
+        'Evidence, notes, and this guide',
+        style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+      ),
+      children: children,
     );
   }
 }

@@ -1,3 +1,13 @@
+## Session scroll, Skip, and quieter question card (2026-08-29)
+
+App **0.1.4+4**. Short hosted viewport (~656px) can reach Current question,
+Why ask this?, and chips including Other / describe. First-run Skip completes
+on the first tap; the I understand disclaimer still follows. Secondary
+collapsibles sit under one collapsed **More about this session** (evidence
+kept). Safety Stop banner stays pinned when `safetyStop != null` — unplug
+AND ventilate AND don’t keep running. Groq stays talk-only. Play listing
+stays out. Details: [`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md).
+
 ## Phrase Other / describe type-in on question cards (2026-08-29)
 
 App **0.1.4+3**. Question-card Groq and the Other / describe type-in stay in
