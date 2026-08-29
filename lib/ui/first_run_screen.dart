@@ -159,7 +159,6 @@ class _FirstRunPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,13 +166,7 @@ class _FirstRunPage extends StatelessWidget {
           if (showGreeting) ...[
             Text(
               UserFacingCopy.firstRunGreeting,
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                height: 1.35,
-                color: scheme.onSurface,
-              ),
+              style: text.headlineSmall,
             ),
             const SizedBox(height: 16),
           ],

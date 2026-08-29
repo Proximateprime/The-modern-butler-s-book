@@ -63,8 +63,7 @@ abstract final class UserFacingCopy {
   static const firstRunDoesBody =
       'You notice. The book asks simple questions.\n\n'
       'It guides only beginner-safe checks.\n\n'
-      'Appliances and repairs you finish stay in your House Book on this device '
-      '(local repair history — not a premium add-on).';
+      'Appliances and repairs you finish stay in your House Book on this device.';
   static const firstRunDoesNotTitle = 'What it doesn’t do';
   static const firstRunDoesNotBody =
       'It does not walk you through dangerous work — no gas, live electrical, '
@@ -72,11 +71,10 @@ abstract final class UserFacingCopy {
       'The camera never diagnoses. What you tap or type is what the book uses.';
   static const firstRunPrivacyTitle = 'Your household stays here';
   static const firstRunPrivacyBody =
-      'Names, appliances, photos, tools, and repair notes are for this book '
-      'on this device.\n\n'
-      'Nothing is uploaded to a cloud account.\n\n'
+      'Names, appliances, photos, tools, and repair notes stay in this book '
+      'on this device — not in a cloud account.\n\n'
       'Some on-screen wording may be sent to Groq through the butler backend '
-      'so the app can talk more clearly. Diagnosis stays on this device.';
+      'so the book can talk more clearly. Diagnosis stays on this device.';
   static const proHandoffLead = 'Hand this page to the technician.';
   static const safetyDisclaimerTitle = 'Safety disclaimer';
   static const safetyDisclaimerBody =

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:modern_butlers_book/app_info.dart';
@@ -16,6 +18,21 @@ void main() {
     expect(kAppVersionLabel, '0.1.4+5');
   });
 
+  test('first-run greeting uses book theme type, not a bare Georgia family', () {
+    final source = File('lib/ui/first_run_screen.dart').readAsStringSync();
+    expect(source, isNot(contains("fontFamily: 'Georgia'")));
+    expect(source, contains('text.headlineSmall'));
+    expect(source, contains('UserFacingCopy.firstRunGreeting'));
+    expect(UserFacingCopy.firstRunDoesBody, isNot(contains('premium add-on')));
+    expect(
+      UserFacingCopy.firstRunPrivacyBody,
+      isNot(contains('Nothing is uploaded')),
+    );
+    expect(UserFacingCopy.firstRunPrivacyBody, contains('cloud account'));
+    expect(UserFacingCopy.firstRunPrivacyBody, contains('Groq'));
+    expect(UserFacingCopy.firstRunPrivacyBody, contains('Diagnosis stays'));
+  });
+
   testWidgets(
     'first-run is a greeting without page-counter chrome',
     (tester) async {
@@ -29,6 +46,14 @@ void main() {
       expect(find.byKey(const Key('first-run-screen')), findsOneWidget);
       expect(find.byKey(const Key('first-run-skip-button')), findsOneWidget);
       expect(find.text(UserFacingCopy.firstRunGreeting), findsOneWidget);
+      final greeting = tester.widget<Text>(
+        find.text(UserFacingCopy.firstRunGreeting),
+      );
+      final bookType = Theme.of(
+        tester.element(find.byKey(const Key('first-run-screen'))),
+      ).textTheme.headlineSmall;
+      expect(greeting.style, bookType);
+      expect(greeting.style?.fontFamily, isNot('Georgia'));
       expect(find.byKey(const Key('first-run-page-what')), findsOneWidget);
       expect(find.text(UserFacingCopy.firstRunDoesTitle), findsOneWidget);
       expect(find.byKey(const Key('first-run-progress')), findsNothing);

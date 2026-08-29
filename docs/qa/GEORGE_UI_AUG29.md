@@ -432,7 +432,7 @@ App **0.1.4+5**. Tests: `test/natural_ui_v1_test.dart` plus existing first-run S
 
 ### Surfaces
 
-1. **First-run greeting.** Drop “1 of 3” / `first-run-progress`. Keep the three UserFacingCopy beats and page keys `first-run-page-what|not|privacy`. Skip keeps 48px, autofocus, and post-frame focus. **Next** is now **Continue** (`first-run-next-button`). Last page still **Get started** (`first-run-done-button`).
+1. **First-run greeting.** Drop “1 of 3” / `first-run-progress`. Keep the three UserFacingCopy beats and page keys `first-run-page-what|not|privacy`. Greeting uses `textTheme.headlineSmall` (book theme — no bare Georgia family). Skip keeps 48px, autofocus, and post-frame focus. **Next** is now **Continue** (`first-run-next-button`). Last page still **Get started** (`first-run-done-button`).
 2. **Home empty/start.** **Create Household** → **Name this home**. “Choose an appliance…” → household voice. Same actions and keys: `create-household-button`, `empty-home-create-household`, `empty-home-load-sample`, `empty-home-appliances`, `household-name`. Frozen chrome (Continue repair, Start repair, I’ll repair, Call a pro, Most likely, Current question, Why ask this?, Matches / OK, Doesn’t match / Not OK) is untouched.
 3. **Pro handoff chrome.** AppBar is Wordmark like Home, not Material “Technician handoff”. Share / Copy are PrimaryCta. Keys stay: `pro-handoff-screen`, `pro-handoff-preview`, `pro-handoff-share`, `pro-handoff-copy`, `completion-save-home`. Engine handoff text and Groq spoken paragraph are unchanged.
 
