@@ -27,10 +27,11 @@ class SafetyStop {
 ///
 /// Gated / needs-professional Primary ids are **not** hard-stopped (they emit
 /// `professional` from [sessionSafetyLevelFor] so the lamp is Check carefully):
-/// - `electric-supply-connection-fault`, `motor-failure`
+/// - `electric-supply-connection-fault`, `motor-failure`, `start-switch-failure`
 /// - any close path with `allowResolvedWhenConfirmed: false` (e.g. thermal fuse)
 /// - heater-circuit DIY-cannot-complete leaders (heating-element, high-limit,
 ///   cycling thermostat, relay/control, thermistor, timer heat segment)
+/// Start-switch is not door-switch: Confirmed does not unlock Fixed.
 ///
 /// Not hard-stopped by Primary alone (soft close path available):
 /// - `heating-element-failed` — identify mode; lamp professional; Confirmed
@@ -143,6 +144,7 @@ const Map<String, String> _hardStopFailureModeReasons = {
 const Set<String> _gatedProfessionalFailureModeIds = {
   'electric-supply-connection-fault',
   'motor-failure',
+  'start-switch-failure',
 };
 const List<_EvidenceSafetyRule> _evidenceRules = [
   _EvidenceSafetyRule(

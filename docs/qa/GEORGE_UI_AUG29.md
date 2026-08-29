@@ -188,3 +188,55 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+6**. First-run
 - **Tap** **Delete household data** → **Delete everything**.
 - **Expect** first-run (Skip / Get started). After Skip, empty home: **Create Household**, no appliances. No silent wipe.
 
+## Leftover-after pack — 0.1.3+7
+
+Fix only. Items 1–12, leftover, and leftover-next stay done; this pack does not reopen them. `GOLDEN_LABELS.md` **Call a pro** stays frozen. Leftover-next lamp / Confirmed ≠ Fixed styling is unchanged. Import parse default stays false.
+
+App **0.1.3+7**. Tests: prior George UI files plus `test/george_ui_leftover_after_test.dart`.
+
+### Fixes
+
+1. **Heater-circuit I'll repair / DIY price.** `closePathDiyCannotComplete` returns true for the heater-circuit id set (`isHeaterCircuitDiyCannotCompleteLeader`), not only `!allowResolvedWhenConfirmed` or a “call a technician” substring. `cycling-thermostat-stuck-closed` and `relay-or-control-no-heat-output` (and remaining heater-circuit siblings) have `allowResolvedWhenConfirmed: false`. Most likely shows the pro-scope notice; Parts & cost is Pro ~ only (no DIY price). Confirmed → **Needs a professional**. Not a hard stop. Leftover-next heating-element lamp / Continue close is unchanged.
+
+2. **start-switch-failure Confirmed ≠ Fixed.** `allowResolvedWhenConfirmed: false`. Gated professional (`isGatedProfessionalFailureMode`): lamp **Check carefully**, not a hard **Stop**. **I'll repair** hidden; **Pro recommended**. Not door-switch; door-switch **Fixed** when a firm click starts the machine stays. `start-capacitor-or-start-assist-weak` stays false.
+
+3. **House Book wipe deletes rating-plate photos.** After confirm only, `wipeLocalHouseBook` deletes every appliance `ratingLabelPhotoPath` as well as evidence `localPhotoPath`. Cancel leaves the file. Silent wipe stays illegal. Confirm/cancel copy unchanged.
+
+4. **Release validator fail-closed.** Heater-circuit id set + `start-switch-failure` + the existing risky list require `allowResolvedWhenConfirmed == false`. Prefer-professional is not an escape hatch. No new engine.
+
+### Leftover-after ledger
+
+- Safety Gate is the id set / `allowResolvedWhenConfirmed: false`, not `isProHandoffGuidanceStep` substring copy.
+- Worn rollers stay parked. Expert unplugged heater-panel stays parked.
+- Electric-supply is already gated professional and is on the existing risky list, so Confirmed also cannot unlock **Fixed**.
+
+### Phone (Given / tap / expect) — leftover-after
+
+Phone or Android emulator, width about **360px**. Install **0.1.3+7**. First-run: **Skip** / **Get started** → **I understand**. Exact labels. Do not file GOLDEN_LABELS **Call a pro**.
+
+#### J. Stuck-closed thermostat is not DIY
+
+- **Given** a dryer session on a phone (`Start repair` on a dryer). Not burning smell.
+- **Tap** to make **Cycling thermostat stuck closed** the Primary (`cycling-thermostat-stuck-closed`).
+- **Expect** lamp **Check carefully**, never **Safe to continue**, never **Stop**. No **Needs a professional** hard-stop banner. Most likely shows the pro-scope notice (**A full fix likely needs a pro**).
+- **Tap** **Continue**. **I'll repair** / **Do safe checks** if shown (same leftover-next close as heating-element).
+- **Expect** no **DIY ~** / DIY Parts & cost. **Call a pro** stays GOLDEN_LABELS. After safe checks, **Pro recommended**.
+- **Expect** **Fixed** is not offered. Confirming the stuck-closed pattern is not a completed repair. Settings still shows **0.1.3+7**.
+
+#### K. Start-switch Confirmed is not Fixed
+
+- **Given** a dryer session whose Primary is start switch (`start-switch-failure`). Not burning smell. Not door-switch.
+- **Expect** lamp **Check carefully**, never **Stop**. Stored `safetyLevel` is `professional`. No **Needs a professional** hard-stop banner.
+- **Tap** through lock/latch safe checks if shown. Do not treat this as the door-click **Fixed** path.
+- **Expect** **Pro recommended**. **Fixed** is not offered. A firm door click that starts the machine is the **door-switch** path, not this one.
+
+#### L. Wipe deletes the rating-plate photo
+
+- **Given** a House Book appliance with a rating-plate photo attached (`ratingLabelPhotoPath` on disk). Open **Settings**.
+- **Tap** **Delete household data**.
+- **Expect** confirm dialog **Delete all household data?**
+- **Tap** **Cancel**.
+- **Expect** the household, appliance, and rating-plate photo file are still there. Settings stays open.
+- **Tap** **Delete household data** → **Delete everything**.
+- **Expect** first-run (Skip / Get started). The rating-plate photo file is gone from the device. After Skip, empty home: **Create Household**, no appliances. No silent wipe. Disclaimer and theme stay.
+

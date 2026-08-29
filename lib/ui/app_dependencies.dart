@@ -223,6 +223,8 @@ class AppDependencies {
     final photoPaths = [
       for (final item in repairSessionRepository.listAllEvidence())
         item.localPhotoPath,
+      for (final appliance in applianceRepository.listAll())
+        appliance.ratingLabelPhotoPath,
     ];
     for (final reminder in List<MaintenanceReminder>.from(_maintenanceReminders)) {
       await maintenanceNotifier.cancel(reminder.id);
