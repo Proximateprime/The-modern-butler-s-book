@@ -720,8 +720,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: Text(
                           filteredHistory[i].applianceName,
                           style: text.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         subtitle: Column(
+                          mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -733,7 +736,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             Text(
                               _recentHistoryMeta(filteredHistory[i]),
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],

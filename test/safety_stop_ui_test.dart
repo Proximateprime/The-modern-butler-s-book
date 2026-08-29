@@ -20,14 +20,19 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('answer-choice-yes')));
 
     expect(find.byKey(const Key('safety-stop-banner')), findsOneWidget);
-    expect(find.text('Stop — Call a professional'), findsOneWidget);
+    expect(find.byKey(const Key('safety-stop-title')), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('safety-stop-title'))).data,
+      'Needs a professional',
+    );
+    expect(find.text('Stop — Call a professional'), findsNothing);
     expect(find.textContaining('Possible fire or smoke hazard'), findsWidgets);
     expect(find.textContaining('Unplug if it is safe'), findsOneWidget);
     expect(find.textContaining('ventilate'), findsOneWidget);
     expect(find.textContaining('do not keep running'), findsOneWidget);
     expect(find.byKey(const Key('blocking-reason-line')), findsOneWidget);
     expect(
-      find.text('This step is blocked for safety—call a pro.'),
+      find.text('This step is blocked for safety — Needs a professional.'),
       findsOneWidget,
     );
     expect(find.byKey(const Key('next-action-cue')), findsNothing);

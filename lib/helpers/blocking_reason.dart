@@ -6,7 +6,7 @@ import 'repair_readiness.dart';
 /// Presentation only. Does not change ranking, safety evaluation, or gates.
 
 const String blockingReasonSafetyLine =
-    'This step is blocked for safety—call a pro.';
+    'This step is blocked for safety — Needs a professional.';
 
 const String blockingReasonToolsUnmarkedLine =
     'Mark I have or I don’t for each tool to continue.';

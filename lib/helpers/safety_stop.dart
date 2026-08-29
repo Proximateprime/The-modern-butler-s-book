@@ -1,4 +1,5 @@
 import '../models/evidence.dart';
+import 'dryer_close_path.dart';
 import 'user_facing_error.dart';
 
 /// Deterministic hard-stop result for the Session screen safety gate.
@@ -21,10 +22,13 @@ class SafetyStop {
 /// - Immediate hazard: `burning smell`, `smoke`, `melting`, `melted`,
 ///   `on fire`, `sparking`, `sparks`
 ///
-/// Primary hypothesis failure mode ids that always require a professional:
-/// - `electric-supply-connection-fault` → high-voltage supply work
-/// - `motor-failure` → package directs escalation over DIY electrical work
+/// Primary hypothesis failure mode ids that still hard-stop:
 /// - `electrical-burning-smell-hazard` → fire/smoke hazard path
+///
+/// Gated / needs-professional Primary ids are **not** hard-stopped (they emit
+/// `professional` from [sessionSafetyLevelFor] so the lamp is Check carefully):
+/// - `electric-supply-connection-fault`, `motor-failure`
+/// - any close path with `allowResolvedWhenConfirmed: false` (e.g. thermal fuse)
 ///
 /// Not hard-stopped by Primary alone (soft close path available):
 /// - `heating-element-failed` — identify mode; no live testing guidance
@@ -47,6 +51,10 @@ String safetyStopDisplayCopy(SafetyStop stop) {
 }
 
 /// Stored session details level. Never the placeholder "not evaluated".
+///
+/// `stop` — hard safety stop (evidence hazard or fire/smoke FM).
+/// `professional` — gated / needs-professional FM that is not a hard stop.
+/// `clear` — no hard stop and not a gated professional path.
 String sessionSafetyLevelFor({
   required List<Evidence> evidence,
   String? primaryFailureModeId,
@@ -58,11 +66,25 @@ String sessionSafetyLevelFor({
       null) {
     return 'stop';
   }
-  if (primaryFailureModeId != null &&
-      _professionalFailureModeReasons.containsKey(primaryFailureModeId)) {
+  if (isGatedProfessionalFailureMode(primaryFailureModeId)) {
     return 'professional';
   }
   return 'clear';
+}
+
+/// Gated professional Primary — lamp Check carefully, not a hard stop.
+bool isGatedProfessionalFailureMode(String? failureModeId) {
+  if (failureModeId == null || failureModeId.isEmpty) {
+    return false;
+  }
+  if (_hardStopFailureModeReasons.containsKey(failureModeId)) {
+    return false;
+  }
+  if (_gatedProfessionalFailureModeIds.contains(failureModeId)) {
+    return true;
+  }
+  final path = closePathForFailureMode(failureModeId);
+  return path != null && !path.allowResolvedWhenConfirmed;
 }
 
 SafetyStop? evaluateSafetyStop({
@@ -98,7 +120,7 @@ SafetyStop? evaluateSafetyStop({
   }
 
   if (primaryFailureModeId != null) {
-    final reason = _professionalFailureModeReasons[primaryFailureModeId];
+    final reason = _hardStopFailureModeReasons[primaryFailureModeId];
     if (reason != null) {
       return SafetyStop(reason: reason);
     }
@@ -107,11 +129,13 @@ SafetyStop? evaluateSafetyStop({
   return null;
 }
 
-const Map<String, String> _professionalFailureModeReasons = {
-  'electric-supply-connection-fault':
-      'Requires professional electrical work',
-  'motor-failure': 'Requires professional service',
+const Map<String, String> _hardStopFailureModeReasons = {
   'electrical-burning-smell-hazard': 'Possible fire or smoke hazard',
+};
+
+const Set<String> _gatedProfessionalFailureModeIds = {
+  'electric-supply-connection-fault',
+  'motor-failure',
 };
 const List<_EvidenceSafetyRule> _evidenceRules = [
   _EvidenceSafetyRule(

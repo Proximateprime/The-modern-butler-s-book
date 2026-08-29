@@ -98,8 +98,12 @@ List<String> _premiumLastRepairLines(InventoryExportRow row) {
 String inventoryLastRepairLine({
   required DateTime completedAt,
   required SessionOutcome outcome,
+  WasherLoadStyle? washerLoadStyle,
 }) {
-  final headline = repairHistoryHeadline(outcome);
+  final headline = repairHistoryHeadline(
+    outcome,
+    washerLoadStyle: washerLoadStyle,
+  );
   final kind = sessionCloseKindLabel(outcome.closeKind);
   return '${_formatDate(completedAt)} · $headline · $kind';
 }

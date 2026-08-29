@@ -147,7 +147,7 @@ void main() {
       expect(find.byKey(const Key('failure-modes-tile')), findsNothing);
       expect(
         find.text('Needs a professional'),
-        findsOneWidget,
+        findsWidgets,
       );
   });
 }

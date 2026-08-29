@@ -1,3 +1,4 @@
+import '../models/appliance.dart';
 import '../models/session_outcome.dart';
 
 /// Short labels for known close paths. Speak Human in the list; ids stay as stored.
@@ -34,12 +35,25 @@ const Map<String, String> _repairPathLabels = {
 
 const String _missingPrimaryCause = 'No primary hypothesis was selected.';
 
+/// Display-time washer latch path. Stored id stays `washer-door-not-latched`.
+String washerLatchRepairPathLabel(WasherLoadStyle? loadStyle) {
+  return switch (loadStyle) {
+    WasherLoadStyle.topLoad => 'Lid latch path',
+    WasherLoadStyle.frontLoad => 'Door latch path',
+    WasherLoadStyle.unknown || null => 'Door or lid latch path',
+  };
+}
+
 /// One-line appliance history title. Not ranking.
-String repairHistoryHeadline(SessionOutcome outcome) {
+String repairHistoryHeadline(
+  SessionOutcome outcome, {
+  WasherLoadStyle? washerLoadStyle,
+}) {
   final symptom = _plainText(outcome.startSymptom);
   final path = _pathLabel(
     failureModeId: outcome.rankingLeaderFailureModeId,
     rankingLeaderLabel: outcome.rankingLeaderLabel,
+    washerLoadStyle: washerLoadStyle,
   );
   final action = _shortAction(outcome);
 
@@ -65,8 +79,14 @@ String repairHistoryHeadline(SessionOutcome outcome) {
 }
 
 /// Optional immediate/root cause under the headline. Hidden when already used.
-String? repairHistoryCauseLine(SessionOutcome outcome) {
-  final headline = repairHistoryHeadline(outcome);
+String? repairHistoryCauseLine(
+  SessionOutcome outcome, {
+  WasherLoadStyle? washerLoadStyle,
+}) {
+  final headline = repairHistoryHeadline(
+    outcome,
+    washerLoadStyle: washerLoadStyle,
+  );
   final action = _shortAction(outcome);
   final immediate = _plainText(outcome.immediateCause);
   final root = _plainText(outcome.rootCause);
@@ -142,7 +162,11 @@ String? _joinedMemory(List<String> items, {required String prefix}) {
 String? _pathLabel({
   required String? failureModeId,
   required String? rankingLeaderLabel,
+  WasherLoadStyle? washerLoadStyle,
 }) {
+  if (failureModeId == 'washer-door-not-latched') {
+    return washerLatchRepairPathLabel(washerLoadStyle);
+  }
   final mapped = _repairPathLabels[failureModeId];
   if (mapped != null) {
     return mapped;

@@ -119,7 +119,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('safety-stop-banner')), findsOneWidget);
-      expect(find.text('Stop — Call a professional'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('safety-stop-title'))).data,
+        'Needs a professional',
+      );
+      expect(find.text('Stop — Call a professional'), findsNothing);
       expect(find.byKey(const Key('answer-choice-panel')), findsNothing);
       expect(find.byKey(const Key('other-observations-picker')), findsNothing);
       final dryer = deps.appliancesForCurrentHousehold().single;
