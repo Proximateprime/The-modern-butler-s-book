@@ -399,3 +399,18 @@ Phone or Android emulator, width about **360px**. Install **0.1.4+0**. First-run
 - **Given** Settings step detail **Shorter steps** on a safety-critical unplug step.
 - **Expect** unplug / never / do not still visible.
 
+### Follow-up — attach-map file layout (do not reopen leftover)
+
+Phrasing layer only. Session / ranking not rebuilt. Layout:
+
+- `lib/services/groq_phrasing_client.dart` — HTTP; `String.fromEnvironment('GROQ_API_KEY')`; timeout / offline → packaged
+- `lib/helpers/phrasing_request.dart` — typed slots for the seven ON hooks; engine ids / packaged strings only
+- `lib/helpers/phrasing_service.dart` — display strings only; never ranking / safety
+- `lib/helpers/phrasing_safety_gate.dart` — every Groq string through `visibleHouseholdHowTo` + `lineLooksLikeUnsafeInstruction` + official-stop (unplug AND ventilate AND don’t keep running) + `standingLooksLikePercentage`
+
+Confirm ≠ Fixed packaged source of truth is now `UserFacingCopy.confirmNotFixedPackaged` / `kConfirmNotFixedPackaged`. Closest shipped thermal-fuse line stays “Confirming no warmth is not a completed repair.” Groq may rephrase the new sentence; must not flip `allowResolvedWhenConfirmed` or offer **Fixed**.
+
+GOLDEN chrome is not paraphrased: **I'll repair**, **Call a pro**, **Most likely**, **Current question**, **Why ask this?**, **Continue repair**, **Start repair**, inspect **Matches / OK** and **Doesn't match / Not OK**.
+
+`kRuntimeEnrichmentCallsEnabled` stays **false**. `StubEnrichmentProvider` stays. `EnrichmentSource.llm` is not diagnosis. Voice later reuses the same strings (`safetyStopOfficial` already = `voiceHazardConfirm`).
+

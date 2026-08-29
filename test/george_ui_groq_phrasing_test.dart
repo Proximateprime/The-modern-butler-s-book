@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:modern_butlers_book/helpers/confidence_display.dart';
 import 'package:modern_butlers_book/helpers/dryer_close_path.dart';
 import 'package:modern_butlers_book/helpers/groq_phrasing.dart';
+import 'package:modern_butlers_book/helpers/package_release_validator.dart';
+import 'package:modern_butlers_book/helpers/phrasing_request.dart';
+import 'package:modern_butlers_book/helpers/phrasing_safety_gate.dart';
 import 'package:modern_butlers_book/helpers/safety_stop.dart';
 import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/helpers/why_ask_this.dart';
+import 'package:modern_butlers_book/models/enrichment_note.dart';
 import 'package:modern_butlers_book/models/evidence.dart';
+import 'package:modern_butlers_book/models/inspect_step.dart';
 import 'package:modern_butlers_book/models/repair_session.dart';
 import 'package:modern_butlers_book/models/repair_comfort_profile.dart';
 import 'package:modern_butlers_book/models/session_ui_resume_state.dart';
+import 'package:modern_butlers_book/services/enrichment_provider.dart';
 import 'package:modern_butlers_book/services/groq_phrasing_client.dart';
 import 'package:modern_butlers_book/services/groq_phrasing_service.dart';
 import 'package:modern_butlers_book/services/question_selection_service.dart';
@@ -404,5 +411,111 @@ void main() {
     expect(find.textContaining('ventilate'), findsWidgets);
     expect(fake.completeCalls, 0);
     expect(fake.liveNetworkCalls, 0);
+  });
+
+  test('Confirm ≠ Fixed packaged source of truth is the SuperGrok sentence', () {
+    const closestShipped =
+        'Confirming no warmth is not a completed repair.';
+    expect(kConfirmNotFixedPackaged, UserFacingCopy.confirmNotFixedPackaged);
+    expect(
+      kConfirmNotFixedPackaged,
+      'We confirmed the part is open. The dryer still isn’t fixed until '
+      'heat returns.',
+    );
+    expect(kConfirmNotFixedPackaged, isNot(closestShipped));
+    expect(
+      closePathForFailureMode('thermal-fuse-open')!.safeGuidanceSteps.join(' '),
+      contains(closestShipped),
+    );
+    expect(
+      packagedConfirmNotFixedLine(
+        allowResolvedWhenConfirmed: false,
+        verificationSupported: true,
+      ),
+      kConfirmNotFixedPackaged,
+    );
+    final typed = PhrasingRequest.confirmNotFixed(
+      family: 'dryer',
+      energy: 'electric',
+      comfort: 'normal',
+      evidenceNeeded: 'thermal-fuse-open',
+      lastObs: 'verified: Confirmed',
+    );
+    expect(typed.slot, PhrasingSlot.confirmNotFixed);
+    expect(typed.packagedWhyOneLine, kConfirmNotFixedPackaged);
+    expect(typed.allowResolvedWhenConfirmed, isFalse);
+    expect(typed.offersFixed, isFalse);
+  });
+
+  test('attach-map gates reject unsafe instruction and percentages', () {
+    expect(
+      lineLooksLikeUnsafeInstruction('Bypass the thermal fuse with a jumper.'),
+      isTrue,
+    );
+    expect(
+      groqStringPassesSafetyGate(
+        'Bypass the thermal fuse with a jumper.',
+        requireOfficialStop: false,
+      ),
+      isFalse,
+    );
+    expect(standingLooksLikePercentage('87% likely'), isTrue);
+    expect(
+      groqStringPassesSafetyGate('This is 87% likely', requireOfficialStop: false),
+      isFalse,
+    );
+    expect(
+      groqStringPassesSafetyGate(
+        'Unplug if safe, ventilate, and do not keep running.',
+        requireOfficialStop: true,
+      ),
+      isTrue,
+    );
+    expect(
+      groqStringPassesSafetyGate(
+        'Just step away.',
+        requireOfficialStop: true,
+      ),
+      isFalse,
+    );
+  });
+
+  test('GOLDEN chrome labels are not paraphrased', () {
+    expect(kGoldenChromeFrozenLabels, contains("I'll repair"));
+    expect(kGoldenChromeFrozenLabels, contains('Call a pro'));
+    expect(kGoldenChromeFrozenLabels, contains('Most likely'));
+    expect(kGoldenChromeFrozenLabels, contains('Current question'));
+    expect(kGoldenChromeFrozenLabels, contains(UserFacingCopy.whyAskThis));
+    expect(kGoldenChromeFrozenLabels, contains('Continue repair'));
+    expect(kGoldenChromeFrozenLabels, contains('Start repair'));
+    expect(kGoldenChromeFrozenLabels, contains(inspectMatchesOkChip));
+    expect(kGoldenChromeFrozenLabels, contains(inspectDoesntMatchChip));
+
+    final remappedChip = acceptGroqPhrasing(
+      request: _questionRequest(
+        options: [inspectMatchesOkChip, inspectDoesntMatchChip],
+      ),
+      parsed: GroqPhrasingJson(
+        title: 'Was there warmth?',
+        optionLabelsOnly: {
+          inspectMatchesOkChip: 'Looks fine',
+          inspectDoesntMatchChip: inspectDoesntMatchChip,
+        },
+      ),
+    );
+    expect(remappedChip, isNull);
+
+    final chromeTitle = acceptGroqPhrasing(
+      request: _questionRequest(),
+      parsed: const GroqPhrasingJson(title: 'Call a pro'),
+    );
+    expect(chromeTitle, isNull);
+  });
+
+  test('runtime enrichment stays stubbed and llm is not diagnosis', () {
+    expect(kRuntimeEnrichmentCallsEnabled, isFalse);
+    expect(const StubEnrichmentProvider(), isA<StubEnrichmentProvider>());
+    expect(EnrichmentSource.llm.name, 'llm');
+    expect(EnrichmentSource.llm, isNot(EnrichmentSource.household));
   });
 }

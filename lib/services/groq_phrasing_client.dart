@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../helpers/groq_phrasing.dart';
+import '../helpers/phrasing_request.dart';
 
 /// OpenAI-compatible Groq chat client. Communication only.
 ///

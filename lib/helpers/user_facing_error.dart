@@ -281,6 +281,12 @@ abstract final class UserFacingCopy {
       'Stop. Unplug if it is safe, ventilate, and do not keep running the '
       'machine. Call a professional.';
   static const voiceHazardConfirm = safetyStopOfficial;
+  /// Confirm ≠ Fixed packaged source of truth. Closest shipped line was
+  /// thermal-fuse “Confirming no warmth is not a completed repair.”
+  /// Groq may rephrase this; it must not flip eligibility or offer Fixed.
+  static const confirmNotFixedPackaged =
+      'We confirmed the part is open. The dryer still isn’t fixed until '
+      'heat returns.';
   static const expertModeNeedAdult =
       'Confirm the adult checkbox first. Expert Mode stays off until you do.';
   static const reminderPingScheduled =
