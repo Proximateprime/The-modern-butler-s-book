@@ -308,6 +308,7 @@ App **0.1.3+9**. Tests: prior George UI files plus `test/george_ui_leftover_afte
 ### Leftover-after-after-after ledger
 
 - Door-switch eligibility flag is unchanged. Only the imported ask polarity flipped so Confirmed means now-starts.
+- Imported door-switch last boundary line does not use the `isProHandoffGuidanceStep` “call a technician” substring, so the now-starts confirm can still reach **Fixed**. Substring matching is not expanded.
 - Internal-duct and blower-wheel lamps are id-based gated professional, not Primary-as-hard-stop.
 - Fail-closed is the id set. Prefer-professional true does not allow Confirmed → Fixed.
 

@@ -726,7 +726,7 @@ const List<Map<String, Object?>> _dryerBatch01Modes = [
       'Never bypass the door switch or safety interlock',
       'Try a firm door click and verify panel response only',
       'Do not probe switch terminals live',
-      'If the latch is broken or Start still does nothing with a firm click, call a technician',
+      'If the latch is broken or Start still will not run after a firm click, escalate for switch/interlock service',
     ],
     'stopProfessionalConditions': [
       'Any plan to jumper/bypass the door switch',

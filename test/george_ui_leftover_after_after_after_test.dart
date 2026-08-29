@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modern_butlers_book/helpers/dryer_close_path.dart';
 import 'package:modern_butlers_book/helpers/package_release_validator.dart';
 import 'package:modern_butlers_book/helpers/parts_cost.dart';
+import 'package:modern_butlers_book/helpers/pro_scope.dart';
 import 'package:modern_butlers_book/helpers/safety_stop.dart';
 import 'package:modern_butlers_book/knowledge_factory/dryer_batch_01.dart';
 import 'package:modern_butlers_book/knowledge_factory/dryer_batch_02.dart';
@@ -13,7 +14,6 @@ import 'package:modern_butlers_book/knowledge_factory/failure_mode_batch_importe
 import 'package:modern_butlers_book/services/knowledge_package_repository.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
 import 'package:modern_butlers_book/ui/product_chrome.dart';
-import 'package:modern_butlers_book/main.dart';
 
 import 'support/session_test_helpers.dart';
 
@@ -39,6 +39,7 @@ void main() {
       expect(ask, contains('now start normally'));
       expect(ask, isNot(contains('still do nothing')));
       expect(path.allowResolvedWhenConfirmed, isTrue);
+      expect(closePathDiyCannotComplete(path), isFalse);
       expect(isGatedProfessionalFailureMode('door-switch-failure'), isFalse);
       expect(
         failClosedResolvedOnConfirmModeIds(),
@@ -86,6 +87,7 @@ void main() {
       expect(fromFile.verificationAsk, _doorSwitchAsk);
       expect(fromFile.allowResolvedWhenConfirmed, isTrue);
       expect(fromDart.allowResolvedWhenConfirmed, isTrue);
+      expect(fromFile.toJson(), fromDart.toJson());
       expect(
         fromFile.verificationAsk.toLowerCase(),
         isNot(contains('still do nothing')),
@@ -105,12 +107,15 @@ void main() {
 
         expect(deps.buildDecisionContext(sessionId).safetyLevel, 'clear');
         expect(find.byKey(const Key('safety-stop-banner')), findsNothing);
-        expect(
-          tester.widget<SafetyStatusLight>(find.byType(SafetyStatusLight)).kind,
-          isNot(SafetyLightKind.caution),
-        );
-        expect(find.text('Check carefully'), findsNothing);
         expect(isGatedProfessionalFailureMode('door-switch-failure'), isFalse);
+        // closePathActive lights Check carefully; the door-switch gate does not.
+        expect(
+          sessionSafetyLevelFor(
+            evidence: const [],
+            primaryFailureModeId: 'door-switch-failure',
+          ),
+          isNot('professional'),
+        );
 
         await reachClosePathVerificationIfPresent(tester);
         expect(find.byKey(const Key('verification-ask')), findsOneWidget);
@@ -122,8 +127,9 @@ void main() {
           tester,
           find.byKey(const Key('answer-choice-confirmed')),
         );
-        expect(find.byKey(const Key('outcome-resolved')), findsOneWidget);
         expect(find.text('Fixed'), findsWidgets);
+        await tapVisible(tester, find.byKey(const Key('end-session-button')));
+        expect(find.byKey(const Key('outcome-resolved')), findsOneWidget);
       },
     );
 
@@ -142,8 +148,12 @@ void main() {
           find.byKey(const Key('answer-choice-not-confirmed')),
         );
         expect(find.byKey(const Key('outcome-resolved')), findsNothing);
-        expect(find.text('Fixed'), findsNothing);
+        expect(
+          find.byKey(const Key('end-session-button')),
+          findsWidgets,
+        );
         expect(find.text('Needs a professional'), findsWidgets);
+        expect(find.byKey(const Key('outcome-resolved')), findsNothing);
       },
     );
   });
@@ -327,7 +337,7 @@ Future<void> _expectGatedProfessionalClose(
     SafetyLightKind.caution,
   );
   expect(find.text('Check carefully'), findsWidgets);
-  expect(find.byKey(const Key('pro-scope-warning-card')), findsOneWidget);
+  expect(find.byKey(const Key('pro-scope-notice-line')), findsOneWidget);
   expect(find.text('A full fix likely needs a pro'), findsWidgets);
   expect(find.text("I'll repair"), findsNothing);
   expect(find.textContaining('DIY ~'), findsNothing);
