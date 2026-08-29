@@ -75,6 +75,7 @@ class PaperCard extends StatelessWidget {
     final colors = butlerColors(context);
     return Material(
       color: tint ?? scheme.surface,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(

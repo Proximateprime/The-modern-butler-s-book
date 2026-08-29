@@ -432,7 +432,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                       children: [
                         for (var i = 0; i < history.length; i++) ...[
                           if (i > 0) const Divider(height: 1),
-                          _repairHistoryTile(history[i]),
+                          _repairHistoryTile(history[i], appliance),
                         ],
                       ],
                     ),
@@ -445,11 +445,11 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
     );
   }
 
-  Widget _repairHistoryTile(RecentSessionOutcome item) {
+  Widget _repairHistoryTile(RecentSessionOutcome item, Appliance appliance) {
     final outcome = item.outcome;
     final cause = repairHistoryCauseLine(
       outcome,
-      washerLoadStyle: widget.appliance.washerLoadStyle,
+      washerLoadStyle: appliance.washerLoadStyle,
     );
     final extras = repairHistoryExtraLines(outcome);
     final by = repairHistoryMemberLine(
@@ -468,7 +468,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
           title: Text(
             repairHistoryHeadline(
               outcome,
-              washerLoadStyle: widget.appliance.washerLoadStyle,
+              washerLoadStyle: appliance.washerLoadStyle,
             ),
             key: Key('repair-history-headline-${outcome.sessionId}'),
             maxLines: 1,
@@ -486,7 +486,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
             date: item.completedAt,
             outcome: outcome,
             dependencies: widget.dependencies,
-            appliance: widget.appliance,
+            appliance: appliance,
           ),
           onTap: () => _openHistoryItem(item),
         ),

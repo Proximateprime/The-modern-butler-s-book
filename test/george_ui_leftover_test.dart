@@ -186,6 +186,56 @@ void main() {
     expect(find.text('Door latch path'), findsNothing);
   });
 
+  testWidgets(
+    'edited washer load style updates history without leaving detail',
+    (tester) async {
+      final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 29, 14, 12));
+      deps.createHousehold('Edit Load Style House');
+      final washer = deps.addWasher(washerLoadStyle: WasherLoadStyle.frontLoad);
+      final sessionId = deps.startOrResumeSession(washer);
+      deps.endSession(
+        sessionId: sessionId,
+        closeKind: SessionCloseKind.fixed,
+        rankingLeaderFailureModeId: 'washer-door-not-latched',
+        immediateCause:
+            'The door or lid switch is open, so the cycle will not start.',
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ApplianceDetailScreen(
+            dependencies: deps,
+            appliance: washer,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Door latch path'), findsWidgets);
+      expect(find.textContaining('Lid latch path'), findsNothing);
+
+      deps.updateAppliance(
+        appliance: washer,
+        name: washer.name,
+        manufacturer: washer.manufacturer,
+        modelNumber: washer.modelNumber,
+        serialNumber: washer.serialNumber,
+        location: washer.location,
+        washerLoadStyle: WasherLoadStyle.topLoad,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ApplianceDetailScreen(
+            dependencies: deps,
+            appliance: washer,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Lid latch path'), findsWidgets);
+      expect(find.text('Door latch path'), findsNothing);
+    },
+  );
+
   testWidgets('history ListTile does not overflow at Size(360, 800)', (
     tester,
   ) async {
@@ -357,4 +407,22 @@ void main() {
       expect(overflows, isEmpty, reason: overflows.join('\n'));
     },
   );
+
+  testWidgets('PaperCard clips ink to the rounded shape', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: PaperCard(child: SizedBox(width: 80, height: 40)),
+        ),
+      ),
+    );
+    final material = tester.widget<Material>(
+      find.descendant(
+        of: find.byType(PaperCard),
+        matching: find.byType(Material),
+      ),
+    );
+    expect(material.clipBehavior, Clip.antiAlias);
+    expect(material.shape, isA<RoundedRectangleBorder>());
+  });
 }
