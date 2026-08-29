@@ -1,3 +1,12 @@
+## Play-ready Groq via Supabase Edge Function (2026-08-29)
+
+App **0.1.4+1**. Groq key moves behind `supabase/functions/phrase`. The client
+prefers that Edge Function when Supabase URL + anon/publishable are set.
+`--dart-define=GROQ_API_KEY` stays a local-only fallback (Mark’s machine).
+Play/CI/Pages/GitHub APK must not pass it. Safety gate still runs before
+paint. Play Console listing stays out. Details:
+[`docs/qa/PLAY_READY_GROQ.md`](docs/qa/PLAY_READY_GROQ.md).
+
 ## Groq phrasing pack (2026-08-29)
 
 App **0.1.4+0**. Groq rephrases seven ON household surfaces (question, stop, pro handoff, Speak Human diagnosis, Confirm ≠ Fixed, resume, comfort). The engine still decides template ids, ranking, and Fixed eligibility. Missing key / timeout / validator fail stay on packaged copy. No Settings paste-a-key field. Details: [`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md).

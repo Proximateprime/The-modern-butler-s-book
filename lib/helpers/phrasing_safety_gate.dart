@@ -6,7 +6,8 @@ import 'user_facing_error.dart';
 
 /// Attach-map gates confirmed on leftover 8bad47be.
 ///
-/// Every Groq string must pass:
+/// The Edge Function is not an escape hatch. Every function/Groq string
+/// must pass these gates before paint:
 /// - [visibleHouseholdHowTo]
 /// - [lineLooksLikeUnsafeInstruction]
 /// - official-stop substring (unplug AND ventilate AND don’t keep running)

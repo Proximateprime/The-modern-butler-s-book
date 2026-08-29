@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Hosted testers must stay on the missing-key / packaged-copy path.
 # Never dart-define a phrasing provider key into web or APK.
+# Never ship a Groq key or Play keystore in git.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -15,6 +16,23 @@ fi
 
 if env | grep -E '^GROQ' >/dev/null; then
   echo "Refusing: phrasing-provider env is set. Testers use packaged copy." >&2
+  exit 1
+fi
+
+if git ls-files --error-unmatch '*.jks' '*.keystore' 'key.properties' \
+    'android/key.properties' 2>/dev/null | grep -q .; then
+  echo "Refusing: Play keystore or key.properties is tracked." >&2
+  exit 1
+fi
+
+if git grep -nI -E "$TOKEN_RE" -- ':!.git' >/dev/null; then
+  echo "Refusing: Groq-shaped token in tracked files." >&2
+  git grep -nI -E "$TOKEN_RE" -- ':!.git' >&2 || true
+  exit 1
+fi
+
+if git grep -nI -E -- 'dart-define=.?GROQ_API_KEY' -- '.github' >/dev/null; then
+  echo "Refusing: phrasing key must not be passed into CI builds." >&2
   exit 1
 fi
 

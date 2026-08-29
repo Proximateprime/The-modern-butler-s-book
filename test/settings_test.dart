@@ -106,6 +106,10 @@ void main() {
     expect(find.text(UserFacingCopy.privacyLocalFirst), findsOneWidget);
     expect(find.text(UserFacingCopy.privacyWhatIsStored), findsOneWidget);
     expect(find.text(UserFacingCopy.privacyNoSkillProfiling), findsOneWidget);
+    expect(find.text(UserFacingCopy.privacyPhrasingBackend), findsOneWidget);
+    expect(find.textContaining('GROQ_API_KEY'), findsNothing);
+    expect(find.textContaining('paste'), findsNothing);
+    expect(find.textContaining('API key'), findsNothing);
     await scrollSettingsUntil(tester, const Key('settings-permissions-help'));
     expect(find.byKey(const Key('settings-permissions-help')), findsOneWidget);
     expect(find.text(UserFacingCopy.permissionsCameraMicWhy), findsOneWidget);

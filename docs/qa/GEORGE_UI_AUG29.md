@@ -347,7 +347,7 @@ App **0.1.4+0**. Tests: prior George UI files plus `test/george_ui_groq_phrasing
 
 Groq changes how we talk, not what we conclude. Packaged strings paint first; the nicer line swaps in when Groq arrives (no blank card). JSON only: `title`, `why_one_line`, `option_labels_only`. Same ids — never a fourth option or new chip id. One Groq call per screen change. Prefetch is the already-chosen next template id’s wording only — not Module 3.7 full branch cache. Never stream a novel into the question slot. Timeout / missing key / validator fail → packaged. Banned: `gas_train`, `live_voltage`, `sealed`. Groq output must pass existing `forbidden_guidance` / `visibleHouseholdHowTo`. How-to body stays off (validator owns gas / live mains / sealed).
 
-Client: OpenAI-compatible POST `https://api.groq.com/openai/v1/chat/completions` model `llama-3.1-8b-instant`. Key from `--dart-define=GROQ_API_KEY` / `String.fromEnvironment('GROQ_API_KEY')`. Never commit a key, `.env`, or secret. Missing key is a required path (packaged copy). No Settings paste-a-key field.
+Client: prefer Supabase Edge Function `phrase` (anon/publishable client; Groq key is a dashboard secret). Local `--dart-define=GROQ_API_KEY` / `String.fromEnvironment('GROQ_API_KEY')` is Mark’s machine only — never Play/CI/Pages/GitHub APK. Never commit a key, `.env`, or secret. Missing function URL / missing key is a required path (packaged copy). No Settings paste-a-key field.
 
 ### Seven ON (testers default) with hard gates
 
@@ -403,7 +403,7 @@ Phone or Android emulator, width about **360px**. Install **0.1.4+0**. First-run
 
 Phrasing layer only. Session / ranking not rebuilt. Layout:
 
-- `lib/services/groq_phrasing_client.dart` — HTTP; `String.fromEnvironment('GROQ_API_KEY')`; timeout / offline → packaged
+- `lib/services/groq_phrasing_client.dart` — Edge Function first; local `String.fromEnvironment('GROQ_API_KEY')` fallback; timeout / 4xx / 5xx / offline → packaged
 - `lib/helpers/phrasing_request.dart` — typed slots for the seven ON hooks; engine ids / packaged strings only
 - `lib/helpers/phrasing_service.dart` — display strings only; never ranking / safety
 - `lib/helpers/phrasing_safety_gate.dart` — every Groq string through `visibleHouseholdHowTo` + `lineLooksLikeUnsafeInstruction` + official-stop (unplug AND ventilate AND don’t keep running) + `standingLooksLikePercentage`
@@ -413,4 +413,14 @@ Confirm ≠ Fixed packaged source of truth is now `UserFacingCopy.confirmNotFixe
 GOLDEN chrome is not paraphrased: **I'll repair**, **Call a pro**, **Most likely**, **Current question**, **Why ask this?**, **Continue repair**, **Start repair**, inspect **Matches / OK** and **Doesn't match / Not OK**.
 
 `kRuntimeEnrichmentCallsEnabled` stays **false**. `StubEnrichmentProvider` stays. `EnrichmentSource.llm` is not diagnosis. Voice later reuses the same strings (`safetyStopOfficial` already = `voiceHazardConfirm`).
+
+## Play-ready follow-up — 0.1.4+1 (do not reopen leftover)
+
+Same seven ON hooks and attach-map gates. Client prefers
+`supabase/functions/phrase` when Supabase is configured. Local
+`String.fromEnvironment('GROQ_API_KEY')` is Mark’s machine only. Hosted
+Pages / GitHub APK stay packaged if the function is unset. The Edge Function
+is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
+still run before paint. Play listing stays out. See
+[`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 

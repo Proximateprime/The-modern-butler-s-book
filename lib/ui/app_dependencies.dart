@@ -52,6 +52,7 @@ import '../services/repair_session_repository.dart';
 import '../services/session_coordinator.dart';
 import '../services/voice_answer.dart';
 import '../services/voice_answer_speech.dart';
+import '../services/butler_supabase.dart';
 import '../services/groq_phrasing_service.dart';
 import 'app_theme.dart';
 
@@ -121,6 +122,7 @@ class AppDependencies {
   static Future<AppDependencies> createPersisted({
     DateTime Function()? clock,
   }) async {
+    await ensureButlerSupabase();
     final store = LocalDomainStore();
     await store.init();
     final firstRunComplete = await store.loadFirstRunComplete();
