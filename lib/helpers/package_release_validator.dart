@@ -24,6 +24,17 @@ const List<String> riskyVerificationModeIds = [
   'gas-dryer-no-ignition-professional-only',
 ];
 
+/// Confirmed must not unlock Fixed. Fail-closed: [allowResolvedWhenConfirmed]
+/// must be false. Heater-circuit id set + start-switch + existing risky list.
+/// Import parse default stays false. Substring handoff copy is not this gate.
+Set<String> failClosedResolvedOnConfirmModeIds() {
+  return {
+    ...heaterCircuitDiyCannotCompleteLeaderIds,
+    'start-switch-failure',
+    ...riskyVerificationModeIds,
+  };
+}
+
 class PackageReleaseFinding {
   const PackageReleaseFinding({
     required this.packageId,
@@ -377,6 +388,15 @@ void _validateComplaintAnswer({
   }
 }
 
+/// Findings when a gated mode still allows Confirmed → Fixed.
+List<PackageReleaseFinding> riskyVerificationFindingsFor(
+  KnowledgePackage package,
+) {
+  final errors = <PackageReleaseFinding>[];
+  _validateRiskyVerifications(package: package, errors: errors);
+  return errors;
+}
+
 void _validateRiskyVerifications({
   required KnowledgePackage package,
   required List<PackageReleaseFinding> errors,
@@ -384,7 +404,7 @@ void _validateRiskyVerifications({
   final present = {
     for (final mode in package.failureModes) mode.id,
   };
-  for (final modeId in riskyVerificationModeIds) {
+  for (final modeId in failClosedResolvedOnConfirmModeIds()) {
     if (!present.contains(modeId)) continue;
     final path = closePathForFailureMode(modeId);
     if (path == null) {
@@ -397,15 +417,14 @@ void _validateRiskyVerifications({
       );
       continue;
     }
-    if (path.allowResolvedWhenConfirmed &&
-        !path.preferProfessionalWhenNotConfirmed) {
+    if (path.allowResolvedWhenConfirmed) {
       errors.add(
         PackageReleaseFinding(
           packageId: package.id,
           checkId: 'risky-verification',
           message:
-              'Risky mode $modeId allows Resolved on confirm without a '
-              'professional-prefer flag',
+              'Gated mode $modeId must not allow Resolved on confirm '
+              '(allowResolvedWhenConfirmed must be false)',
         ),
       );
     }

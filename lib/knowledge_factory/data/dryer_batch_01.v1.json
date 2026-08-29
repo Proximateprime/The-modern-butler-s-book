@@ -1275,7 +1275,7 @@
       "difficultyNotes": "External seating only. Outlet and terminal-block work is professional.",
       "commonality": "moderate",
       "safetyNotes": "High voltage: do not provide live measurement instructions.",
-      "allowResolvedWhenConfirmed": true,
+      "allowResolvedWhenConfirmed": false,
       "preferProfessionalWhenNotConfirmed": true
     },
     {
@@ -1471,7 +1471,7 @@
       "difficultyNotes": "Observation only for beginners. Thermostat diagnosis is professional.",
       "commonality": "common",
       "safetyNotes": "Do not guide live thermostat testing.",
-      "allowResolvedWhenConfirmed": true,
+      "allowResolvedWhenConfirmed": false,
       "preferProfessionalWhenNotConfirmed": true
     },
     {
@@ -1707,7 +1707,7 @@
       "difficultyNotes": "Lock and latch checks only. Start-control repair is professional.",
       "commonality": "common",
       "safetyNotes": "No live control-console testing for beginners.",
-      "allowResolvedWhenConfirmed": true,
+      "allowResolvedWhenConfirmed": false,
       "preferProfessionalWhenNotConfirmed": true
     },
     {

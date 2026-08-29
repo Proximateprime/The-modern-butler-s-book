@@ -1107,7 +1107,7 @@ const List<Map<String, Object?>> _dryerBatch01Modes = [
     'commonality': 'moderate',
     'safetyNotes':
         'High voltage: do not provide live measurement instructions.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
@@ -1269,7 +1269,7 @@ const List<Map<String, Object?>> _dryerBatch01Modes = [
     'commonality': 'common',
     'safetyNotes':
         'Do not guide live thermostat testing.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
@@ -1478,7 +1478,7 @@ const List<Map<String, Object?>> _dryerBatch01Modes = [
     'commonality': 'common',
     'safetyNotes':
         'No live control-console testing for beginners.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {

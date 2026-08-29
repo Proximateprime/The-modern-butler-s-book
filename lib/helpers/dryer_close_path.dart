@@ -318,7 +318,7 @@ const Map<String, FailureModeClosePath> _dryerClosePaths = {
       'If the dryer tumbles without heat, stop and call a professional.',
       'High-voltage dryer supply work is not a beginner DIY task.',
     ],
-    allowResolvedWhenConfirmed: true,
+    allowResolvedWhenConfirmed: false,
     preferProfessionalWhenNotConfirmed: true,
   ),
   'broken-drive-belt': FailureModeClosePath(
