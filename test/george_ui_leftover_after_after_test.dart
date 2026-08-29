@@ -326,25 +326,64 @@ void main() {
     });
 
     testWidgets(
-      'gated Primary hides I\'ll repair and DIY ~ even when a part is quoted',
+      'Phone P: gated id + absent close path hides I\'ll repair / DIY ~',
       (tester) async {
         clearImportedClosePaths();
-        expect(
-          closePathForFailureMode('start-capacitor-or-start-assist-weak'),
-          isNull,
-        );
         const quoted = PartCostEstimate(
-          name: 'Start capacitor',
+          name: 'Quoted part',
           diyEstimate: r'$20–40',
           proEstimate: r'$150–280',
         );
+        for (final id in const [
+          'start-capacitor-or-start-assist-weak',
+          'gas-dryer-no-ignition-professional-only',
+        ]) {
+          expect(isGatedProfessionalFailureMode(id), isTrue, reason: id);
+          expect(closePathForFailureMode(id), isNull, reason: id);
+          expect(partsCostDiyOutOfScope(id), isTrue, reason: id);
+
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: PartsCostCard(
+                  parts: const [quoted],
+                  diyOutOfScope: partsCostDiyOutOfScope(id),
+                  onIllRepair: () {},
+                  onCallPro: () {},
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          expect(find.text("I'll repair"), findsNothing, reason: id);
+          expect(find.textContaining('DIY ~'), findsNothing, reason: id);
+          expect(find.textContaining('Pro ~'), findsOneWidget, reason: id);
+          expect(find.byKey(const Key('parts-cost-call-pro')), findsOneWidget);
+          expect(find.text('Call a pro'), findsOneWidget);
+          expect(find.byKey(const Key('parts-cost-ill-repair')), findsNothing);
+        }
+
+        KnowledgePackageRepository().loadById('dryer-core');
+        expect(
+          isGatedProfessionalFailureMode(accessibleThermalResetModeId),
+          isFalse,
+        );
+        expect(isResettableThermalPath(accessibleThermalResetModeId), isTrue);
+        expect(
+          closePathForFailureMode(accessibleThermalResetModeId)!
+              .allowResolvedWhenConfirmed,
+          isTrue,
+        );
+        expect(partsCostDiyOutOfScope(accessibleThermalResetModeId), isFalse);
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: PartsCostCard(
                 parts: const [quoted],
                 diyOutOfScope: partsCostDiyOutOfScope(
-                  'start-capacitor-or-start-assist-weak',
+                  accessibleThermalResetModeId,
                 ),
                 onIllRepair: () {},
                 onCallPro: () {},
@@ -353,13 +392,9 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-
-        expect(find.text("I'll repair"), findsNothing);
-        expect(find.textContaining('DIY ~'), findsNothing);
-        expect(find.textContaining('Pro ~'), findsOneWidget);
-        expect(find.byKey(const Key('parts-cost-call-pro')), findsOneWidget);
-        expect(find.text('Call a pro'), findsOneWidget);
-        expect(find.byKey(const Key('parts-cost-ill-repair')), findsNothing);
+        expect(find.textContaining('DIY ~'), findsWidgets);
+        expect(find.byKey(const Key('parts-cost-ill-repair')), findsOneWidget);
+        expect(find.text("I'll repair"), findsOneWidget);
       },
     );
   });

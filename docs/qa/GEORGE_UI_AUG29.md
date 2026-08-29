@@ -286,6 +286,6 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+8**. First-run
 
 #### P. I'll repair fail-closed
 
-- **Given** a gated professional Primary (start-capacitor or gas-no-ignition).
-- **Expect** **I'll repair** / **DIY ~** are not shown even if Parts & cost would otherwise quote a part. **Call a pro** stays GOLDEN_LABELS. Pro ~ only.
+- **Given** a gated professional Primary (start-capacitor or gas-no-ignition), including when `closePathForFailureMode` is null (`isGatedProfessionalFailureMode` still true).
+- **Expect** **I'll repair** / **DIY ~** are not shown even if Parts & cost would otherwise quote a part. **Call a pro** stays GOLDEN_LABELS. Pro ~ only. Resettable thermal cutoff stays DIY.
 

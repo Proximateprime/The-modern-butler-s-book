@@ -137,7 +137,8 @@ const String partsCostProOnlyNote =
 ///
 /// The card then hides the DIY estimate and the "I'll repair" action so a
 /// beginner is never quoted a self-repair price for work we will not walk
-/// them through.
+/// them through. Gated professional ids stay out of scope even when
+/// [closePathForFailureMode] is null. Resettable thermal cutoff stays DIY.
 bool partsCostDiyOutOfScope(String? failureModeId) {
   final id = failureModeId?.trim() ?? '';
   if (id.isEmpty) {
