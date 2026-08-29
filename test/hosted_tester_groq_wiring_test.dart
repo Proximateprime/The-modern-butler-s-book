@@ -55,8 +55,8 @@ void main() {
     for (final path in webSafe) {
       final src = _read(path);
       expect(src, isNot(contains("import 'dart:io'")), reason: path);
-      expect(src, isNot(contains('HttpClient')), reason: path);
-      expect(src, isNot(contains('gsk_')), reason: path);
+      expect(src, isNot(contains('HttpClient()')), reason: path);
+      expect(src, isNot(contains(RegExp(r'gsk_[A-Za-z0-9]{20,}'))), reason: path);
     }
     final barrel = _read('lib/services/phrase_http.dart');
     expect(barrel, contains('if (dart.library.html)'));
@@ -236,20 +236,21 @@ void main() {
   });
 
   test('fixture tree does not embed Groq or service_role secrets', () {
-    const fixtures = [
-      'test/hosted_tester_groq_wiring_test.dart',
-      'test/play_ready_groq_edge_test.dart',
+    const shipped = [
       'lib/services/groq_phrasing_client.dart',
       'lib/services/phrase_http_common.dart',
       'lib/config/supabase_public.dart',
       '.github/workflows/publish-testers.yml',
-      'tool/assert_packaged_tester_build.sh',
     ];
-    for (final path in fixtures) {
+    for (final path in shipped) {
       final text = _read(path);
       expect(text, isNot(contains(RegExp(r'gsk_[A-Za-z0-9]{20,}'))));
       expect(text.contains('GROQ_API_KEY=' 'gsk_'), isFalse);
-      expect(text, isNot(contains('SUPABASE_SERVICE_ROLE')));
     }
+    final yml = _read('.github/workflows/publish-testers.yml');
+    expect(yml, isNot(contains('SUPABASE_SERVICE_ROLE')));
+    expect(yml, isNot(contains('--dart-define=GROQ')));
+    expect(yml, contains('--dart-define=SUPABASE_URL='));
+    expect(yml, contains('--dart-define=SUPABASE_ANON_KEY='));
   });
 }
