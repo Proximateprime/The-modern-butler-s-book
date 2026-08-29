@@ -1,10 +1,21 @@
-# Rebuild hosted tester artifacts. No Groq key, no .env, no dart-define secrets.
-# Missing GROQ_API_KEY is required: testers see packaged copy.
+# Rebuild hosted tester artifacts as packaged copy only.
+# Do not dart-define a phrasing key. Play Store is out.
 name: Publish tester web and APK
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-testers.yml"
+      - "tool/assert_packaged_tester_build.sh"
+      - "tool/sync_pages_web.sh"
+      - "pubspec.yaml"
+      - "lib/**"
+      - "android/**"
+      - "assets/**"
+      - "web/**"
   workflow_dispatch:
 
 permissions:
@@ -12,8 +23,9 @@ permissions:
   pages: write
   id-token: write
 
+# PRs validate in parallel. All main publishes (push + dispatch) share one group.
 concurrency:
-  group: publish-testers
+  group: ${{ github.event_name == 'pull_request' && format('publish-testers-pr-{0}', github.event.pull_request.number) || 'publish-testers' }}
   cancel-in-progress: true
 
 jobs:
@@ -22,6 +34,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Packaged-copy gate (no live phrasing key)
+        run: bash tool/assert_packaged_tester_build.sh
 
       - name: Java (APK)
         uses: actions/setup-java@v4
@@ -38,18 +53,16 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
-      - name: Build Flutter web (no dart-define Groq key)
+      - name: Build Flutter web (no dart-define)
         run: |
           set -euo pipefail
+          bash tool/assert_packaged_tester_build.sh
           flutter build web --release --base-href "/The-modern-butler-s-book/"
           touch build/web/.nojekyll
-          if find build/web -type f \( -name '*.js' -o -name '*.json' -o -name '*.html' \) \
-              -print0 | xargs -0 grep -E -n 'GROQ_API_KEY=|gsk_[A-Za-z0-9]{20,}'; then
-            echo "Refusing to publish: Groq-like secret in web build" >&2
-            exit 1
-          fi
+          bash tool/assert_packaged_tester_build.sh --scan-web
 
       - name: Deploy gh-pages (Flutter web, Jekyll off)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -59,7 +72,8 @@ jobs:
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
 
-      - name: Prefer gh-pages or Actions as Pages source
+      - name: Prefer gh-pages as Pages source
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,25 +85,30 @@ jobs:
           EOF
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         continue-on-error: true
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
       - name: Deploy Pages (when source is GitHub Actions)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         continue-on-error: true
         uses: actions/deploy-pages@v4
 
       - name: Sync Flutter web onto main for legacy Pages (main /)
-        if: github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash tool/sync_pages_web.sh --commit
 
-      - name: Build sideload APK (debug signing, no dart-define Groq key)
-        run: flutter build apk --release
+      - name: Build sideload APK (debug signing, no dart-define)
+        run: |
+          set -euo pipefail
+          bash tool/assert_packaged_tester_build.sh
+          flutter build apk --release
 
-      - name: Attach APK to version-tag release
+      - name: Scan APK then attach to version-tag release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -98,12 +117,13 @@ jobs:
           TAG="v${VERSION}"
           ASSET="modern-butlers-book-${VERSION}.apk"
           cp build/app/outputs/flutter-apk/app-release.apk "$ASSET"
-          if strings "$ASSET" | grep -E 'GROQ_API_KEY=|gsk_[A-Za-z0-9]{20,}'; then
-            echo "Refusing to upload: Groq-like secret in APK" >&2
-            exit 1
+          bash tool/assert_packaged_tester_build.sh --scan-apk "$ASSET"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "PR build: APK scanned, not attached to the release."
+            exit 0
           fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --title "$TAG" \
-              --notes "Tester sideload APK ${VERSION}. Debug-signed. Not Play Store. No Groq key."
+              --notes "Tester sideload APK ${VERSION}. Debug-signed. Not Play Store. Packaged copy only."
           fi
           gh release upload "$TAG" "$ASSET" --clobber
