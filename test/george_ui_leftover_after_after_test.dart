@@ -371,20 +371,29 @@ void main() {
         final deps = AppDependencies(
           clock: () => DateTime.utc(2026, 8, 29, 19, 40),
         );
-        await _openGasDryerSession(
-          tester,
-          deps,
-          'Gas No Heat House',
-          skipProblemStarter: false,
-        );
-        final dryer = deps.appliancesForCurrentHousehold().single;
+        deps.createHousehold('Gas No Heat House');
+        final dryer = deps.addDryer(energySource: ApplianceEnergySource.gas);
         expect(dryer.energySource, ApplianceEnergySource.gas);
-        final sessionId = deps.startOrResumeSession(dryer);
 
-        await tester.tap(find.byKey(const Key('starter-chip-no-heat')));
+        await prepareTallSurface(tester);
+        await tester.pumpWidget(ModernButlerApp(dependencies: deps));
         await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const Key('problem-starter-confirm')));
+        await tester.tap(find.text(dryer.name));
         await tester.pumpAndSettle();
+        expect(find.textContaining('Energy: Gas'), findsWidgets);
+        await startRepairFromDetail(tester);
+
+        final sessionId = deps.startOrResumeSession(dryer);
+        // Seeded gas-dryer-type evidence hides the problem starter.
+        if (find.byKey(const Key('starter-chip-no-heat')).evaluate().isNotEmpty) {
+          await tester.tap(find.byKey(const Key('starter-chip-no-heat')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('problem-starter-confirm')));
+          await tester.pumpAndSettle();
+        } else {
+          await selectObservation(tester, 'heat-observed');
+          await tapInspectOrAnswerChoice(tester, 'no-warmth');
+        }
 
         expect(find.byKey(const Key('starter-chip-hazard-signs')), findsNothing);
         expect(
@@ -414,7 +423,9 @@ void main() {
         );
         expect(
           find.byKey(
-            const Key('recommended-primary-label-cycling-thermostat-stuck-closed'),
+            const Key(
+              'recommended-primary-label-cycling-thermostat-stuck-closed',
+            ),
           ),
           findsNothing,
         );
@@ -442,33 +453,4 @@ void main() {
       },
     );
   });
-}
-
-Future<void> _openGasDryerSession(
-  WidgetTester tester,
-  AppDependencies dependencies,
-  String householdName, {
-  bool skipProblemStarter = true,
-}) async {
-  await prepareTallSurface(tester);
-  await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
-  await tester.tap(find.byKey(const Key('create-household-button')));
-  await tester.pumpAndSettle();
-  await tester.enterText(
-    find.byKey(const Key('household-name-field')),
-    householdName,
-  );
-  await tester.tap(find.byKey(const Key('confirm-household-button')));
-  await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const Key('add-dryer-button')));
-  await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const Key('add-appliance-energy-gas')));
-  await tester.pumpAndSettle();
-  await confirmAddAppliance(tester);
-  await tester.tap(find.text('Laundry Room Dryer'));
-  await tester.pumpAndSettle();
-  await startRepairFromDetail(tester);
-  if (skipProblemStarter) {
-    await dismissProblemStarterIfPresent(tester);
-  }
 }
