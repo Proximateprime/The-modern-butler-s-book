@@ -23,7 +23,7 @@ Hosted testers (0.1.4+2; public Supabase URL + anon only — CI never dart-defin
 - Flutter web (phone browser; no rating-plate scan): https://proximateprime.github.io/The-modern-butler-s-book/
 - Sideload APK (full tester on a real phone): https://github.com/Proximateprime/The-modern-butler-s-book/releases/download/v0.1.4+2/modern-butlers-book-0.1.4+2.apk
 
-Play Store listing is out. This tree is **0.1.4+5** natural UI (first-run greeting, household home start, pro handoff chrome) — no App Bundle upload and no Console listing. Published tester APK/Pages stay **0.1.4+2** until a later publish.
+Play Store listing is out. This tree is **0.1.4+6** safety-handoff honesty (session-true already-tried; safety-stop why) — no App Bundle upload and no Console listing. Published tester APK/Pages stay **0.1.4+2** until a later publish.
 
 ## Groq phrasing (Play-ready)
 
@@ -48,7 +48,7 @@ See [`docs/qa/PLAY_READY_GROQ.md`](docs/qa/PLAY_READY_GROQ.md).
 ## Play signing later (not now)
 
 `applicationId` stays `com.example.modern_butlers_book`. `versionCode` follows
-`pubspec.yaml` (`0.1.4+5`).
+`pubspec.yaml` (`0.1.4+6`).
 
 When a store AAB is wanted later:
 

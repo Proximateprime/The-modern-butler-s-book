@@ -3314,7 +3314,13 @@ class _SessionScreenState extends State<SessionScreen>
                     ),
                   ),
                   subtitle: Text(
-                    'Evidence count: ${decisionContext.evidence.length}',
+                    safetyStop != null
+                        ? (clueCount == 0
+                            ? 'No clues yet'
+                            : clueCount == 1
+                            ? '1 clue'
+                            : '$clueCount clues')
+                        : 'Evidence count: ${decisionContext.evidence.length}',
                     key: const Key('context-evidence-count'),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),

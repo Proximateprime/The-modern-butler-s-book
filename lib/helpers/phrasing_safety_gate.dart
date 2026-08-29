@@ -87,6 +87,14 @@ GroqPhrasingAccepted? acceptGroqPhrasing({
     }
   }
 
+  if (request.slot == PhrasingSlot.proHandoff &&
+      _inventsUnrecordedTriedSteps(
+        packaged: request.packagedWhyOneLine,
+        groq: why,
+      )) {
+    return null;
+  }
+
   if (requireOfficialStop) {
     final shortened = why ?? title ?? '';
     if (!hasOfficialStopSubstrings(shortened)) {
@@ -255,6 +263,34 @@ bool _failsHouseholdHowToGate(String text) {
       text.trim().isNotEmpty &&
       !isSafetyLimitLanguage(text)) {
     return true;
+  }
+  return false;
+}
+
+/// Groq may rephrase recorded tried steps. It may not invent lint / vent
+/// checks that are not already in the packaged spoken paragraph.
+bool _inventsUnrecordedTriedSteps({
+  required String packaged,
+  required String? groq,
+}) {
+  if (groq == null || groq.isEmpty) {
+    return false;
+  }
+  final packagedLower = packaged.toLowerCase();
+  final groqLower = groq.toLowerCase();
+  const inventedTryClaims = [
+    'lint filter',
+    'lint screen',
+    'vent hood',
+    'exhaust restriction',
+    'visible vent hose',
+    'cleaned the lint',
+    'checked airflow',
+  ];
+  for (final claim in inventedTryClaims) {
+    if (groqLower.contains(claim) && !packagedLower.contains(claim)) {
+      return true;
+    }
   }
   return false;
 }

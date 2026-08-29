@@ -424,6 +424,21 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Safety handoff honesty — 0.1.4+6
+
+P0 honesty. Do not start PAGES_WEB_HIT. Do not reopen leftover PRs #1–#6.
+Play listing stays out. Groq stays phrasing-only and must not invent tried
+steps. No session-engine rewrite. No new chips, question ids, failure modes,
+or Knowledge Factory runtime authoring.
+
+App **0.1.4+6**. Tests: `test/safety_handoff_v1_test.dart`.
+
+- `alreadyTried` = completed inspect / guidance + those evidence rows. Empty → **None recorded.** Never the unused leader checklist.
+- Safety-stop `whyStopping` = hazard / Needs a professional, not the vent close-path why.
+- Leader hypothesis may still show, labeled unconfirmed, not framed as why we stopped.
+- Stop-screen `context-evidence-count` uses the clue count so it does not contradict **No clues yet**.
+- NATURAL_UI_V1 handoff AppBar chrome stays. GOLDEN **Call a pro** stays.
+
 ## Natural UI — first-run, home start, pro handoff — 0.1.4+5
 
 Presentation only. Leftover 1–13 / session scroll / Skip first-tap / quieter card stay done. Do not reopen those. John’s APP nits (800×656 not 360-wide, 8px Stop spacer, Qodo tall-banner overflow) stay parked. `GOLDEN_LABELS` **Call a pro** and inspect **Matches / OK** stay frozen. Groq stays talk-only. `UNMATCHED_PROBLEM_V1` stays HOLD. No session rebuild.

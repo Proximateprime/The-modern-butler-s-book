@@ -8,6 +8,21 @@ import '../models/appliance.dart';
 import '../models/session_outcome.dart';
 import 'app_dependencies.dart';
 
+List<String> _completedGuidanceStepIdsFor(
+  AppDependencies dependencies,
+  String sessionId,
+) {
+  final sessionIds = dependencies.repairSessionRepository
+          .getSession(sessionId)
+          ?.completedGuidanceStepIds ??
+      const <String>[];
+  if (sessionIds.isNotEmpty) {
+    return sessionIds;
+  }
+  return dependencies.uiResumeForSession(sessionId)?.completedGuidanceStepIds ??
+      const <String>[];
+}
+
 /// Share a closed repair as local plain text. No cloud.
 class RepairLogExportButton extends StatelessWidget {
   const RepairLogExportButton({
@@ -42,6 +57,10 @@ class RepairLogExportButton extends StatelessWidget {
             appliance: appliance,
             outcome: outcome,
             date: date,
+            completedGuidanceStepIds: _completedGuidanceStepIdsFor(
+              deps,
+              outcome.sessionId,
+            ),
           ),
           subject: 'Technician handoff',
         );

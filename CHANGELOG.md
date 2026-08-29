@@ -1,3 +1,17 @@
+## Safety handoff honesty (2026-08-29)
+
+App **0.1.4+6**. Burning-smell → stop → pro handoff no longer copies the
+ranking leader’s unused lint/vent checklist or the vent close-path why.
+`alreadyTried` is what the session recorded (completed inspect / guidance +
+those evidence rows). Empty prints **None recorded.** On a safety stop,
+`whyStopping` is the hazard / Needs a professional reason. The leader
+hypothesis may still appear as an unconfirmed guide match. Spoken/read-aloud
+uses the same lists; Groq may phrase and must not invent tried steps.
+Household chrome on the stop screen uses the clue count for
+`context-evidence-count` so it does not contradict **No clues yet**.
+AppBar chrome from NATURAL_UI_V1 stays. GOLDEN **Call a pro** stays.
+Play listing stays out. Details: [`docs/qa/PRO_HANDOFF_UX.md`](docs/qa/PRO_HANDOFF_UX.md).
+
 ## Natural UI — first-run, home start, pro handoff (2026-08-29)
 
 App **0.1.4+5**. First-run drops the “1 of 3” tour chrome and reads as a short

@@ -1,5 +1,17 @@
 # Pro handoff UX (dryer no-heat / no-warmth)
 
+## Safety handoff honesty — 0.1.4+6
+
+`alreadyTried` is what this session recorded (completed inspect / Safe
+Guidance + those evidence rows). If none, **None recorded.** Never copy the
+unused close-path checklist for the ranking leader. On a fire/smoke stop,
+`whyStopping` is the safety-stop reason (hazard / Needs a professional), not
+the vent path’s “simple exhaust restriction” why. The leader hypothesis may
+still show as a guide match and stays labeled unconfirmed — it is not why we
+stopped. Spoken/read-aloud uses the same lists. Groq may phrase; it may not
+invent tried steps. GOLDEN **Call a pro** and NATURAL_UI_V1 handoff chrome
+stay. Play listing stays out.
+
 Inspect stays **LOOK FOR + chips**. Camera, AR, and “show me where” stay off unless a step has authored inspect text **and** flashlight camera is explicitly offered. The camera never writes diagnostic evidence.
 
 When the package marks a path as pro-required (or DIY cannot finish), show **A full fix likely needs a pro** before numbered Safe Guidance. **Do safe checks** continues to easy checks first. **End session** records professional service.
