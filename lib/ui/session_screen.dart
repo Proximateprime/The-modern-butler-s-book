@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../helpers/blocking_reason.dart';
@@ -127,6 +128,8 @@ class _SessionScreenState extends State<SessionScreen>
   bool _voiceHazardConfirm = false;
   GroqPhrasingAccepted? _phrasing;
   String? _phrasingScreenKey;
+  final ValueNotifier<GroqPhrasingAccepted?> _phrasingNotifier =
+      ValueNotifier<GroqPhrasingAccepted?>(null);
   bool _showResumeKnew = false;
   String? _resumeKnewLine;
   String? _prefetchedNextTemplateId;
@@ -170,6 +173,7 @@ class _SessionScreenState extends State<SessionScreen>
     unawaited(widget.dependencies.flushPersist());
     _starterFreeTextController.dispose();
     _freeObservationController.dispose();
+    _phrasingNotifier.dispose();
     super.dispose();
   }
 
@@ -890,6 +894,7 @@ class _SessionScreenState extends State<SessionScreen>
     }
     _phrasingScreenKey = request.screenKey;
     _phrasing = GroqPhrasingAccepted.packaged(request);
+    _phrasingNotifier.value = _phrasing;
     if (!widget.dependencies.groqPhrasing.shouldCallNetwork) {
       return;
     }
@@ -906,6 +911,7 @@ class _SessionScreenState extends State<SessionScreen>
     setState(() {
       _phrasing = accepted;
     });
+    _phrasingNotifier.value = accepted;
   }
 
   void _prefetchAlreadyChosenNext({
@@ -1450,13 +1456,12 @@ class _SessionScreenState extends State<SessionScreen>
     }
 
     var answer = choice;
-    if (choice == 'Other / describe' || choice.startsWith('Other / describe')) {
+    if (isOtherDescribeEngineId(choice)) {
       final note = describeNote ?? await _askOptionalDescribeNote();
       if (!mounted || note == null) {
         return;
       }
-      final trimmed = note.trim();
-      answer = trimmed.isEmpty ? 'Other / describe' : 'Other / describe: $trimmed';
+      answer = recordedOtherDescribeAnswer(note);
       if (trimmed.isNotEmpty) {
         final liveSession =
             widget.dependencies.repairSessionRepository.getSession(
@@ -1786,7 +1791,9 @@ class _SessionScreenState extends State<SessionScreen>
   Future<String?> _askOptionalDescribeNote() {
     return showDialog<String>(
       context: context,
-      builder: (dialogContext) => const _OptionalDescribeNoteDialog(),
+      builder: (dialogContext) => _OptionalDescribeNoteDialog(
+        phrasing: _phrasingNotifier,
+      ),
     );
   }
 
@@ -2978,9 +2985,9 @@ class _SessionScreenState extends State<SessionScreen>
                               choice,
                               forPrompt: activeObservation,
                             ),
-                        onDescribe:
+                            onDescribe:
                             (note) => _selectAnswerChoice(
-                              'Other / describe',
+                              kOtherDescribeChoiceId,
                               forPrompt: activeObservation,
                               describeNote: note,
                             ),
@@ -7049,8 +7056,14 @@ class _PackageSummaryCard extends StatelessWidget {
 }
 
 /// Owns the optional describe field so its controller is disposed with the dialog.
+///
+/// Packaged title/hint paint first. The same question-card overlay may swap
+/// a nicer line. Typing does not call Groq. Recorded prefix stays
+/// [kOtherDescribeChoiceId].
 class _OptionalDescribeNoteDialog extends StatefulWidget {
-  const _OptionalDescribeNoteDialog();
+  const _OptionalDescribeNoteDialog({required this.phrasing});
+
+  final ValueListenable<GroqPhrasingAccepted?> phrasing;
 
   @override
   State<_OptionalDescribeNoteDialog> createState() =>
@@ -7068,31 +7081,45 @@ class _OptionalDescribeNoteDialogState extends State<_OptionalDescribeNoteDialog
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('What do you notice?'),
-      content: TextField(
-        key: const Key('answer-other-note-field'),
-        controller: _controller,
-        autofocus: true,
-        minLines: 2,
-        maxLines: 4,
-        decoration: const InputDecoration(
-          labelText: 'Describe what you see or hear',
-          hintText: 'e.g. no heat, won’t start, loud squeal',
-          border: OutlineInputBorder(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          key: const Key('answer-other-confirm'),
-          onPressed: () => Navigator.of(context).pop(_controller.text),
-          child: const Text('Save'),
-        ),
-      ],
+    return ValueListenableBuilder<GroqPhrasingAccepted?>(
+      valueListenable: widget.phrasing,
+      builder: (context, overlay, _) {
+        final title = overlay?.describeTitle.trim().isNotEmpty == true
+            ? overlay!.describeTitle.trim()
+            : kPackagedDescribeDialogTitle;
+        final hint = overlay?.describeHint.trim().isNotEmpty == true
+            ? overlay!.describeHint.trim()
+            : kPackagedDescribeDialogHint;
+        return AlertDialog(
+          title: Text(
+            title,
+            key: const Key('answer-other-note-title'),
+          ),
+          content: TextField(
+            key: const Key('answer-other-note-field'),
+            controller: _controller,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 4,
+            decoration: InputDecoration(
+              labelText: kPackagedDescribeDialogLabel,
+              hintText: hint,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              key: const Key('answer-other-confirm'),
+              onPressed: () => Navigator.of(context).pop(_controller.text),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

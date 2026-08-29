@@ -9,7 +9,8 @@ import 'session_timeline.dart';
 
 /// Display strings only. Never ranking, safety decisions, or eligibility.
 ///
-/// Testers default ON with hard gates. One Groq call per screen change.
+/// Testers default ON with hard gates. One Groq call per screen change —
+/// not a call per letter, and not when the Other / describe type-in opens.
 /// Prefetch is the already-chosen next template id only.
 ///
 /// The Edge Function is not an escape hatch. Every network JSON still

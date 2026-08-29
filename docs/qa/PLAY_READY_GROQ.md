@@ -1,12 +1,15 @@
 # Play-ready Groq via Supabase Edge Function (not a Store listing)
 
-App **0.1.4+2**. Play Console listing and store upload stay **OUT**. This pack
+App **0.1.4+3**. Play Console listing and store upload stay **OUT**. This pack
 does not reopen leftover 1–12 / +5…+9. `GOLDEN_LABELS` **Call a pro** stays
 frozen. Voice-as-required stays locked.
 
 Groq still changes how we talk, not what we conclude. Same seven ON hooks,
 JSON-only `title` / `why_one_line` / `option_labels_only`, same ids, one call
-per screen, prefetch already-chosen next template id only.
+per screen, prefetch already-chosen next template id only. Optional
+`describe_title` / `describe_hint` may ride the same question-card payload
+for the Other / describe type-in. Extra keys ignored if missing. Extra chip
+ids still rejected. Typed notes stay on the `Other / describe` prefix.
 
 ## Hard gates (Auditor John)
 

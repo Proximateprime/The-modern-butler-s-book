@@ -3,13 +3,17 @@ import '../models/knowledge_package.dart';
 import 'dryer_problem_starter.dart';
 import 'easy_check_already_checked.dart';
 
+/// Engine id for the optional type-in chip. Display labels may change; this
+/// recorded prefix never does.
+const String kOtherDescribeChoiceId = 'Other / describe';
+
 /// Fallback answer choices when a template does not define [answerChoices].
 const List<String> observationAnswerChoices = [
   'Yes',
   'No',
   'Sometimes',
   'Not sure',
-  'Other / describe',
+  kOtherDescribeChoiceId,
 ];
 
 /// Templates that intentionally use generic Yes/No/Sometimes chips.
@@ -45,7 +49,7 @@ List<String> answerChoicesFor(EvidenceTemplate template) {
     } else if (genericBooleanObservationTemplateIds.contains(template.id)) {
       base = observationAnswerChoices;
     } else {
-      base = const ['Not sure', 'Other / describe'];
+      base = const ['Not sure', kOtherDescribeChoiceId];
     }
   }
   return withAlreadyCheckedEasyCheckChoice(
@@ -74,8 +78,8 @@ List<String> answerChoicesFromTemplateEffects(EvidenceTemplate template) {
   if (!seen.contains('Not sure')) {
     ordered.add('Not sure');
   }
-  if (!seen.contains('Other / describe')) {
-    ordered.add('Other / describe');
+  if (!seen.contains(kOtherDescribeChoiceId)) {
+    ordered.add(kOtherDescribeChoiceId);
   }
   return ordered;
 }
@@ -451,6 +455,23 @@ const String clothesFeelDryUnusuallyHotAnswer = 'Dry but unusually hot';
 bool isClothesFeelExcessHeatAnswer(String? answer) {
   return answer == 'Warm or hot but still damp' ||
       answer == clothesFeelDryUnusuallyHotAnswer;
+}
+
+/// True when [choice] is the engine Other chip or a recorded
+/// `Other / describe: {note}` answer. Groq display strings do not match.
+bool isOtherDescribeEngineId(String choice) {
+  final trimmed = choice.trim();
+  return trimmed == kOtherDescribeChoiceId ||
+      trimmed.startsWith(kOtherDescribeChoiceId);
+}
+
+/// Recorded answer for the Other chip. Typed text is the note only —
+/// Groq must not remap it onto a different chip id.
+String recordedOtherDescribeAnswer(String? note) {
+  final trimmed = note?.trim() ?? '';
+  return trimmed.isEmpty
+      ? kOtherDescribeChoiceId
+      : '$kOtherDescribeChoiceId: $trimmed';
 }
 
 /// Base answer choice used for package effect lookup.

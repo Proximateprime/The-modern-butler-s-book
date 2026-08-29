@@ -35,6 +35,12 @@ const String kSpeakHumanNextLabel = 'Next step';
 const String kResumeKnewLead = 'Last time we knew…';
 const String kProHandoffSpokenHeading = 'Read this to a technician';
 
+/// Packaged Other / describe type-in. Groq may swap display only.
+const String kPackagedDescribeDialogTitle = 'What do you notice?';
+const String kPackagedDescribeDialogHint =
+    'e.g. no heat, won’t start, loud squeal';
+const String kPackagedDescribeDialogLabel = 'Describe what you see or hear';
+
 /// GOLDEN chrome — Groq must not paraphrase these labels or buttons.
 const List<String> kGoldenChromeFrozenLabels = [
   "I'll repair",
@@ -82,6 +88,8 @@ class PhrasingRequest {
     required this.packagedTitle,
     required this.packagedWhyOneLine,
     this.packagedOptionLabels = const {},
+    this.packagedDescribeTitle = kPackagedDescribeDialogTitle,
+    this.packagedDescribeHint = kPackagedDescribeDialogHint,
     this.allowResolvedWhenConfirmed,
     this.offersFixed = false,
     this.safetyCritical = false,
@@ -282,6 +290,8 @@ class PhrasingRequest {
   final String packagedTitle;
   final String packagedWhyOneLine;
   final Map<String, String> packagedOptionLabels;
+  final String packagedDescribeTitle;
+  final String packagedDescribeHint;
   final bool? allowResolvedWhenConfirmed;
   final bool offersFixed;
   final bool safetyCritical;
@@ -322,6 +332,8 @@ class PhrasingRequest {
     String? packagedTitle,
     String? packagedWhyOneLine,
     Map<String, String>? packagedOptionLabels,
+    String? packagedDescribeTitle,
+    String? packagedDescribeHint,
     bool? allowResolvedWhenConfirmed,
     bool? offersFixed,
     bool? safetyCritical,
@@ -342,6 +354,9 @@ class PhrasingRequest {
       packagedTitle: packagedTitle ?? this.packagedTitle,
       packagedWhyOneLine: packagedWhyOneLine ?? this.packagedWhyOneLine,
       packagedOptionLabels: packagedOptionLabels ?? this.packagedOptionLabels,
+      packagedDescribeTitle:
+          packagedDescribeTitle ?? this.packagedDescribeTitle,
+      packagedDescribeHint: packagedDescribeHint ?? this.packagedDescribeHint,
       allowResolvedWhenConfirmed:
           allowResolvedWhenConfirmed ?? this.allowResolvedWhenConfirmed,
       offersFixed: offersFixed ?? this.offersFixed,
@@ -355,16 +370,23 @@ class PhrasingRequest {
 typedef GroqPhrasingRequest = PhrasingRequest;
 
 /// JSON-only Groq payload. Extra keys ignored; extra option ids reject.
+///
+/// Optional [describeTitle] / [describeHint] may ride the same question-card
+/// payload as extra display strings for the Other / describe type-in.
 class GroqPhrasingJson {
   const GroqPhrasingJson({
     this.title,
     this.whyOneLine,
     this.optionLabelsOnly = const {},
+    this.describeTitle,
+    this.describeHint,
   });
 
   final String? title;
   final String? whyOneLine;
   final Map<String, String> optionLabelsOnly;
+  final String? describeTitle;
+  final String? describeHint;
 }
 
 /// Accepted display overlay. Always starts as packaged.
@@ -374,6 +396,8 @@ class GroqPhrasingAccepted {
     required this.title,
     required this.whyOneLine,
     required this.optionLabels,
+    required this.describeTitle,
+    required this.describeHint,
     required this.fromGroq,
   });
 
@@ -381,6 +405,8 @@ class GroqPhrasingAccepted {
   final String title;
   final String whyOneLine;
   final Map<String, String> optionLabels;
+  final String describeTitle;
+  final String describeHint;
   final bool fromGroq;
 
   factory GroqPhrasingAccepted.packaged(PhrasingRequest request) {
@@ -389,6 +415,8 @@ class GroqPhrasingAccepted {
       title: request.packagedTitle,
       whyOneLine: request.packagedWhyOneLine,
       optionLabels: Map<String, String>.from(request.packagedOptionLabels),
+      describeTitle: request.packagedDescribeTitle,
+      describeHint: request.packagedDescribeHint,
       fromGroq: false,
     );
   }
@@ -463,6 +491,8 @@ GroqPhrasingJson? parseGroqPhrasingJson(String? raw) {
   }
   final title = decoded['title']?.toString().trim();
   final why = decoded['why_one_line']?.toString().trim();
+  final describeTitle = decoded['describe_title']?.toString().trim();
+  final describeHint = decoded['describe_hint']?.toString().trim();
   final rawOptions = decoded['option_labels_only'];
   final options = <String, String>{};
   if (rawOptions is Map) {
@@ -483,13 +513,21 @@ GroqPhrasingJson? parseGroqPhrasingJson(String? raw) {
     title: title == null || title.isEmpty ? null : title,
     whyOneLine: why == null || why.isEmpty ? null : why,
     optionLabelsOnly: options,
+    describeTitle:
+        describeTitle == null || describeTitle.isEmpty ? null : describeTitle,
+    describeHint:
+        describeHint == null || describeHint.isEmpty ? null : describeHint,
   );
 }
 
 String groqPhrasingSystemPrompt() {
   return 'You rephrase household repair copy. The engine already decided. '
       'Return JSON only with keys title, why_one_line, option_labels_only. '
+      'Optional describe_title and describe_hint may ride that same payload '
+      'as extra display strings for the Other / describe type-in. '
       'Use the same option ids — never invent a fourth option or new chip id. '
+      'Keep the Other / describe option id. Do not map typed notes onto '
+      'another chip. Do not pick the next question. '
       'Do not write how-to. Do not mention gas_train, live_voltage, or sealed. '
       'No confidence numbers. No streaming novels. '
       'Do not paraphrase frozen chrome: I\'ll repair, Call a pro, Most likely, '

@@ -230,6 +230,7 @@ void main() {
       'test/play_ready_groq_edge_test.dart',
       'test/george_ui_groq_phrasing_test.dart',
       'test/hosted_tester_groq_wiring_test.dart',
+      'test/other_describe_groq_phrasing_test.dart',
       'supabase/functions/phrase/index.ts',
     ];
     for (final path in fixtures) {
