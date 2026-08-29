@@ -445,7 +445,7 @@ void main() {
       await tester.tap(find.byKey(const Key('first-run-skip-button')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('create-household-button')), findsOneWidget);
-      expect(find.byKey(const Key('empty-home-appliances')), findsOneWidget);
+      expect(find.byKey(const Key('empty-home-appliances')), findsNothing);
     });
   });
 }

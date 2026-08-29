@@ -153,8 +153,11 @@ void main() {
     expect(find.byKey(const Key('empty-home-create-household')), findsNothing);
     expect(find.byKey(const Key('empty-home-load-sample')), findsNothing);
     expect(find.byKey(const Key('load-sample-home-button')), findsOneWidget);
+    expect(find.byKey(const Key('empty-home-appliances')), findsNothing);
     expect(find.text(UserFacingCopy.createHouseholdAction), findsOneWidget);
+    expect(find.text('Load sample home'), findsOneWidget);
     expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsOneWidget);
+    expect(find.text(UserFacingCopy.noDryersYet), findsNothing);
     expect(find.text('Create Household'), findsNothing);
     expect(find.text(UserFacingCopy.noRepairsYet), findsOneWidget);
     expect(find.byKey(const Key('add-dryer-button')), findsNothing);
@@ -169,6 +172,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('add-dryer-button')), findsOneWidget);
+    expect(find.byKey(const Key('empty-home-appliances')), findsOneWidget);
     expect(find.text(UserFacingCopy.noDryersYet), findsOneWidget);
     expect(find.text(UserFacingCopy.emptyHomeNoDryer), findsOneWidget);
     expect(find.text(UserFacingCopy.noRepairsYet), findsOneWidget);

@@ -108,7 +108,7 @@ abstract final class UserFacingCopy {
       'No barcode or QR mapped to a model. You can enter the details by hand.';
   static const privacyLocalFirst =
       'Local-first: household data stays on this device. Guides install from '
-      'copies stored here. Nothing is uploaded to a cloud account.';
+      'copies stored here.';
   static const privacyWhatIsStored =
       'Stored here: household profiles, appliances, repair sessions and '
       'outcomes, photos you attach, tools you list, reminders, and appearance. '

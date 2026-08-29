@@ -4,10 +4,12 @@ App **0.1.4+5**. First-run drops the “1 of 3” tour chrome and reads as a sho
 butler greeting in the book theme type (no bare Georgia family). The three
 UserFacingCopy beats stay. Skip keeps the 48px first-tap target. Home
 empty/start copy is household voice (**Name this home**, not Create Household),
-with one create control and one Load sample — not a second pair in Appliances.
+with one helper, one create control, and one Load sample. Appliances waits
+until the house is named.
 Pro handoff uses ButlerPageBody / PaperCard / PrimaryCta like Home and Session.
 Privacy slide is local-first household copy (no Groq / backend vendor names;
-phrasing disclosure stays in Settings).
+phrasing disclosure stays in Settings). Settings local-first line no longer
+claims nothing is uploaded.
 Source Pages chrome (`web/index.html`, `web/manifest.json`) uses a household-book
 description and paper `#F3EDE3`. Groq still phrases the spoken paragraph only.
 Session scroll / Skip / quieter card from **0.1.4+4** stay. Play listing stays out.

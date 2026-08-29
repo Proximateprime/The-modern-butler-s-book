@@ -496,9 +496,9 @@ class _HomeScreenState extends State<HomeScreen> {
             )
           else
             const SizedBox.shrink(),
-          const SizedBox(height: 32),
-          const BookSectionLabel('Appliances'),
           if (household != null) ...[
+            const SizedBox(height: 32),
+            const BookSectionLabel('Appliances'),
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerLeft,
@@ -514,18 +514,16 @@ class _HomeScreenState extends State<HomeScreen> {
               UserFacingCopy.exportInventoryPrivacy,
               style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
-          ],
-          const SizedBox(height: 12),
-          if (appliances.isEmpty)
-            PaperCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  EmptyHint(
-                    key: const Key('empty-home-appliances'),
-                    message: UserFacingCopy.noDryersYet,
-                  ),
-                  if (household != null) ...[
+            const SizedBox(height: 12),
+            if (appliances.isEmpty)
+              PaperCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    EmptyHint(
+                      key: const Key('empty-home-appliances'),
+                      message: UserFacingCopy.noDryersYet,
+                    ),
                     const SizedBox(height: 12),
                     FilledButton(
                       key: const Key('add-dryer-button'),
@@ -551,22 +549,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: const Text('Add Dishwasher'),
                     ),
                   ],
-                ],
-              ),
-            )
-          else
-            for (var i = 0; i < appliances.length; i++) ...[
-              if (i > 0) const SizedBox(height: 12),
-              _ApplianceCard(
-                appliance: appliances[i],
-                inProgress: widget.dependencies.hasInProgressSession(
-                  appliances[i],
                 ),
-                onOpen: () => _openAppliance(appliances[i]),
-                onContinue: () => _continueRepair(appliances[i]),
-                onArchive: () => _archiveAppliance(appliances[i]),
-              ),
-            ],
+              )
+            else
+              for (var i = 0; i < appliances.length; i++) ...[
+                if (i > 0) const SizedBox(height: 12),
+                _ApplianceCard(
+                  appliance: appliances[i],
+                  inProgress: widget.dependencies.hasInProgressSession(
+                    appliances[i],
+                  ),
+                  onOpen: () => _openAppliance(appliances[i]),
+                  onContinue: () => _continueRepair(appliances[i]),
+                  onArchive: () => _archiveAppliance(appliances[i]),
+                ),
+              ],
+          ],
           if (impact.repairsLogged > 0) ...[
             const SizedBox(height: 32),
             HouseholdImpactCard(impact: impact),

@@ -37,6 +37,11 @@ void main() {
     );
     expect(UserFacingCopy.privacyPhrasingBackend, contains('Groq'));
     expect(UserFacingCopy.privacyPhrasingBackend, contains('butler'));
+    expect(UserFacingCopy.privacyLocalFirst, contains('on this device'));
+    expect(
+      UserFacingCopy.privacyLocalFirst,
+      isNot(contains('Nothing is uploaded')),
+    );
   });
 
   test('Pages source chrome is a household book, not a developer demo', () {
@@ -131,10 +136,13 @@ void main() {
     expect(find.byKey(const Key('empty-home-create-household')), findsNothing);
     expect(find.byKey(const Key('empty-home-load-sample')), findsNothing);
     expect(find.byKey(const Key('load-sample-home-button')), findsOneWidget);
-    expect(find.byKey(const Key('empty-home-appliances')), findsOneWidget);
+    expect(find.byKey(const Key('empty-home-appliances')), findsNothing);
+    expect(find.byKey(const Key('export-inventory-button')), findsNothing);
     expect(find.byKey(const Key('household-name')), findsOneWidget);
     expect(find.text(UserFacingCopy.createHouseholdAction), findsOneWidget);
+    expect(find.text('Load sample home'), findsOneWidget);
     expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsOneWidget);
+    expect(find.text(UserFacingCopy.noDryersYet), findsNothing);
     expect(find.text('Create Household'), findsNothing);
     expect(find.text('Choose an appliance to start or continue a repair.'), findsNothing);
 
@@ -149,6 +157,7 @@ void main() {
 
     expect(find.text(UserFacingCopy.emptyHomeNoDryer), findsOneWidget);
     expect(find.text(UserFacingCopy.noDryersYet), findsOneWidget);
+    expect(find.byKey(const Key('empty-home-appliances')), findsOneWidget);
     expect(find.text('Choose an appliance to start or continue a repair.'), findsNothing);
 
     await tester.tap(find.byKey(const Key('add-dryer-button')));
