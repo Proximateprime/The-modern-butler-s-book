@@ -48,10 +48,17 @@ abstract final class UserFacingCopy {
       'This repair isn’t on this device anymore.';
   static const sessionAlreadyFinished = 'This repair is already finished.';
   static const reminderNeedsTitle = 'Add a short title for this reminder.';
-  static const noDryersYet = 'No appliances yet.';
+  static const noDryersYet = 'No appliances in this house yet.';
   static const emptyHomeNoHousehold =
-      'Add a household to get started, then add an appliance.';
-  static const emptyHomeNoDryer = 'Add an appliance to start a repair.';
+      'This book is empty until you name the house it belongs to.';
+  static const emptyHomeNoDryer =
+      'Nothing is listed yet. Add what you have in the house.';
+  static const emptyHomeHasAppliances =
+      'Open an appliance when something needs looking at.';
+  static const createHouseholdAction = 'Name this home';
+  static const firstRunGreeting =
+      'Welcome. A few words before we open the book.';
+  static const firstRunContinue = 'Continue';
   static const firstRunDoesTitle = 'What Butler does';
   static const firstRunDoesBody =
       'You notice. The book asks simple questions.\n\n'
@@ -70,6 +77,7 @@ abstract final class UserFacingCopy {
       'Nothing is uploaded to a cloud account.\n\n'
       'Some on-screen wording may be sent to Groq through the butler backend '
       'so the app can talk more clearly. Diagnosis stays on this device.';
+  static const proHandoffLead = 'Hand this page to the technician.';
   static const safetyDisclaimerTitle = 'Safety disclaimer';
   static const safetyDisclaimerBody =
       'This book is not a substitute for a licensed professional.\n\n'

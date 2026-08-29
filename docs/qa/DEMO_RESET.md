@@ -6,7 +6,7 @@ Exact click path so phone regression starts from a known-good **Sample home**. L
 flutter run -d chrome
 ```
 
-First-launch onboarding: **Skip**, or **Next** through three short screens → **Get started**. Safety disclaimer: **I understand**. Click path: [`FIRST_RUN.md`](FIRST_RUN.md).
+First-launch onboarding: **Skip**, or **Continue** through three short pages → **Get started**. Safety disclaimer: **I understand**. Click path: [`FIRST_RUN.md`](FIRST_RUN.md).
 
 ---
 

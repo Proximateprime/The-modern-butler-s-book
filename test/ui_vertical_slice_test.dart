@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/main.dart';
 import 'package:modern_butlers_book/services/knowledge_package_repository.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
@@ -16,7 +17,7 @@ void main() {
     await prepareTallSurface(tester);
     await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
 
-    expect(find.text('Create Household'), findsNWidgets(2));
+    expect(find.text(UserFacingCopy.createHouseholdAction), findsNWidgets(2));
     await tester.tap(find.byKey(const Key('create-household-button')));
     await tester.pumpAndSettle();
 

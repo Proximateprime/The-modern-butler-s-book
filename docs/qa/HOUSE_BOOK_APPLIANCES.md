@@ -31,7 +31,7 @@ OCR/barcode scan is phone-only, on-device (ML Kit). Failures show a calm snackba
 
 Use a **new** household (not sample home), so the list is yours.
 
-1. Home → **Create Household** (if needed) → name it → confirm.
+1. Home → **Name this home** (if needed) → name it → **Save**.
 2. **Add Dryer** (empty home: filled button; if you already have appliances: outline chip at the top).
 3. **Add dryer** form. Type brand **Whirlpool**, model **WED5000DW**, serial **DRY-SERIAL-1**. Location can stay **Laundry Room**. **Save appliance**.
 4. Home lists **Laundry Room Dryer** with **Model WED5000DW**.

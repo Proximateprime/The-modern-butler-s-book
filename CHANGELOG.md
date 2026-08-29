@@ -1,3 +1,14 @@
+## Natural UI — first-run, home start, pro handoff (2026-08-29)
+
+App **0.1.4+5**. First-run drops the “1 of 3” tour chrome and reads as a short
+butler greeting. The three UserFacingCopy beats stay. Skip keeps the 48px
+first-tap target. Home empty/start copy is household voice (**Name this home**,
+not Create Household). Pro handoff uses ButlerPageBody / PaperCard / PrimaryCta
+like Home and Session. Groq still phrases the spoken paragraph only. Session
+scroll / Skip / quieter card from **0.1.4+4** stay. Play listing stays out.
+Details: [`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md),
+[`docs/qa/FIRST_RUN.md`](docs/qa/FIRST_RUN.md).
+
 ## Session scroll, Skip, and quieter question card (2026-08-29)
 
 App **0.1.4+4**. Short hosted viewport (~656px) can reach Current question,

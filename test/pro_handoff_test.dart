@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:modern_butlers_book/helpers/pro_handoff.dart';
 import 'package:modern_butlers_book/helpers/repair_log_share.dart';
 import 'package:modern_butlers_book/helpers/session_timeline.dart';
+import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
 
 import 'support/session_test_helpers.dart';
@@ -117,6 +118,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('pro-handoff-screen')), findsOneWidget);
+      expect(find.text(UserFacingCopy.proHandoffLead), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.text('Technician handoff'),
+        ),
+        findsNothing,
+      );
       final preview = tester.widget<SelectableText>(
         find.byKey(const Key('pro-handoff-preview')),
       );

@@ -9,6 +9,7 @@ import '../helpers/user_facing_error.dart';
 import '../models/appliance.dart';
 import '../models/session_outcome.dart';
 import 'app_dependencies.dart';
+import 'brand_mark.dart';
 import 'primary_cta.dart';
 import 'product_chrome.dart';
 
@@ -83,7 +84,13 @@ class ProHandoffScreen extends StatelessWidget {
     return Scaffold(
       key: const Key('pro-handoff-screen'),
       appBar: AppBar(
-        title: const Text('Technician handoff'),
+        title: const Row(
+          children: [
+            BrandMark(size: 28),
+            SizedBox(width: 10),
+            Flexible(child: Wordmark()),
+          ],
+        ),
       ),
       body: ListView(
         padding: EdgeInsets.zero,
@@ -92,8 +99,10 @@ class ProHandoffScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const BookSectionLabel('For the technician'),
+                const SizedBox(height: 8),
                 Text(
-                  'Share this with a technician',
+                  UserFacingCopy.proHandoffLead,
                   style: text.headlineSmall,
                 ),
                 const SizedBox(height: 6),
@@ -117,18 +126,21 @@ class ProHandoffScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                FilledButton.icon(
+                PrimaryCta(
                   key: const Key('pro-handoff-share'),
+                  label: 'Share',
+                  semanticLabel: 'Share',
+                  icon: Icons.ios_share_outlined,
                   onPressed: () => _share(context),
-                  icon: const Icon(Icons.ios_share_outlined),
-                  label: const Text('Share'),
                 ),
                 const SizedBox(height: 8),
-                OutlinedButton.icon(
+                PrimaryCta(
                   key: const Key('pro-handoff-copy'),
+                  label: 'Copy',
+                  semanticLabel: 'Copy',
+                  style: PrimaryCtaStyle.outlined,
+                  icon: Icons.copy_outlined,
                   onPressed: () => _copy(context),
-                  icon: const Icon(Icons.copy_outlined),
-                  label: const Text('Copy'),
                 ),
                 const SizedBox(height: 24),
                 PrimaryCta(

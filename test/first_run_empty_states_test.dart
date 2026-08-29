@@ -42,9 +42,11 @@ void main() {
 
     expect(find.byKey(const Key('first-run-screen')), findsOneWidget);
     expect(find.byKey(const Key('first-run-page-what')), findsOneWidget);
+    expect(find.text(UserFacingCopy.firstRunGreeting), findsOneWidget);
     expect(find.text(UserFacingCopy.firstRunDoesTitle), findsOneWidget);
     expect(find.textContaining('House Book'), findsOneWidget);
-    expect(find.text('1 of 3'), findsOneWidget);
+    expect(find.text('1 of 3'), findsNothing);
+    expect(find.byKey(const Key('first-run-progress')), findsNothing);
     expect(find.byKey(const Key('create-household-button')), findsNothing);
 
     await tester.tap(find.byKey(const Key('first-run-next-button')));
@@ -54,7 +56,8 @@ void main() {
     expect(find.text(UserFacingCopy.firstRunDoesNotTitle), findsOneWidget);
     expect(find.textContaining('camera never diagnoses'), findsOneWidget);
     expect(find.textContaining('gas'), findsOneWidget);
-    expect(find.text('2 of 3'), findsOneWidget);
+    expect(find.text(UserFacingCopy.firstRunGreeting), findsNothing);
+    expect(find.text('2 of 3'), findsNothing);
 
     await tester.tap(find.byKey(const Key('first-run-next-button')));
     await tester.pump();
@@ -65,7 +68,7 @@ void main() {
     expect(find.textContaining('cloud account'), findsOneWidget);
     expect(find.textContaining('Groq'), findsOneWidget);
     expect(find.textContaining('butler backend'), findsOneWidget);
-    expect(find.text('3 of 3'), findsOneWidget);
+    expect(find.text('3 of 3'), findsNothing);
     expect(find.byKey(const Key('first-run-done-button')), findsOneWidget);
   });
 
@@ -145,7 +148,9 @@ void main() {
 
     expect(find.byKey(const Key('create-household-button')), findsOneWidget);
     expect(find.byKey(const Key('empty-home-create-household')), findsOneWidget);
+    expect(find.text(UserFacingCopy.createHouseholdAction), findsNWidgets(2));
     expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsWidgets);
+    expect(find.text('Create Household'), findsNothing);
     expect(find.text(UserFacingCopy.noRepairsYet), findsOneWidget);
     expect(find.byKey(const Key('add-dryer-button')), findsNothing);
 

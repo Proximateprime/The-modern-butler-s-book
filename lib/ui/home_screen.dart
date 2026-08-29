@@ -403,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? UserFacingCopy.emptyHomeNoHousehold
                 : appliances.isEmpty
                 ? UserFacingCopy.emptyHomeNoDryer
-                : 'Choose an appliance to start or continue a repair.',
+                : UserFacingCopy.emptyHomeHasAppliances,
             style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
           if (dueReminders.isNotEmpty) ...[
@@ -451,10 +451,11 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
           ],
           if (household == null) ...[
-            FilledButton(
+            PrimaryCta(
               key: const Key('create-household-button'),
+              label: UserFacingCopy.createHouseholdAction,
+              semanticLabel: UserFacingCopy.createHouseholdAction,
               onPressed: _createHousehold,
-              child: const Text('Create Household'),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
@@ -528,10 +529,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   if (household == null) ...[
-                    FilledButton(
+                    PrimaryCta(
                       key: const Key('empty-home-create-household'),
+                      label: UserFacingCopy.createHouseholdAction,
+                      semanticLabel: UserFacingCopy.createHouseholdAction,
                       onPressed: _createHousehold,
-                      child: const Text('Create Household'),
                     ),
                     const SizedBox(height: 8),
                     OutlinedButton(
