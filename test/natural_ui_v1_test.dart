@@ -33,6 +33,19 @@ void main() {
     expect(UserFacingCopy.firstRunPrivacyBody, contains('Diagnosis stays'));
   });
 
+  test('Pages source chrome is a household book, not a developer demo', () {
+    final index = File('web/index.html').readAsStringSync();
+    final manifest = File('web/manifest.json').readAsStringSync();
+    expect(index, isNot(contains('developer demo')));
+    expect(index, isNot(contains('#3F51B5')));
+    expect(index, contains('A household repair book'));
+    expect(index, contains('#F3EDE3'));
+    expect(manifest, isNot(contains('developer demo')));
+    expect(manifest, isNot(contains('#3F51B5')));
+    expect(manifest, contains('A household repair book'));
+    expect(manifest, contains('#F3EDE3'));
+  });
+
   testWidgets(
     'first-run is a greeting without page-counter chrome',
     (tester) async {
@@ -109,12 +122,13 @@ void main() {
     await tester.pumpWidget(ModernButlerApp(dependencies: deps));
 
     expect(find.byKey(const Key('create-household-button')), findsOneWidget);
-    expect(find.byKey(const Key('empty-home-create-household')), findsOneWidget);
-    expect(find.byKey(const Key('empty-home-load-sample')), findsOneWidget);
+    expect(find.byKey(const Key('empty-home-create-household')), findsNothing);
+    expect(find.byKey(const Key('empty-home-load-sample')), findsNothing);
+    expect(find.byKey(const Key('load-sample-home-button')), findsOneWidget);
     expect(find.byKey(const Key('empty-home-appliances')), findsOneWidget);
     expect(find.byKey(const Key('household-name')), findsOneWidget);
-    expect(find.text(UserFacingCopy.createHouseholdAction), findsNWidgets(2));
-    expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsWidgets);
+    expect(find.text(UserFacingCopy.createHouseholdAction), findsOneWidget);
+    expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsOneWidget);
     expect(find.text('Create Household'), findsNothing);
     expect(find.text('Choose an appliance to start or continue a repair.'), findsNothing);
 

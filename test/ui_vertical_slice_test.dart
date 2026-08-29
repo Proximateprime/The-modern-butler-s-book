@@ -17,7 +17,7 @@ void main() {
     await prepareTallSurface(tester);
     await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
 
-    expect(find.text(UserFacingCopy.createHouseholdAction), findsNWidgets(2));
+    expect(find.text(UserFacingCopy.createHouseholdAction), findsOneWidget);
     await tester.tap(find.byKey(const Key('create-household-button')));
     await tester.pumpAndSettle();
 

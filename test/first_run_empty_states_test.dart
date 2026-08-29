@@ -147,9 +147,11 @@ void main() {
     await tester.pumpWidget(ModernButlerApp(dependencies: deps));
 
     expect(find.byKey(const Key('create-household-button')), findsOneWidget);
-    expect(find.byKey(const Key('empty-home-create-household')), findsOneWidget);
-    expect(find.text(UserFacingCopy.createHouseholdAction), findsNWidgets(2));
-    expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsWidgets);
+    expect(find.byKey(const Key('empty-home-create-household')), findsNothing);
+    expect(find.byKey(const Key('empty-home-load-sample')), findsNothing);
+    expect(find.byKey(const Key('load-sample-home-button')), findsOneWidget);
+    expect(find.text(UserFacingCopy.createHouseholdAction), findsOneWidget);
+    expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsOneWidget);
     expect(find.text('Create Household'), findsNothing);
     expect(find.text(UserFacingCopy.noRepairsYet), findsOneWidget);
     expect(find.byKey(const Key('add-dryer-button')), findsNothing);

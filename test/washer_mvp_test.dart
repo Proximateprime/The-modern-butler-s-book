@@ -369,6 +369,7 @@ void main() {
     await selectFailureMode(tester, washerUnbalancedLoadId);
     await completeRepairReadinessIfPresent(tester);
     expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
+    await walkGuidanceUntilContaining(tester, 'Redistribute clothes');
     expect(find.textContaining('Redistribute clothes'), findsWidgets);
     await completeGuidanceStepsIfPresent(tester);
     await tapVisible(tester, find.byKey(const Key('answer-choice-confirmed')));

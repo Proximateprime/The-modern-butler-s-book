@@ -523,25 +523,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   EmptyHint(
                     key: const Key('empty-home-appliances'),
-                    message: household == null
-                        ? UserFacingCopy.emptyHomeNoHousehold
-                        : UserFacingCopy.noDryersYet,
+                    message: UserFacingCopy.noDryersYet,
                   ),
-                  const SizedBox(height: 12),
-                  if (household == null) ...[
-                    PrimaryCta(
-                      key: const Key('empty-home-create-household'),
-                      label: UserFacingCopy.createHouseholdAction,
-                      semanticLabel: UserFacingCopy.createHouseholdAction,
-                      onPressed: _createHousehold,
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      key: const Key('empty-home-load-sample'),
-                      onPressed: _loadSampleHome,
-                      child: const Text('Load sample home'),
-                    ),
-                  ] else ...[
+                  if (household != null) ...[
+                    const SizedBox(height: 12),
                     FilledButton(
                       key: const Key('add-dryer-button'),
                       onPressed: _addDryer,
