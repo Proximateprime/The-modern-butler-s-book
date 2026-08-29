@@ -85,7 +85,7 @@ App **0.1.3+5**. Tests: `test/george_ui_aug29_test.dart` plus `test/george_ui_le
 - **Locked (Bible / Safety Gate):** `safetyLevel` `professional` → `SafetyLightKind.caution` (“Check carefully”). Not watch. Not calm. Hard `stop` stays Stop. `clear` stays Safe to continue.
 - Blocking line is presentation-only. Burning-smell banner body stays `safetyStopDisplayCopy` / `safetyStopOfficial`.
 - History path overlay is display-time from `washerLoadStyle`. Stored failure-mode id stays `washer-door-not-latched`.
-- Home history meta is one ellipsized line so the `isThreeLine` ListTile does not clip at phone width. Trailing stays export icon only.
+- Home history meta is one ellipsized line so the `isThreeLine` ListTile does not clip at phone width. Trailing stays export icon only. `PaperCard` is a `Material` ancestor so those tiles keep a valid ink parent.
 - `GOLDEN_LABELS.md` still freezes I'll-repair **Call a pro** / missing-tool **Call a professional** as QA chrome. That freeze is not Bible. This pack does not reopen washer inspect / GOLDEN_LABELS door copy. Tests that asserted **Stop — Call a professional** now assert **Needs a professional** on the stop banner title.
 - Do not restore **Calling a professional**, **End Session as Resolved**, or Stay-alert `#C4A035`. Stay-alert gold stays `#6B4E0E`.
 
