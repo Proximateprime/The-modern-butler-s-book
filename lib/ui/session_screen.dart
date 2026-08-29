@@ -2366,6 +2366,12 @@ class _SessionScreenState extends State<SessionScreen>
     final clearLeaderId = reasoning?.clearLeaderFailureModeId;
     final recommendPrimaryId = reasoning?.recommendPrimaryFailureModeId;
     final isTerminal = _isTerminal(session.currentState);
+    final coverageNotice = dryerCoverageNotice(
+      manufacturer: appliance.manufacturer,
+      modelNumber: appliance.modelNumber,
+      usingGeneralGuide: session.usingGeneralGuide,
+      category: package.category,
+    );
     final safetyStop =
         isTerminal ? null : _safety.evaluateContext(decisionContext);
     final easierPursuitId = easierFirstPursuitId(
@@ -2771,19 +2777,12 @@ class _SessionScreenState extends State<SessionScreen>
                 hint: priorHint,
               ),
             ],
-            if (!isTerminal &&
-                dryerCoverageNotice(
-                      manufacturer: appliance.manufacturer,
-                      modelNumber: appliance.modelNumber,
-                      usingGeneralGuide: session.usingGeneralGuide,
-                      category: package.category,
-                    )
-                    case final coverage?) ...[
+            if (!isTerminal && coverageNotice != null) ...[
               const SizedBox(height: 16),
               Text(
-                coverage,
+                coverageNotice,
                 key: Key(
-                  coverage == UserFacingCopy.missingMachinePlateNotice
+                  coverageNotice == UserFacingCopy.missingMachinePlateNotice
                       ? 'missing-plate-notice'
                       : 'general-dryer-guide-notice',
                 ),

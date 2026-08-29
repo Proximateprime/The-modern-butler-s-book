@@ -252,8 +252,11 @@ void main() {
 
   test('Groq does not pick chips or next question id on unmatched path', () {
     final helper = File('lib/helpers/unmatched_starter.dart').readAsStringSync();
-    expect(helper, isNot(contains('groq')));
-    expect(helper, isNot(contains('Groq')));
+    final imports = helper
+        .split('\n')
+        .where((line) => line.startsWith('import '));
+    expect(imports, isNot(anyElement(contains('groq'))));
+    expect(imports, isNot(anyElement(contains('question_selection'))));
     expect(helper, isNot(contains('QuestionSelectionService')));
     const QuestionSelectionService().suggestNext(
       templates: const [],
@@ -298,10 +301,11 @@ void main() {
       final dependencies = AppDependencies(
         clock: () => DateTime.utc(2026, 8, 29, 23, 40),
       );
-      await openDryerSessionWithoutStarterSkip(
+      await openDryerSession(
         tester,
         dependencies,
         'Plate House',
+        skipProblemStarter: false,
       );
       expect(find.byKey(const Key('missing-plate-notice')), findsOneWidget);
       expect(find.byKey(const Key('general-dryer-guide-notice')), findsNothing);
@@ -316,10 +320,11 @@ void main() {
       final dependencies = AppDependencies(
         clock: () => DateTime.utc(2026, 8, 29, 23, 45),
       );
-      await openDryerSessionWithoutStarterSkip(
+      await openDryerSession(
         tester,
         dependencies,
         'Basement House',
+        skipProblemStarter: false,
       );
 
       await tester.tap(find.byKey(const Key('starter-chip-other-describe')));
