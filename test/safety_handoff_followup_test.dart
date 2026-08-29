@@ -130,6 +130,8 @@ void main() {
       );
       expect(spoken, contains(leftoverLeaderPrefix));
       expect(spoken, contains(leftover));
+      expect(spoken.toLowerCase(), contains('needs a professional'));
+      expect(spoken.toLowerCase(), contains('fire or smoke'));
     },
   );
 
