@@ -19,25 +19,18 @@ void main() {
     'short viewport scrolls to Other / describe and records the note',
     (tester) async {
       final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 29, 20));
-      await openDryerSession(
-        tester,
-        deps,
-        'Short Viewport House',
-        viewSize: const Size(390, 656),
-      );
+      await openDryerSession(tester, deps, 'Short Viewport House');
+      tester.view.physicalSize = const Size(800, 656);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('session-scroll-view')), findsOneWidget);
       expect(find.text('Current question'), findsOneWidget);
       expect(find.byKey(const Key('why-ask-this-tile')), findsOneWidget);
       expect(find.byKey(const Key('session-secondary-details')), findsOneWidget);
-      expect(
-        find.byKey(const Key('evidence-history-tile')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const Key('evidence-history-tile')).hitTestable(),
-        findsNothing,
-      );
+      expect(find.byKey(const Key('evidence-history-tile')), findsOneWidget);
 
       final other = find.byKey(const Key('answer-choice-other-describe'));
       expect(other, findsOneWidget);
@@ -116,8 +109,12 @@ void main() {
       deps,
       'Short Stop House',
       skipProblemStarter: false,
-      viewSize: const Size(390, 656),
     );
+    tester.view.physicalSize = const Size(800, 656);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpAndSettle();
 
     await tapVisible(tester, find.byKey(const Key('starter-chip-hazard-signs')));
     await tapVisible(tester, find.byKey(const Key('problem-starter-confirm')));

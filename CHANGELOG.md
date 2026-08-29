@@ -3,8 +3,8 @@
 App **0.1.4+4**. Short hosted viewport (~656px) can reach Current question,
 Why ask this?, and chips including Other / describe. First-run Skip completes
 on the first tap; the I understand disclaimer still follows. Secondary
-collapsibles sit under one collapsed **More about this session** (evidence
-kept). Safety Stop banner stays pinned when `safetyStop != null` — unplug
+collapsibles sit under a muted **More about this session** heading (evidence
+kept, tiles stay collapsed). Safety Stop banner stays pinned when `safetyStop != null` — unplug
 AND ventilate AND don’t keep running. Groq stays talk-only. Play listing
 stays out. Details: [`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md).
 

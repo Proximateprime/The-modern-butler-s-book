@@ -445,9 +445,10 @@ first-run / safety-stop / Other / describe suites.
    first-run still shows **I understand** when the disclaimer is outstanding.
 3. **Quieter question card.** `other-observations-picker`,
    `evidence-history-tile`, `failure-modes-tile`, `package-summary-tile`,
-   `hypotheses-tile`, and `decision-context-tile` live under one collapsed
-   `session-secondary-details` (**More about this session**). Evidence / history
-   is kept. Default collapsed. Not a session rebuild.
+   `hypotheses-tile`, and `decision-context-tile` sit under a muted
+   `session-secondary-details` heading (**More about this session**), without
+   the old stacked card chrome. Evidence / history is kept. Each tile stays
+   default collapsed. Not a session rebuild.
 4. **Pinned Stop.** When `safetyStop != null`, `safety-stop-banner` sits above
    the scroll view so it cannot be scrolled off. Title stays **Needs a
    professional**. Body still unplug AND ventilate AND don’t keep running.

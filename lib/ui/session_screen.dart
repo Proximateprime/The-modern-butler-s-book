@@ -2631,7 +2631,6 @@ class _SessionScreenState extends State<SessionScreen>
           Expanded(
             child: SingleChildScrollView(
               key: const Key('session-scroll-view'),
-              primary: true,
               padding: EdgeInsets.zero,
               child: ButlerPageBody(
                 padding: pinnedStopBanner != null
@@ -4955,8 +4954,8 @@ class _ProblemStarterPanel extends StatelessWidget {
   }
 }
 
-/// Quiet dump for history / notes / guide. Default collapsed so the
-/// primary path stays: current question, Why ask this?, chips.
+/// Quiet dump for history / notes / guide. Tiles stay default-collapsed
+/// so the primary path is current question, Why ask this?, chips.
 class _SessionSecondaryDetails extends StatelessWidget {
   const _SessionSecondaryDetails({required this.children});
 
@@ -4969,20 +4968,32 @@ class _SessionSecondaryDetails extends StatelessWidget {
     }
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    return ExpansionTile(
+    return Column(
       key: const Key('session-secondary-details'),
-      initiallyExpanded: false,
-      maintainState: true,
-      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
-      title: Text(
-        'More about this session',
-        style: text.titleSmall?.copyWith(color: scheme.onSurfaceVariant),
-      ),
-      subtitle: Text(
-        'Evidence, notes, and this guide',
-        style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-      ),
-      children: children,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'More about this session',
+                style: text.titleSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                'Evidence, notes, and this guide',
+                style: text.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...children,
+      ],
     );
   }
 }
