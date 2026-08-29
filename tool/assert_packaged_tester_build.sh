@@ -6,6 +6,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+TOKEN_RE='gsk_[A-Za-z0-9]{20,}'
+
 if [[ -f .env ]] || compgen -G '.env.*' >/dev/null; then
   echo "Refusing: env file in the tree. Do not ship secrets with testers." >&2
   exit 1
@@ -16,20 +18,42 @@ if env | grep -E '^GROQ' >/dev/null; then
   exit 1
 fi
 
-if [[ "${1:-}" == "--scan-web" ]]; then
-  if find build/web -type f \( -name '*.js' -o -name '*.json' -o -name '*.html' \) \
-      -print0 | xargs -0 grep -E -n 'gsk_[A-Za-z0-9]{20,}'; then
-    echo "Refusing to publish: secret-like token in web build" >&2
+scan_tree() {
+  local dir="$1"
+  local label="$2"
+  if [[ ! -d "$dir" ]]; then
+    echo "Refusing: missing $dir for $label scan (fail closed)." >&2
     exit 1
   fi
+  if ! find "$dir" -type f -print -quit | grep -q .; then
+    echo "Refusing: no files in $dir for $label scan (fail closed)." >&2
+    exit 1
+  fi
+  # Every regular file, including compressed/binary members (WASM, assets).
+  if find "$dir" -type f -print0 | xargs -0 grep -a -E -n -- "$TOKEN_RE"; then
+    echo "Refusing to publish: secret-like token in $label" >&2
+    exit 1
+  fi
+}
+
+if [[ "${1:-}" == "--scan-web" ]]; then
+  scan_tree build/web "web build"
   exit 0
 fi
 
 if [[ "${1:-}" == "--scan-apk" ]]; then
   APK="${2:-build/app/outputs/flutter-apk/app-release.apk}"
-  if strings "$APK" | grep -E 'gsk_[A-Za-z0-9]{20,}'; then
-    echo "Refusing to upload: secret-like token in APK" >&2
+  if [[ ! -f "$APK" ]]; then
+    echo "Refusing: missing APK $APK (fail closed)." >&2
     exit 1
   fi
+  TMP="$(mktemp -d)"
+  cleanup() { rm -rf "$TMP"; }
+  trap cleanup EXIT
+  if ! unzip -q -o "$APK" -d "$TMP"; then
+    echo "Refusing: APK extract failed (fail closed)." >&2
+    exit 1
+  fi
+  scan_tree "$TMP" "APK members"
   exit 0
 fi

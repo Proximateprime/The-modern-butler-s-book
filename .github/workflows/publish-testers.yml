@@ -12,6 +12,10 @@ on:
       - "tool/assert_packaged_tester_build.sh"
       - "tool/sync_pages_web.sh"
       - "pubspec.yaml"
+      - "lib/**"
+      - "android/**"
+      - "assets/**"
+      - "web/**"
   workflow_dispatch:
 
 permissions:
@@ -19,8 +23,9 @@ permissions:
   pages: write
   id-token: write
 
+# PRs validate in parallel. All main publishes (push + dispatch) share one group.
 concurrency:
-  group: publish-testers-${{ github.event_name }}
+  group: ${{ github.event_name == 'pull_request' && format('publish-testers-pr-{0}', github.event.pull_request.number) || 'publish-testers' }}
   cancel-in-progress: true
 
 jobs:
