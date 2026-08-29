@@ -468,13 +468,18 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
           washerLoadStyle: widget.appliance.washerLoadStyle,
         ),
         key: Key('repair-history-headline-${outcome.sessionId}'),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
       subtitle: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             when,
             key: Key('repair-history-when-${outcome.sessionId}'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           if (cause != null)
             Text(

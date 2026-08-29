@@ -5,6 +5,8 @@ import 'package:modern_butlers_book/helpers/repair_history_display.dart';
 import 'package:modern_butlers_book/helpers/safety_stop.dart';
 import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/models/appliance.dart';
+import 'package:modern_butlers_book/helpers/dryer_problem_starter.dart';
+import 'package:modern_butlers_book/models/evidence.dart';
 import 'package:modern_butlers_book/models/repair_session.dart';
 import 'package:modern_butlers_book/models/session_outcome.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
@@ -54,6 +56,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('outcome-needs-professional')), findsOneWidget);
     expect(find.byKey(const Key('recent-activity-title')), findsNothing);
+  });
+
+  test('sessionSafetyLevelFor professional drives Check carefully without close path', () {
+    final level = sessionSafetyLevelFor(
+      evidence: const [],
+      primaryFailureModeId: 'thermal-fuse-open',
+    );
+    expect(level, 'professional');
+    expect(
+      safetyLightForSession(
+        safetyStop: false,
+        closePathActive: false,
+        safetyLevel: level,
+      ),
+      SafetyLightKind.caution,
+    );
   });
 
   test('safetyLightForSession(professional) is caution, not calm', () {
@@ -222,4 +240,98 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(overflows, isEmpty, reason: overflows.join('\n'));
   });
+
+  testWidgets(
+    'thermal-fuse primary emits professional and Check carefully, not Stop',
+    (tester) async {
+      final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 29, 14, 30));
+      await openDryerSession(tester, deps, 'Fuse Lamp House');
+      final dryer = deps.appliancesForCurrentHousehold().single;
+      final sessionId = deps.startOrResumeSession(dryer);
+      await selectFailureMode(tester, 'thermal-fuse-open');
+
+      expect(deps.buildDecisionContext(sessionId).safetyLevel, 'professional');
+      expect(find.byKey(const Key('safety-stop-banner')), findsNothing);
+      expect(
+        tester.widget<SafetyStatusLight>(find.byType(SafetyStatusLight)).kind,
+        SafetyLightKind.caution,
+      );
+    },
+  );
+
+  testWidgets(
+    'appliance-detail history title does not overflow at Size(360, 800)',
+    (tester) async {
+      final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 29, 14, 40));
+      deps.createHousehold('Detail Title House');
+      final dryer = deps.addDryer();
+      final sessionId = deps.startOrResumeSession(dryer);
+      final session = deps.repairSessionRepository.getSession(sessionId)!;
+      const longSymptom =
+          'Clothes stay damp after a long heat cycle and the cabinet near the '
+          'lint slot and crushed vent hose still feels warmer than it should '
+          'on a phone-width history row';
+      deps.sessionCoordinator.addEvidence(
+        evidence: Evidence(
+          id: deps.nextId('evidence'),
+          sessionId: sessionId,
+          applianceId: dryer.id,
+          type: EvidenceType.structuredAnswer,
+          observation: 'What is going on?',
+          answer: longSymptom,
+          templateId: problemStarterComplaintTemplateId,
+          collectedAt: deps.nextTimestamp(),
+          collectedInState: session.currentState,
+          source: EvidenceSource.user,
+          schemaVersion: session.schemaVersion,
+        ),
+        evidenceLinkId: deps.nextId('evidence-link'),
+      );
+      deps.endSession(
+        sessionId: sessionId,
+        closeKind: SessionCloseKind.fixed,
+        whatFixedIt: 'Cleared the crushed vent hose',
+      );
+
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final overflows = <String>[];
+      final previousOnError = FlutterError.onError;
+      FlutterError.onError = (details) {
+        final text = details.exceptionAsString();
+        if (text.contains('overflowed') || text.contains('OVERFLOWING')) {
+          overflows.add(text);
+        }
+        previousOnError?.call(details);
+      };
+      addTearDown(() {
+        FlutterError.onError = previousOnError;
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ApplianceDetailScreen(
+            dependencies: deps,
+            appliance: dryer,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.byKey(Key('repair-history-headline-$sessionId')),
+      );
+      await tester.pumpAndSettle();
+
+      final title = tester.widget<Text>(
+        find.byKey(Key('repair-history-headline-$sessionId')),
+      );
+      expect(title.maxLines, 1);
+      expect(title.overflow, TextOverflow.ellipsis);
+      expect(tester.takeException(), isNull);
+      expect(overflows, isEmpty, reason: overflows.join('\n'));
+    },
+  );
 }

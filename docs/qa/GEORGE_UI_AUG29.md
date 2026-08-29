@@ -74,7 +74,7 @@ App **0.1.3+5**. Tests: `test/george_ui_aug29_test.dart` plus `test/george_ui_le
 
 2. **Blocking copy.** `blockingReasonSafetyLine` is `This step is blocked for safety — Needs a professional.` Burning-smell hard stop still uses the official banner, not this line.
 
-3. **P0 / Safety Gate.** `safetyLightForSession` maps `safetyLevel` **professional** → `SafetyLightKind.caution` (**Check carefully**). Hard stop stays **Stop**. `clear` stays **Safe to continue**. Professional must not map to calm.
+3. **P0 / Safety Gate.** `sessionSafetyLevelFor` emits `professional` for gated / needs-professional FMs that are **not** a hard stop (`thermal-fuse-open` via `allowResolvedWhenConfirmed: false`; also `electric-supply-connection-fault` and `motor-failure`). `buildDecisionContext` still feeds that into `safetyLightForSession`, which maps `professional` → `SafetyLightKind.caution` (**Check carefully**). Hard stop (burning-smell evidence, `electrical-burning-smell-hazard`) stays `stop` / **Stop**. `clear` stays **Safe to continue**. `evaluateSafetyStop` no longer treats gated supply/motor Primary ids as a hard stop.
 
 4. **Top-load washer history.** Display-time overlay from `appliance.washerLoadStyle` on stored id `washer-door-not-latched`: top-load **Lid latch path**, front-load **Door latch path**, unknown **Door or lid latch path**. Lid chips from item 4 stay accepted. Inspect door/lid goldens not reopened.
 
@@ -83,9 +83,11 @@ App **0.1.3+5**. Tests: `test/george_ui_aug29_test.dart` plus `test/george_ui_le
 ### Leftover ledger (locked picks)
 
 - **Locked (Bible / Safety Gate):** `safetyLevel` `professional` → `SafetyLightKind.caution` (“Check carefully”). Not watch. Not calm. Hard `stop` stays Stop. `clear` stays Safe to continue.
+- **Call site:** `AppDependencies.buildDecisionContext` stores `sessionSafetyLevelFor`. Gated FMs that are not a hard stop emit `professional` (thermal fuse and other `allowResolvedWhenConfirmed: false` paths; electric-supply / motor-failure). Fire/smoke FM and evidence hazards stay `stop`. The mapper then lights **Check carefully** even when `closePathActive` is false.
 - Blocking line is presentation-only. Burning-smell banner body stays `safetyStopDisplayCopy` / `safetyStopOfficial`.
 - History path overlay is display-time from `washerLoadStyle`. Stored failure-mode id stays `washer-door-not-latched`.
 - Home history meta is one ellipsized line so the `isThreeLine` ListTile does not clip at phone width. Trailing stays export icon only. `PaperCard` is a `Material` ancestor so those tiles keep a valid ink parent.
+- Appliance-detail history **title** is one ellipsized line at phone width (same clip rule as the home row).
 - `GOLDEN_LABELS.md` still freezes I'll-repair **Call a pro** / missing-tool **Call a professional** as QA chrome. That freeze is not Bible. This pack does not reopen washer inspect / GOLDEN_LABELS door copy. Tests that asserted **Stop — Call a professional** now assert **Needs a professional** on the stop banner title.
 - Do not restore **Calling a professional**, **End Session as Resolved**, or Stay-alert `#C4A035`. Stay-alert gold stays `#6B4E0E`.
 
@@ -106,9 +108,9 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+5**. First-run
 #### B. Safety lamp (Safety Gate)
 
 - **Given** the burning-smell stop from A.
-- **Expect** the session lamp reads **Stop**. It must not read **Safe to continue**.
-- **Given** a dryer close-path that needs a professional without a hard stop (e.g. thermal-fuse / **Most likely** on a pro-gated path).
-- **Expect** the lamp is **Check carefully** or **Stop**, never **Safe to continue**. Mapper lock: stored `professional` → **Check carefully**.
+- **Expect** the session lamp reads **Stop**. It must not read **Safe to continue**. Stored level is `stop`.
+- **Given** a dryer session whose Primary is thermal fuse (`thermal-fuse-open`) without a hard stop — **Most likely** thermal fuse, or pick that failure mode. Not burning smell.
+- **Expect** stored `safetyLevel` is `professional`. The lamp is **Check carefully**, never **Safe to continue**, never **Stop**.
 
 #### C. Top-load history uses lid
 
@@ -116,7 +118,9 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+5**. First-run
 - **Tap** the washer → finish a session whose leader is the latch path (`washer-door-not-latched` stays the stored id) → **Save**.
 - **Expect** appliance **Repair history** uses **Lid latch path** when the path label is shown. Fail if that row says **Door latch path**. Front-load still **Door latch path**. Unknown **Door or lid latch path**. Do not file inspect “door” copy; inspect already said door or lid.
 
-#### D. Home history row at phone width
+#### D. Home and detail history rows at phone width
 
 - **Given** House Book on a ~360px phone with at least one completed repair whose status is **Needs a professional** and a long appliance name or note.
-- **Expect** the **Repair history** row: status one line, date/detail one line, trailing export icon only. No clipped text, no overflow stripe. Tap the row still opens the closed session.
+- **Expect** the home **Repair history** row: status one line, date/detail one line, trailing export icon only. No clipped text, no overflow stripe. Tap the row still opens the closed session.
+- **Given** that appliance’s detail **Repair history** with a long headline.
+- **Expect** the history title ellipsizes on one line. No overflow stripe.
