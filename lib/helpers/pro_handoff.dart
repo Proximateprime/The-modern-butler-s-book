@@ -332,6 +332,9 @@ List<String> _triedCompletedGuidance({
   if (completedGuidanceStepIds.isEmpty) {
     return const [];
   }
+  if (leaderFailureModeId == null || leaderFailureModeId.trim().isEmpty) {
+    return const [];
+  }
   final path = closePathForFailureMode(leaderFailureModeId);
   if (path == null) {
     return const [];
