@@ -240,3 +240,52 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+7**. First-run
 - **Tap** **Delete household data** → **Delete everything**.
 - **Expect** first-run (Skip / Get started). The rating-plate photo file is gone from the device. After Skip, empty home: **Create Household**, no appliances. No silent wipe. Disclaimer and theme stay.
 
+## Leftover-after-after pack — 0.1.3+8
+
+Fix only. Items 1–12, leftover, leftover-next, and leftover-after stay done; this pack does not reopen them. `GOLDEN_LABELS.md` **Call a pro** stays frozen. Worn rollers stay parked. Expert unplugged heater-panel stays parked. `motor-overheat-protector-open` stays DIY (KNOWN_ISSUES split). Door-switch **Fixed** when a firm click starts the machine stays.
+
+App **0.1.3+8**. Tests: prior George UI files plus `test/george_ui_leftover_after_after_test.dart`.
+
+### Fixes
+
+1. **P1 electricHeatGenerationModeIds.** The gas-dryer extra-exclude set in `dryer_energy_source.dart` is the heater-circuit DIY-cannot-complete leaders plus `missing-leg-240v-supply` and `loose-power-cord-connection-electric`. Extra exclude counts only (`applyFuelTypeSteering` as today). Ranking math is not rewritten. Adds high-limit, cycling thermostat (failed / stuck-open / stuck-closed), thermistor, and timer heat segment. Electric dryer unchanged. Resettable thermal cutoff is not in this set.
+
+2. **P0 start-capacitor-or-start-assist-weak.** Id is on `_gatedProfessionalFailureModeIds` and `failClosedResolvedOnConfirmModeIds`. Lamp **Check carefully**. **I'll repair** off. Confirmed ≠ **Fixed**. Not a hard stop. Not door-switch. Not `motor-overheat-protector-open`. Leftover-after “stays false” was pack-scope (`allowResolvedWhenConfirmed` already false); this pack makes the lamp / fail-closed id-based. `start-switch-failure` stays as leftover-after left it.
+
+3. **P1 gas-dryer-no-ignition-professional-only.** Id is on `_gatedProfessionalFailureModeIds`. Already on `riskyVerificationModeIds`. Not a hard stop. Gas smell / propane evidence stays **Stop**. External valve + cycle only; no igniter / gas valve / burner / flame-sensor how-to. **I'll repair** stays off.
+
+4. **P1 partsCostDiyOutOfScope.** Treats `isGatedProfessionalFailureMode` as DIY-out-of-scope even if `closePathForFailureMode` is null. Treats `isHeaterCircuitDiyCannotCompleteLeader` the same way. Resettable thermal cutoff stays DIY (`isResettableThermalPath` + `allowResolvedWhenConfirmed` true). GOLDEN_LABELS **Call a pro** string stays frozen.
+
+### Leftover-after-after ledger
+
+- Fuel steering still adds exclude counts only. No ranking-formula change.
+- Start-capacitor and gas-no-ignition lamps are id-based gated professional, not Primary-as-hard-stop.
+- `partsCostDiyOutOfScope` does not wait on an imported close path for those gated ids.
+
+### Phone (Given / tap / expect) — leftover-after-after
+
+Phone or Android emulator, width about **360px**. Install **0.1.3+8**. First-run: **Skip** / **Get started** → **I understand**. Exact labels. Do not file GOLDEN_LABELS **Call a pro**.
+
+#### M. Gas dryer, no heat
+
+- **Given** a dryer whose energy source is **Gas**. **Start repair**. Not burning smell.
+- **Expect** **Most likely** is not cycling thermostat stuck closed / heating element / high-limit.
+- **Expect** lamp is not **Safe to continue** on a gas no-ignition / professional path.
+
+#### N. Start-capacitor
+
+- **Given** a dryer session whose Primary is `start-capacitor-or-start-assist-weak`.
+- **Expect** lamp **Check carefully**, never **Stop**, never **Safe to continue**. **Pro recommended**. **Fixed** not offered.
+- **Expect** door-switch firm-click **Fixed** still exists on the other path. motor-overheat-protector cooldown path still DIY.
+
+#### O. Gas no-ignition
+
+- **Given** a dryer session whose Primary is `gas-dryer-no-ignition-professional-only`.
+- **Expect** lamp **Check carefully**, not a hard-stop banner. No igniter/valve how-to. **I'll repair** hidden.
+- **Expect** gas smell still **Stop**.
+
+#### P. I'll repair fail-closed
+
+- **Given** a gated professional Primary (start-capacitor or gas-no-ignition), including when `closePathForFailureMode` is null (`isGatedProfessionalFailureMode` still true).
+- **Expect** **I'll repair** / **DIY ~** are not shown even if Parts & cost would otherwise quote a part. **Call a pro** stays GOLDEN_LABELS. Pro ~ only. Resettable thermal cutoff stays DIY.
+

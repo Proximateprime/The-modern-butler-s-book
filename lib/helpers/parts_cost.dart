@@ -1,5 +1,7 @@
 import 'dryer_close_path.dart';
 import 'pro_scope.dart';
+import 'safety_stop.dart';
+import 'thermal_reset_scope.dart';
 
 /// Display-only part/cost stub from package metadata. Never a payment.
 class PartCostEstimate {
@@ -135,11 +137,22 @@ const String partsCostProOnlyNote =
 ///
 /// The card then hides the DIY estimate and the "I'll repair" action so a
 /// beginner is never quoted a self-repair price for work we will not walk
-/// them through.
+/// them through. Gated professional ids stay out of scope even when
+/// [closePathForFailureMode] is null. Resettable thermal cutoff stays DIY.
 bool partsCostDiyOutOfScope(String? failureModeId) {
   final id = failureModeId?.trim() ?? '';
   if (id.isEmpty) {
     return false;
+  }
+  if (isResettableThermalPath(id)) {
+    final resetPath = closePathForFailureMode(id);
+    if (resetPath != null && resetPath.allowResolvedWhenConfirmed) {
+      return false;
+    }
+  }
+  if (isGatedProfessionalFailureMode(id) ||
+      isHeaterCircuitDiyCannotCompleteLeader(id)) {
+    return true;
   }
   final path = closePathForFailureMode(id);
   if (path == null) {
