@@ -424,6 +424,41 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Safety handoff follow-up — 0.1.4+8
+
+Presentation/honesty only. Do not reopen leftover PRs #1–#6 or John’s
+SAFETY_HANDOFF_V1 (#15) / PAGES_WEB_HIT (#16) nits. Do not restyle AppBar
+chrome. Do not rewrite the session engine. Play listing stays out. Groq stays
+phrasing-only. GOLDEN **Call a pro** stays.
+
+App **0.1.4+8**. Tests: `test/safety_handoff_followup_test.dart`.
+
+1. **Unbundled fire Yes.** `hazard-observation` prompt is burning smell or smoke only. Repeated stopping must not share that Yes. Fire/smoke stays a hard stop.
+2. **Symptom.** On a safety stop, Symptom is the mid-session hazard observation (**Burning smell / smoke**), not **not recorded** / **—**.
+3. **Leftover leader.** Hard stop does not headline the prior ranking leader (for example leftover **Loose or faulty electric supply connection**) as why we stopped. It is labeled leftover. `whyStopping` stays the hazard.
+
+### Phone / Pages (Given / tap / expect)
+
+Phone or hosted Pages. Install **0.1.4+8**.
+
+#### A. Stopping is not a fire Yes
+
+- **Given** a dryer session on the hazard question.
+- **Expect** the prompt asks about burning smell or smoke. It does not say repeated stopping.
+- **Tap** **Yes**.
+- **Expect** fire/smoke hard stop.
+
+#### B. Mid-session hazard fills Symptom
+
+- **Given** a dryer session with no starter complaint, then hazard **Yes**.
+- **Tap** **End Session** → **Needs a professional** → save.
+- **Expect** handoff **Symptom: Burning smell / smoke**. Not **—** / **not recorded**.
+
+#### C. Leftover leader is leftover
+
+- **Given** a session whose ranking leader was electric supply, then a fire/smoke stop.
+- **Expect** **Why we’re stopping** is the hazard. Leader is **Leftover (not why we stopped):**.
+
 ## Pages mouse hit mapping — 0.1.4+7
 
 PAGES_WEB_HIT. Pointer mapping only. Do not reopen leftover PRs #1–#6 or

@@ -1,3 +1,14 @@
+## Safety handoff follow-up (2026-08-29)
+
+App **0.1.4+8**. Presentation/honesty only. The fire/smoke hazard question no
+longer bundles “repeated stopping” into the same Yes. Fire/smoke still hard-stops.
+On a safety stop, Symptom is the mid-session burning/smoke observation — not
+**not recorded** / **—**. A leftover ranking leader is labeled leftover and is
+not why we stopped; `whyStopping` stays the hazard. No new engine, chips,
+question ids, or failure modes. GOLDEN **Call a pro** stays. Play listing stays
+out. Groq stays phrasing-only. Details:
+[`docs/qa/PRO_HANDOFF_UX.md`](docs/qa/PRO_HANDOFF_UX.md).
+
 ## Pages mouse hit mapping (2026-08-29)
 
 App **0.1.4+7**. GitHub Pages mouse clicks were landing ~164px / 4 chip rows
