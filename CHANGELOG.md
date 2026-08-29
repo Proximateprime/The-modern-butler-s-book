@@ -1,3 +1,12 @@
+## Hosted testers call phrase via public Supabase URL (2026-08-29)
+
+App **0.1.4+2**. GitHub Pages and the GitHub-release APK compile public
+`SUPABASE_URL` + anon JWT only. Groq stays on the Edge Function. Web uses
+package:http with conditional imports (no dart:io HttpClient). Init failures
+are swallowed before runApp. Safety gate still runs before paint. Play
+listing stays out. Details:
+[`docs/qa/PLAY_READY_GROQ.md`](docs/qa/PLAY_READY_GROQ.md).
+
 ## Play-ready Groq via Supabase Edge Function (2026-08-29)
 
 App **0.1.4+1**. Groq key moves behind `supabase/functions/phrase`. The client

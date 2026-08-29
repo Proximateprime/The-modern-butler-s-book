@@ -122,7 +122,11 @@ class AppDependencies {
   static Future<AppDependencies> createPersisted({
     DateTime Function()? clock,
   }) async {
-    await ensureButlerSupabase();
+    try {
+      await ensureButlerSupabase();
+    } catch (_) {
+      // Packaged copy if init fails. App still starts.
+    }
     final store = LocalDomainStore();
     await store.init();
     final firstRunComplete = await store.loadFirstRunComplete();

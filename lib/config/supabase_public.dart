@@ -4,8 +4,9 @@
 /// `GROQ_API_KEY` must never appear here or in `--dart-define` for Play,
 /// CI, Pages, or GitHub APK artifacts.
 ///
-/// Empty defaults keep hosted testers on packaged copy until Mark sets
-/// the project URL/anon (dashboard or a later Play build).
+/// Empty compile defaults. Hosted tester CI (publish-testers.yml) passes
+/// `--dart-define=SUPABASE_URL` and `--dart-define=SUPABASE_ANON_KEY` only.
+/// Never dart-define GROQ or service_role.
 const String kBundledSupabaseUrl = String.fromEnvironment(
   'SUPABASE_URL',
   defaultValue: '',

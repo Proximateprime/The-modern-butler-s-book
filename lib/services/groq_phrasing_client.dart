@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import '../config/supabase_public.dart';
 import '../helpers/phrasing_request.dart';
+import 'phrase_http.dart';
 
 /// OpenAI-compatible / Edge Function phrasing client. Communication only.
 ///
@@ -138,25 +138,12 @@ class SupabasePhraseFunctionClient implements GroqPhrasingClient {
     Map<String, String> headers,
     String body,
   ) async {
-    final client = HttpClient();
-    try {
-      final httpRequest = await client.postUrl(uri).timeout(timeout);
-      headers.forEach(httpRequest.headers.set);
-      httpRequest.add(utf8.encode(body));
-      final httpResponse = await httpRequest.close().timeout(timeout);
-      final raw = await utf8.decodeStream(httpResponse).timeout(timeout);
-      final responseHeaders = <String, String>{};
-      httpResponse.headers.forEach((name, values) {
-        responseHeaders[name] = values.join(',');
-      });
-      return PhraseFunctionHttpResponse(
-        statusCode: httpResponse.statusCode,
-        body: raw,
-        headers: responseHeaders,
-      );
-    } finally {
-      client.close(force: true);
-    }
+    final result = await defaultPhraseHttpPost(uri, headers, body);
+    return PhraseFunctionHttpResponse(
+      statusCode: result.statusCode,
+      body: result.body,
+      headers: result.headers,
+    );
   }
 }
 
@@ -175,7 +162,7 @@ class GroqOpenAiPhrasingClient implements GroqPhrasingClient {
   final Duration timeout;
   final DateTime Function()? now;
 
-  /// Injected HTTP. Default uses [HttpClient]. Tests pass a stub — no live net.
+  /// Injected HTTP. Default uses package:http (web-safe). Tests stub — no live net.
   final GroqLocalHttpPost? httpPost;
 
   @override
@@ -219,16 +206,8 @@ class GroqOpenAiPhrasingClient implements GroqPhrasingClient {
     Map<String, String> headers,
     String body,
   ) async {
-    final client = HttpClient();
-    try {
-      final httpRequest = await client.postUrl(uri).timeout(timeout);
-      headers.forEach(httpRequest.headers.set);
-      httpRequest.add(utf8.encode(body));
-      final response = await httpRequest.close().timeout(timeout);
-      return await utf8.decodeStream(response).timeout(timeout);
-    } finally {
-      client.close(force: true);
-    }
+    final result = await defaultPhraseHttpPost(uri, headers, body);
+    return result.body;
   }
 }
 
