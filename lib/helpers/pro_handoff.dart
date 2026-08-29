@@ -102,6 +102,7 @@ String formatProHandoffSpokenParagraph({
   required List<SessionTimelineObservation> observations,
   required List<String> alreadyTried,
   String? leaderHypothesis,
+  String? whyStopping,
   String? groqParagraph,
 }) {
   final packaged = packagedProHandoffSpokenParagraph(
@@ -110,6 +111,7 @@ String formatProHandoffSpokenParagraph({
     observations: observations,
     alreadyTried: alreadyTried,
     leaderHypothesis: leaderHypothesis,
+    whyStopping: whyStopping,
   );
   final overlay = groqParagraph?.trim() ?? '';
   if (overlay.isEmpty) {
@@ -187,7 +189,7 @@ String formatProHandoffForSession({
 }
 
 /// Spoken paragraph from a closed session. Display only.
-/// Uses the same [alreadyTriedFromSession] list as the written handoff.
+/// Uses the same already-tried list and [whyStopping] as the written handoff.
 String formatProHandoffSpokenForSession({
   required List<Evidence> evidence,
   required String applianceName,
@@ -196,6 +198,11 @@ String formatProHandoffSpokenForSession({
   List<String> completedGuidanceStepIds = const [],
 }) {
   final leaderId = outcome.rankingLeaderFailureModeId;
+  final stop = evaluateSafetyStop(
+    evidence: evidence,
+    primaryFailureModeId: leaderId,
+  );
+  final path = leaderId == null ? null : closePathForFailureMode(leaderId);
   return formatProHandoffSpokenParagraph(
     applianceName: applianceName,
     symptom: outcome.startSymptom ?? _symptomFromEvidence(evidence),
@@ -206,6 +213,10 @@ String formatProHandoffSpokenForSession({
       leaderFailureModeId: leaderId,
     ),
     leaderHypothesis: outcome.rankingLeaderLabel,
+    whyStopping: whyStoppingForSession(
+      safetyStop: stop,
+      path: path,
+    ),
     groqParagraph: groqParagraph,
   );
 }

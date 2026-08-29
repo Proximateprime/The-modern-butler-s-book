@@ -160,6 +160,7 @@ String packagedProHandoffSpokenParagraph({
   required List<SessionTimelineObservation> observations,
   required List<String> alreadyTried,
   String? leaderHypothesis,
+  String? whyStopping,
 }) {
   final noticed = observations.isEmpty
       ? 'nothing recorded yet'
@@ -173,8 +174,11 @@ String packagedProHandoffSpokenParagraph({
       ? 'none'
       : leaderHypothesis!.trim();
   final what = (symptom ?? '').trim().isEmpty ? 'not recorded' : symptom!.trim();
+  final why = whyStopping?.trim() ?? '';
+  final whyClause = why.isEmpty ? '' : ' Why we stopped: $why.';
   return 'Please look at this ${applianceName.trim()}. Symptom: $what. '
-      'Observed: $noticed. Already tried or not done: $tried. '
+      'Observed: $noticed. Already tried or not done: $tried.'
+      '$whyClause '
       'Leading household-guide match: $leader — not a diagnosis.';
 }
 

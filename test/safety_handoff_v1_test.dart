@@ -65,9 +65,32 @@ void main() {
         outcome: outcome,
       );
       expect(spoken.toLowerCase(), contains('none recorded'));
+      expect(spoken.toLowerCase(), contains('needs a professional'));
+      expect(spoken.toLowerCase(), contains('fire or smoke'));
       expect(spoken.toLowerCase(), isNot(contains('lint filter')));
       expect(spoken.toLowerCase(), isNot(contains('vent hood')));
       expect(spoken, isNot(contains('exhaust restriction')));
+      expect(spoken, contains('not a diagnosis'));
+    },
+  );
+
+  test(
+    'burning-smell spoken paragraph includes safety why, not unused vent checks',
+    () {
+      final spoken = formatProHandoffSpokenForSession(
+        evidence: [_burningSmellEvidence()],
+        applianceName: 'Laundry Room Dryer',
+        outcome: _ventLeaderOutcome(),
+      );
+      final lower = spoken.toLowerCase();
+      expect(lower, contains('needs a professional'));
+      expect(lower, contains('fire or smoke'));
+      expect(lower, contains('none recorded'));
+      expect(lower, isNot(contains('lint filter')));
+      expect(lower, isNot(contains('vent hood')));
+      expect(spoken, isNot(contains('exhaust restriction')));
+      expect(spoken, contains('Restricted vent'));
+      expect(spoken, contains('not a diagnosis'));
     },
   );
 
@@ -110,8 +133,11 @@ void main() {
       observations: const [],
       alreadyTried: const [],
       leaderHypothesis: 'Restricted vent',
+      whyStopping: 'Needs a professional. Possible fire or smoke hazard.',
     );
     expect(packaged.toLowerCase(), contains('none recorded'));
+    expect(packaged.toLowerCase(), contains('needs a professional'));
+    expect(packaged.toLowerCase(), contains('fire or smoke'));
 
     final invented = acceptGroqPhrasing(
       request: PhrasingRequest.proHandoff(
@@ -128,6 +154,40 @@ void main() {
     );
     expect(invented, isNull);
 
+    final droppedWhy = acceptGroqPhrasing(
+      request: PhrasingRequest.proHandoff(
+        family: 'dryer',
+        energy: 'unknown',
+        comfort: 'normal',
+        packagedParagraph: packaged,
+      ),
+      parsed: const GroqPhrasingJson(
+        whyOneLine:
+            'Please look at this dryer. Already tried: none recorded. '
+            'Leading match is Restricted vent — not a diagnosis.',
+      ),
+    );
+    expect(droppedWhy, isNull);
+
+    final phrasedWhy = acceptGroqPhrasing(
+      request: PhrasingRequest.proHandoff(
+        family: 'dryer',
+        energy: 'unknown',
+        comfort: 'normal',
+        packagedParagraph: packaged,
+      ),
+      parsed: const GroqPhrasingJson(
+        whyOneLine:
+            'Please look at this dryer. Already tried: none recorded. '
+            'Why we stopped: Needs a professional because of a possible '
+            'fire or smoke hazard. Leading match is Restricted vent — '
+            'not a diagnosis.',
+      ),
+    );
+    expect(phrasedWhy, isNotNull);
+    expect(phrasedWhy!.whyOneLine.toLowerCase(), contains('needs a professional'));
+    expect(phrasedWhy.whyOneLine.toLowerCase(), contains('fire or smoke'));
+
     final spoken = formatProHandoffSpokenForSession(
       evidence: [_burningSmellEvidence()],
       applianceName: 'Dryer',
@@ -136,6 +196,8 @@ void main() {
           'We already tried the lint filter and checked the vent hood.',
     );
     expect(spoken.toLowerCase(), contains('none recorded'));
+    expect(spoken.toLowerCase(), contains('needs a professional'));
+    expect(spoken.toLowerCase(), contains('fire or smoke'));
     expect(spoken.toLowerCase(), isNot(contains('lint filter')));
     expect(spoken.toLowerCase(), isNot(contains('vent hood')));
   });
@@ -207,8 +269,12 @@ void main() {
       );
       final spokenBody = spoken.data ?? '';
       expect(spokenBody.toLowerCase(), contains('none recorded'));
+      expect(spokenBody.toLowerCase(), contains('needs a professional'));
+      expect(spokenBody.toLowerCase(), contains('fire or smoke'));
       expect(spokenBody.toLowerCase(), isNot(contains('lint filter')));
+      expect(spokenBody.toLowerCase(), isNot(contains('vent hood')));
       expect(spokenBody, isNot(contains('exhaust restriction')));
+      expect(spokenBody, contains('not a diagnosis'));
     },
   );
 }

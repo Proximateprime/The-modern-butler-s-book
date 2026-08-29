@@ -88,10 +88,14 @@ GroqPhrasingAccepted? acceptGroqPhrasing({
   }
 
   if (request.slot == PhrasingSlot.proHandoff &&
-      _inventsUnrecordedTriedSteps(
-        packaged: request.packagedWhyOneLine,
-        groq: why,
-      )) {
+      (_inventsUnrecordedTriedSteps(
+            packaged: request.packagedWhyOneLine,
+            groq: why,
+          ) ||
+          _dropsSafetyStopWhy(
+            packaged: request.packagedWhyOneLine,
+            groq: why,
+          ))) {
     return null;
   }
 
@@ -262,6 +266,31 @@ bool _failsHouseholdHowToGate(String text) {
   if (visible.isEmpty &&
       text.trim().isNotEmpty &&
       !isSafetyLimitLanguage(text)) {
+    return true;
+  }
+  return false;
+}
+
+/// Groq may phrase a packaged safety why. It may not drop
+/// Needs a professional / fire or smoke when those are in the packaged line.
+bool _dropsSafetyStopWhy({
+  required String packaged,
+  required String? groq,
+}) {
+  if (groq == null || groq.isEmpty) {
+    return false;
+  }
+  final packagedLower = packaged.toLowerCase();
+  final groqLower = groq.toLowerCase();
+  final packagedNeedsPro = packagedLower.contains('needs a professional');
+  final packagedHazard = packagedLower.contains('fire or smoke');
+  if (!packagedNeedsPro && !packagedHazard) {
+    return false;
+  }
+  if (packagedNeedsPro && !groqLower.contains('needs a professional')) {
+    return true;
+  }
+  if (packagedHazard && !groqLower.contains('fire or smoke')) {
     return true;
   }
   return false;
