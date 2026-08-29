@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 
 import '../helpers/degraded_mode.dart';
 import '../helpers/evidence_prompt_match.dart';
+import '../helpers/forbidden_guidance.dart';
 import '../helpers/inspect_steps.dart';
 import '../helpers/user_facing_error.dart';
 import '../helpers/why_ask_this.dart';
 import 'error_banner.dart';
+import 'household_how_to_text.dart';
 import 'why_ask_this_tile.dart';
 
 /// Inspect overlay: LOOK FOR, OK / Not OK, confirmation chips.
@@ -24,6 +26,7 @@ class InspectStepCard extends StatefulWidget {
     this.progressCurrent,
     this.progressTotal,
     this.whyAskBody,
+    this.expertMode = false,
     super.key,
   });
 
@@ -44,6 +47,9 @@ class InspectStepCard extends StatefulWidget {
 
   /// Optional “Why ask this?” from package maps. Empty uses inspect fallback.
   final String? whyAskBody;
+
+  /// Expert Mode only affects beginner-blocked heater-panel extras.
+  final bool expertMode;
 
   @override
   State<InspectStepCard> createState() => _InspectStepCardState();
@@ -199,9 +205,10 @@ class _InspectStepCardState extends State<InspectStepCard> {
             Text(_step.title, style: textTheme.titleLarge),
             if (_step.safetyPreamble.trim().isNotEmpty) ...[
               const SizedBox(height: 10),
-              Text(
-                _step.safetyPreamble,
+              HouseholdHowToText(
                 key: const Key('inspect-safety-preamble'),
+                text: _step.safetyPreamble,
+                expertMode: widget.expertMode,
                 style: textTheme.bodyMedium,
               ),
             ],
@@ -212,23 +219,28 @@ class _InspectStepCardState extends State<InspectStepCard> {
               style: textTheme.labelLarge,
             ),
             const SizedBox(height: 4),
-            Text(
-              _step.lookFor,
+            HouseholdHowToText(
               key: const Key('inspect-look-for'),
+              text: _step.lookFor,
+              expertMode: widget.expertMode,
               style: textTheme.bodyLarge,
             ),
             WhyAskThisTile(
-              body: widget.whyAskBody ??
-                  whyAskThisQuestion(inspectStep: _step).body,
+              body: visibleHouseholdHowTo(
+                widget.whyAskBody ??
+                    whyAskThisQuestion(inspectStep: _step).body,
+                expertMode: widget.expertMode,
+              ),
             ),
             const SizedBox(height: 10),
             Text(
               UserFacingCopy.inspectOkLooksLike,
               style: textTheme.labelLarge,
             ),
-            Text(
-              _step.okMeans,
+            HouseholdHowToText(
               key: const Key('inspect-ok-means'),
+              text: _step.okMeans,
+              expertMode: widget.expertMode,
               style: textTheme.bodySmall?.copyWith(
                 color: scheme.onSurfaceVariant,
               ),
@@ -238,9 +250,10 @@ class _InspectStepCardState extends State<InspectStepCard> {
               UserFacingCopy.inspectNotOkLooksLike,
               style: textTheme.labelLarge,
             ),
-            Text(
-              _step.notOkMeans,
+            HouseholdHowToText(
               key: const Key('inspect-not-ok-means'),
+              text: _step.notOkMeans,
+              expertMode: widget.expertMode,
               style: textTheme.bodySmall?.copyWith(
                 color: scheme.onSurfaceVariant,
               ),
@@ -287,7 +300,7 @@ class _InspectStepCardState extends State<InspectStepCard> {
                             child: Padding(
                               padding: const EdgeInsets.all(8),
                               child: Text(
-                                '${UserFacingCopy.inspectLookForHeading}: ${_step.lookFor}',
+                                '${UserFacingCopy.inspectLookForHeading}: ${visibleHouseholdHowTo(_step.lookFor, expertMode: widget.expertMode)}',
                                 key: const Key('inspect-camera-overlay-copy'),
                                 maxLines: 4,
                                 overflow: TextOverflow.ellipsis,

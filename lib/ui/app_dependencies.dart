@@ -18,6 +18,7 @@ import '../helpers/pattern_hint.dart';
 import '../helpers/inventory_export.dart';
 import '../helpers/package_resolve.dart';
 import '../helpers/local_backup.dart';
+import '../helpers/house_book_wipe.dart';
 import '../helpers/maintenance_reminder_copy.dart';
 import '../helpers/safety_stop.dart';
 import '../helpers/stale_session.dart';
@@ -214,6 +215,34 @@ class AppDependencies {
   Future<void> completeFirstRun() async {
     firstRunComplete = true;
     await _store?.saveFirstRunComplete();
+  }
+
+  /// Wipes local House Book. Caller must have confirmed in the UI.
+  /// Silent wipe is illegal.
+  Future<void> wipeLocalHouseBook() async {
+    final photoPaths = [
+      for (final item in repairSessionRepository.listAllEvidence())
+        item.localPhotoPath,
+    ];
+    for (final reminder in List<MaintenanceReminder>.from(_maintenanceReminders)) {
+      await maintenanceNotifier.cancel(reminder.id);
+    }
+    applyHouseholdSnapshot(emptyHouseBookSnapshot());
+    currentHousehold = null;
+    currentMemberId = null;
+    firstRunComplete = false;
+    expertMode = false;
+    householdProEnabled = false;
+    repairComfort = const RepairComfortProfile();
+    final store = _store;
+    if (store != null) {
+      await store.clearDomain();
+      await store.clearOwnedToolsOverlay();
+      await store.clearFirstRunComplete();
+    }
+    await deleteLocalHouseholdPhotoFiles(photoPaths);
+    _schedulePersist();
+    await flushPersist();
   }
 
   Future<void> acknowledgeDisclaimer() async {

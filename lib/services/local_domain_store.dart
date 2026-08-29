@@ -133,6 +133,11 @@ class LocalDomainStore {
     await _preferences!.setBool(firstRunCompleteKey, true);
   }
 
+  Future<void> clearFirstRunComplete() async {
+    await init();
+    await _preferences!.remove(firstRunCompleteKey);
+  }
+
   Future<bool> loadDisclaimerAcknowledged() async {
     await init();
     return _preferences!.getBool(disclaimerAcknowledgedKey) ?? false;

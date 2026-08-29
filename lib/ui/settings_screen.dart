@@ -226,6 +226,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _confirmWipeHouseBook() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: const Text(UserFacingCopy.wipeHouseBookConfirmTitle),
+            content: const Text(UserFacingCopy.wipeHouseBookConfirmBody),
+            actions: [
+              TextButton(
+                key: const Key('settings-wipe-cancel'),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                key: const Key('settings-wipe-confirm'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text(UserFacingCopy.wipeHouseBookConfirmAction),
+              ),
+            ],
+          ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    await widget.dependencies.wipeLocalHouseBook();
+    if (!mounted) {
+      return;
+    }
+    widget.onAppearanceChanged?.call();
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   Future<void> _openAbout() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
@@ -481,6 +513,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: const Text(UserFacingCopy.backupImportTitle),
               subtitle: const Text('Replace data on this device from a backup'),
               onTap: _importBackup,
+            ),
+            ListTile(
+              key: const Key('settings-wipe-house-book'),
+              leading: const Icon(Icons.delete_forever_outlined),
+              title: const Text(UserFacingCopy.wipeHouseBookTitle),
+              subtitle: const Text(UserFacingCopy.wipeHouseBookSubtitle),
+              onTap: _confirmWipeHouseBook,
             ),
             const SizedBox(height: 16),
             const BookSectionLabel('Demo'),

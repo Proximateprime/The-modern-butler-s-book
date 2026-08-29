@@ -126,6 +126,14 @@ abstract final class UserFacingCopy {
       'This file isn’t a household backup from this app. Your current data is unchanged.';
   static const backupImported = 'Household data restored from the backup.';
   static const backupExported = 'Household backup ready to save on this device.';
+  static const wipeHouseBookTitle = 'Delete household data';
+  static const wipeHouseBookSubtitle =
+      'Homes, appliances, sessions, photos, tools, and reminders on this device';
+  static const wipeHouseBookConfirmTitle = 'Delete all household data?';
+  static const wipeHouseBookConfirmBody =
+      'This removes your House Book on this device. It cannot be undone unless '
+      'you already exported a backup. There is no cloud account.';
+  static const wipeHouseBookConfirmAction = 'Delete everything';
   static const staleSessionTitle = 'This session is old';
   static String get staleSessionBody =>
       'Evidence was recorded more than $staleOpenSessionHours hours ago and '

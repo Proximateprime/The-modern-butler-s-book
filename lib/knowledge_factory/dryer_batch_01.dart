@@ -552,7 +552,7 @@ const List<Map<String, Object?>> _dryerBatch01Modes = [
     'commonality': 'high',
     'safetyNotes':
         'Do not guide beginners through live electrical testing of the heater circuit.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {

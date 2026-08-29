@@ -124,3 +124,67 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+5**. First-run
 - **Expect** the home **Repair history** row: status one line, date/detail one line, trailing export icon only. No clipped text, no overflow stripe. Tap the row still opens the closed session.
 - **Given** that appliance’s detail **Repair history** with a long headline, cause, or note.
 - **Expect** the history title, cause, and extra lines each ellipsize on one line. No overflow stripe.
+
+## Leftover-next pack — 0.1.3+6
+
+Fix only. Items 1–12 and the leftover pack above stay done; this pack does not reopen them. `GOLDEN_LABELS.md` **Call a pro** stays frozen.
+
+App **0.1.3+6**. Tests: `test/george_ui_aug29_test.dart`, `test/george_ui_leftover_test.dart`, plus `test/george_ui_leftover_next_test.dart`.
+
+### Fixes
+
+1. **Heater-circuit Safety Gate.** Remaining `closePathDiyCannotComplete` heater-circuit leaders (`heating-element-failed`, high-limit, cycling thermostat, relay/control, thermistor, timer heat segment) emit `safetyLevel` `professional` → lamp **Check carefully**. Confirmed does not unlock **Fixed**. Not a hard stop (no **Stop** banner). Door-switch **Fixed** when a firm click starts the machine is unchanged. Resettable thermal cutoff stays DIY.
+
+2. **Authoring import default.** Omitted `allowResolvedWhenConfirmed` parses as `false`. Explicit `true` only on DIY-completable paths. Resettable thermal cutoff stays DIY.
+
+3. **Safety Validator before paint.** Existing `forbidden_guidance` / `visibleHouseholdHowTo` runs on inspect LOOK FOR, interview HOW, and similar household how-to strings before display. Prohibition lines (`do not` / `never`) stay visible. No new engine.
+
+4. **House Book wipe.** Settings **Delete household data** with confirm. Cancel keeps data. Confirm wipes homes, appliances, sessions, photos, tools, and reminders on this device, then first-run / empty home. No cloud account. Silent wipe is illegal.
+
+### Leftover-next ledger
+
+- Heater-circuit professional leaders are an explicit id set in `dryer_close_path.dart`, plus `allowResolvedWhenConfirmed: false` on heating-element (built-in and Batch 01). Door-switch is not in the set.
+- Import constructor / JSON default is false; `parseAllowResolvedWhenConfirmed` treats omitted and non-`true` as false.
+- Display filter is `shouldHideGuidanceStep` / `visibleHouseholdHowTo` — same engine as close-path `visibleSafeGuidanceSteps`.
+- Wipe is `AppDependencies.wipeLocalHouseBook` after an AlertDialog confirm only. First-run flag is cleared; disclaimer and theme stay.
+
+### Phone (Given / tap / expect) — leftover-next
+
+Phone or Android emulator, width about **360px**. Install **0.1.3+6**. First-run: **Skip** / **Get started** → **I understand**. Exact labels. Do not file GOLDEN_LABELS **Call a pro**.
+
+#### E. Heating-element Check carefully (not calm, not a hard stop)
+
+- **Given** a dryer session on a phone (`Start repair` on a dryer). Not burning smell.
+- **Tap** to make **Heating element** the Primary (Most likely / pick **heating-element-failed**).
+- **Expect** lamp **Check carefully**, never **Safe to continue**, never **Stop**. No **Needs a professional** hard-stop banner (that banner is for burning smell / smoke). Stored `safetyLevel` is `professional`.
+- **Tap** through safe checks to the end of this path.
+- **Expect** **Pro recommended** / **Needs a professional**. **Fixed** is not offered. Confirming the still-cold pattern is not a completed repair.
+
+#### F. Door-switch Fixed unchanged
+
+- **Given** a dryer session whose Primary is door switch (`door-switch-failure`). Not burning smell.
+- **Expect** stored `safetyLevel` is not `professional` from the heater-circuit gate. No **Needs a professional** hard-stop banner.
+- **Tap** through the door-click check. If a firm click actually starts the machine and verification is **Confirmed**,
+- **Expect** **Fixed** is still available. This path is not a heater-circuit hard professional close.
+
+#### I. Authoring import default is not DIY-complete
+
+- **Given** a dryer session whose Primary is **Heating element** (Batch 01 `allowResolvedWhenConfirmed` is false — same result as omitting the flag on import).
+- **Tap** I'll repair / Do safe checks if shown, then **I did this** through the safe checks.
+- **Expect** **Pro recommended**, not **Fixed**. Settings still shows **0.1.3+6**. Explicit DIY (vent / resettable thermal cutoff) is not this path.
+
+#### G. Forbidden how-to is not shown
+
+- **Given** inspect LOOK FOR or interview **How to check** on a dryer session.
+- **Expect** no live-meter / jumper / bypass how-to is painted. Lines that start with **Do not** or **Never** stay visible (for example do not probe live terminals).
+
+#### H. Settings wipe + confirm → empty home
+
+- **Given** a House Book with at least one household and appliance. Open **Settings**.
+- **Tap** **Delete household data**.
+- **Expect** confirm dialog **Delete all household data?**
+- **Tap** **Cancel**.
+- **Expect** the household and appliance are still there. Settings stays open.
+- **Tap** **Delete household data** → **Delete everything**.
+- **Expect** first-run (Skip / Get started). After Skip, empty home: **Create Household**, no appliances. No silent wipe.
+

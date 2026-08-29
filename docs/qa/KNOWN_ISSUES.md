@@ -24,7 +24,7 @@ Expected product limits and authored quirks, **2026-08-25**. Not a backlog. Park
 
 ## Authored close-path (not a bug)
 
-**Thermal fuse** (`thermal-fuse-open`): **Confirmed** does **not** unlock **Fixed**. Beginner checks identify the pattern; fuse swap is professional. End Session is **Needs professional**. Same pattern on other `allowResolvedWhenConfirmed: false` modes (e.g. high-limit service, hard-stop hazard).
+**Thermal fuse** (`thermal-fuse-open`) and **heating element** (`heating-element-failed`): **Confirmed** does **not** unlock **Fixed**. Beginner checks identify the pattern; fuse swap / element service is professional. End Session is **Needs professional**. Same pattern on other heater-circuit DIY-cannot-complete leaders (high-limit, cycling thermostat, relay/control, thermistor, timer heat segment) and other `allowResolvedWhenConfirmed: false` modes (e.g. hard-stop hazard). Door-switch **Fixed** when a firm click actually starts the machine stays allowed.
 
 **Resettable thermal cutoff** (`accessible-thermal-reset`) and **motor overheat protector** are the DIY split: cooldown / visible reset if present, then clear airflow. That is not a fuse swap. Device-test notes: [`TEST_FEEDBACK_AUG25.md`](TEST_FEEDBACK_AUG25.md).
 
