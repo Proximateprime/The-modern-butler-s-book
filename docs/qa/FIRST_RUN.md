@@ -12,7 +12,7 @@ Read from code on **2026-08-29**. Tests: `test/first_run_empty_states_test.dart`
 |---|---|---|
 | 1 | Greeting + **What Butler does** | Observe → guide safe checks → remember House Book |
 | 2 | **What it doesn’t do** | No gas / live electrical / sealed cooling DIY. **The camera never diagnoses.** |
-| 3 | **Your household stays here** | Names, appliances, photos, tools, repair notes on this device. Not uploaded. |
+| 3 | **Your household stays here** | Names, appliances, photos, tools, repair notes stay on this device. Diagnosis stays on this device. Groq / backend disclosure lives in Settings, not here. |
 
 The first page opens with **Welcome. A few words before we open the book.** Then the existing what-beat. **Continue** turns the page. Last page: **Get started**.
 

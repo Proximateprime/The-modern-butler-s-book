@@ -24,13 +24,19 @@ void main() {
     expect(source, contains('text.headlineSmall'));
     expect(source, contains('UserFacingCopy.firstRunGreeting'));
     expect(UserFacingCopy.firstRunDoesBody, isNot(contains('premium add-on')));
+    expect(UserFacingCopy.firstRunDoesBody, contains('House Book'));
+    expect(UserFacingCopy.firstRunDoesBody, contains('this device'));
+    expect(UserFacingCopy.firstRunPrivacyBody, contains('on this device'));
+    expect(UserFacingCopy.firstRunPrivacyBody, contains('Diagnosis stays'));
+    expect(UserFacingCopy.firstRunPrivacyBody, isNot(contains('Groq')));
+    expect(UserFacingCopy.firstRunPrivacyBody, isNot(contains('butler backend')));
+    expect(UserFacingCopy.firstRunPrivacyBody, isNot(contains('cloud account')));
     expect(
       UserFacingCopy.firstRunPrivacyBody,
       isNot(contains('Nothing is uploaded')),
     );
-    expect(UserFacingCopy.firstRunPrivacyBody, contains('cloud account'));
-    expect(UserFacingCopy.firstRunPrivacyBody, contains('Groq'));
-    expect(UserFacingCopy.firstRunPrivacyBody, contains('Diagnosis stays'));
+    expect(UserFacingCopy.privacyPhrasingBackend, contains('Groq'));
+    expect(UserFacingCopy.privacyPhrasingBackend, contains('butler'));
   });
 
   test('Pages source chrome is a household book, not a developer demo', () {

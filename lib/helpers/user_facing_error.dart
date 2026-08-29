@@ -72,9 +72,8 @@ abstract final class UserFacingCopy {
   static const firstRunPrivacyTitle = 'Your household stays here';
   static const firstRunPrivacyBody =
       'Names, appliances, photos, tools, and repair notes stay in this book '
-      'on this device — not in a cloud account.\n\n'
-      'Some on-screen wording may be sent to Groq through the butler backend '
-      'so the book can talk more clearly. Diagnosis stays on this device.';
+      'on this device.\n\n'
+      'Diagnosis stays on this device.';
   static const proHandoffLead = 'Hand this page to the technician.';
   static const safetyDisclaimerTitle = 'Safety disclaimer';
   static const safetyDisclaimerBody =

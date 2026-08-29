@@ -65,9 +65,12 @@ void main() {
     expect(find.byKey(const Key('first-run-page-privacy')), findsOneWidget);
     expect(find.text(UserFacingCopy.firstRunPrivacyTitle), findsOneWidget);
     expect(find.textContaining('this device'), findsWidgets);
-    expect(find.textContaining('cloud account'), findsOneWidget);
-    expect(find.textContaining('Groq'), findsOneWidget);
-    expect(find.textContaining('butler backend'), findsOneWidget);
+    expect(find.textContaining('Names, appliances, photos'), findsOneWidget);
+    expect(find.textContaining('Diagnosis stays on this device'), findsOneWidget);
+    expect(find.textContaining('Groq'), findsNothing);
+    expect(find.textContaining('butler backend'), findsNothing);
+    expect(find.textContaining('cloud account'), findsNothing);
+    expect(find.textContaining('Nothing is uploaded'), findsNothing);
     expect(find.text('3 of 3'), findsNothing);
     expect(find.byKey(const Key('first-run-done-button')), findsOneWidget);
   });
