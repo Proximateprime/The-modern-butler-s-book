@@ -4,10 +4,15 @@ import '../models/evidence.dart';
 import '../models/knowledge_package.dart';
 import '../models/session_objective.dart';
 import '../models/session_outcome.dart';
+import 'close_path_phase.dart';
 import 'dryer_close_path.dart';
 import 'dryer_problem_starter.dart';
+import 'evidence_prompt_match.dart';
 import 'groq_phrasing.dart';
+import 'guidance_display.dart';
+import 'inspect_steps.dart';
 import 'pro_scope.dart';
+import 'safety_stop.dart';
 import 'session_timeline.dart';
 
 /// Default beginner-safe reminder when a mode has no specific notes.
@@ -97,6 +102,7 @@ String formatProHandoffSpokenParagraph({
   required List<SessionTimelineObservation> observations,
   required List<String> alreadyTried,
   String? leaderHypothesis,
+  String? whyStopping,
   String? groqParagraph,
 }) {
   final packaged = packagedProHandoffSpokenParagraph(
@@ -105,6 +111,7 @@ String formatProHandoffSpokenParagraph({
     observations: observations,
     alreadyTried: alreadyTried,
     leaderHypothesis: leaderHypothesis,
+    whyStopping: whyStopping,
   );
   final overlay = groqParagraph?.trim() ?? '';
   if (overlay.isEmpty) {
@@ -131,6 +138,11 @@ String formatProHandoffSpokenParagraph({
 }
 
 /// Builds a handoff from a closed session's evidence and outcome.
+///
+/// [alreadyTried] is what this session recorded — never the unused close-path
+/// checklist for the ranking leader. On a safety stop, [whyStopping] is the
+/// hazard / Needs a professional reason, not the leader path's verification
+/// why.
 String formatProHandoffForSession({
   required List<Evidence> evidence,
   KnowledgePackage? package,
@@ -138,10 +150,14 @@ String formatProHandoffForSession({
   Appliance? appliance,
   required SessionOutcome outcome,
   DateTime? date,
+  List<String> completedGuidanceStepIds = const [],
 }) {
   final leaderId = outcome.rankingLeaderFailureModeId;
-  final path =
-      leaderId == null ? null : closePathForFailureMode(leaderId);
+  final stop = evaluateSafetyStop(
+    evidence: evidence,
+    primaryFailureModeId: leaderId,
+  );
+  final path = leaderId == null ? null : closePathForFailureMode(leaderId);
   return formatProHandoffSummary(
     applianceName: applianceName,
     manufacturer: appliance?.manufacturer,
@@ -150,36 +166,63 @@ String formatProHandoffForSession({
     symptom: outcome.startSymptom ?? _symptomFromEvidence(evidence),
     observations: sessionTimelineObservations(evidence),
     leaderHypothesis: outcome.rankingLeaderLabel,
-    alreadyTried: alreadyTriedStepsForLeader(leaderId),
+    alreadyTried: alreadyTriedFromSession(
+      evidence: evidence,
+      completedGuidanceStepIds: completedGuidanceStepIds,
+      leaderFailureModeId: leaderId,
+    ),
     safetyNotes: safetyNotesForLeader(
       package: package,
       failureModeId: leaderId,
     ),
     householdNote: outcome.userNote,
     sessionObjective: outcome.sessionObjective,
-    whyStopping: path == null ? null : proHandoffWhy(path),
-    tellTechnician: path == null ? null : proHandoffTellTechnician(path),
+    whyStopping: whyStoppingForSession(
+      safetyStop: stop,
+      path: path,
+    ),
+    tellTechnician: tellTechnicianForSession(
+      safetyStop: stop,
+      path: path,
+    ),
   );
 }
 
 /// Spoken paragraph from a closed session. Display only.
+/// Uses the same already-tried list and [whyStopping] as the written handoff.
 String formatProHandoffSpokenForSession({
   required List<Evidence> evidence,
   required String applianceName,
   required SessionOutcome outcome,
   String? groqParagraph,
+  List<String> completedGuidanceStepIds = const [],
 }) {
   final leaderId = outcome.rankingLeaderFailureModeId;
+  final stop = evaluateSafetyStop(
+    evidence: evidence,
+    primaryFailureModeId: leaderId,
+  );
+  final path = leaderId == null ? null : closePathForFailureMode(leaderId);
   return formatProHandoffSpokenParagraph(
     applianceName: applianceName,
     symptom: outcome.startSymptom ?? _symptomFromEvidence(evidence),
     observations: sessionTimelineObservations(evidence),
-    alreadyTried: alreadyTriedStepsForLeader(leaderId),
+    alreadyTried: alreadyTriedFromSession(
+      evidence: evidence,
+      completedGuidanceStepIds: completedGuidanceStepIds,
+      leaderFailureModeId: leaderId,
+    ),
     leaderHypothesis: outcome.rankingLeaderLabel,
+    whyStopping: whyStoppingForSession(
+      safetyStop: stop,
+      path: path,
+    ),
     groqParagraph: groqParagraph,
   );
 }
 
+/// Canned close-path checklist for a failure mode. Display/tests only —
+/// never use this as a live session's "already tried" list.
 List<String> alreadyTriedStepsForLeader(String? failureModeId) {
   if (failureModeId == null || failureModeId.trim().isEmpty) {
     return const [];
@@ -189,6 +232,131 @@ List<String> alreadyTriedStepsForLeader(String? failureModeId) {
     return const [];
   }
   return safeCheckGuidanceSteps(steps);
+}
+
+/// What this session actually recorded: completed inspect / verification
+/// evidence plus Safe Guidance steps the household marked done.
+/// Empty when nothing was recorded — the formatter prints "None recorded."
+List<String> alreadyTriedFromSession({
+  required List<Evidence> evidence,
+  List<String> completedGuidanceStepIds = const [],
+  String? leaderFailureModeId,
+}) {
+  return [
+    ..._triedInspectAndVerification(evidence),
+    ..._triedCompletedGuidance(
+      completedGuidanceStepIds: completedGuidanceStepIds,
+      leaderFailureModeId: leaderFailureModeId,
+    ),
+  ];
+}
+
+/// Safety-stop reason when the session hard-stopped; otherwise the path why.
+String? whyStoppingForSession({
+  SafetyStop? safetyStop,
+  FailureModeClosePath? path,
+}) {
+  if (safetyStop != null) {
+    return proHandoffWhySafetyStop(safetyStop);
+  }
+  if (path == null) {
+    return null;
+  }
+  return proHandoffWhy(path);
+}
+
+/// Safety-stop bullets do not claim unused DIY checks were done.
+List<String>? tellTechnicianForSession({
+  SafetyStop? safetyStop,
+  FailureModeClosePath? path,
+}) {
+  if (safetyStop != null) {
+    return proHandoffTellTechnicianSafetyStop(safetyStop);
+  }
+  if (path == null) {
+    return null;
+  }
+  return proHandoffTellTechnician(path);
+}
+
+/// Why we stopped on a fire / smoke / professional safety gate.
+String proHandoffWhySafetyStop(SafetyStop stop) {
+  final reason = stop.reason.trim();
+  if (reason.isEmpty) {
+    return 'Needs a professional.';
+  }
+  if (reason.toLowerCase().contains('needs a professional')) {
+    return reason;
+  }
+  return 'Needs a professional. $reason.';
+}
+
+List<String> proHandoffTellTechnicianSafetyStop(SafetyStop stop) {
+  final reason = stop.reason.trim();
+  return [
+    if (reason.isEmpty)
+      'Stopped for a safety hazard before DIY checks.'
+    else
+      'Stopped for a safety hazard: $reason.',
+    'Share the observations listed above.',
+  ];
+}
+
+List<String> _triedInspectAndVerification(List<Evidence> evidence) {
+  final tried = <String>[];
+  final seenTemplates = <String>{};
+  for (final item in evidence) {
+    final templateId = item.templateId;
+    final answer = item.answer?.trim();
+    if (answer == null || answer.isEmpty) {
+      continue;
+    }
+    if (isCloseVerificationTemplateId(templateId)) {
+      final prompt = item.observation.trim();
+      tried.add(
+        prompt.isEmpty ? answer : '$prompt: $answer',
+      );
+      continue;
+    }
+    if (templateId == null || templateId.isEmpty) {
+      continue;
+    }
+    if (templateId == problemStarterComplaintTemplateId) {
+      continue;
+    }
+    final step = inspectStepForEvidenceTemplate(templateId: templateId);
+    if (step == null) {
+      continue;
+    }
+    if (!seenTemplates.add(templateId)) {
+      continue;
+    }
+    tried.add('${step.title}: $answer');
+  }
+  return tried;
+}
+
+List<String> _triedCompletedGuidance({
+  required List<String> completedGuidanceStepIds,
+  String? leaderFailureModeId,
+}) {
+  if (completedGuidanceStepIds.isEmpty) {
+    return const [];
+  }
+  if (leaderFailureModeId == null || leaderFailureModeId.trim().isEmpty) {
+    return const [];
+  }
+  final path = closePathForFailureMode(leaderFailureModeId);
+  if (path == null) {
+    return const [];
+  }
+  final steps = safeCheckGuidanceSteps(path.safeGuidanceSteps);
+  final done = completedGuidanceStepIds.toSet();
+  return [
+    for (var i = 0; i < steps.length; i++)
+      if (done.contains(guidanceStepId(i, steps[i])))
+        guidanceForSafeStep(steps[i]).what,
+  ];
 }
 
 String? safetyNotesForLeader({

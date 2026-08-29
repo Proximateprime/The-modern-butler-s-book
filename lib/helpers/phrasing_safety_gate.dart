@@ -87,6 +87,18 @@ GroqPhrasingAccepted? acceptGroqPhrasing({
     }
   }
 
+  if (request.slot == PhrasingSlot.proHandoff &&
+      (_inventsUnrecordedTriedSteps(
+            packaged: request.packagedWhyOneLine,
+            groq: why,
+          ) ||
+          _dropsSafetyStopWhy(
+            packaged: request.packagedWhyOneLine,
+            groq: why,
+          ))) {
+    return null;
+  }
+
   if (requireOfficialStop) {
     final shortened = why ?? title ?? '';
     if (!hasOfficialStopSubstrings(shortened)) {
@@ -255,6 +267,59 @@ bool _failsHouseholdHowToGate(String text) {
       text.trim().isNotEmpty &&
       !isSafetyLimitLanguage(text)) {
     return true;
+  }
+  return false;
+}
+
+/// Groq may phrase a packaged safety why. It may not drop
+/// Needs a professional / fire or smoke when those are in the packaged line.
+bool _dropsSafetyStopWhy({
+  required String packaged,
+  required String? groq,
+}) {
+  if (groq == null || groq.isEmpty) {
+    return false;
+  }
+  final packagedLower = packaged.toLowerCase();
+  final groqLower = groq.toLowerCase();
+  final packagedNeedsPro = packagedLower.contains('needs a professional');
+  final packagedHazard = packagedLower.contains('fire or smoke');
+  if (!packagedNeedsPro && !packagedHazard) {
+    return false;
+  }
+  if (packagedNeedsPro && !groqLower.contains('needs a professional')) {
+    return true;
+  }
+  if (packagedHazard && !groqLower.contains('fire or smoke')) {
+    return true;
+  }
+  return false;
+}
+
+/// Groq may rephrase recorded tried steps. It may not invent lint / vent
+/// checks that are not already in the packaged spoken paragraph.
+bool _inventsUnrecordedTriedSteps({
+  required String packaged,
+  required String? groq,
+}) {
+  if (groq == null || groq.isEmpty) {
+    return false;
+  }
+  final packagedLower = packaged.toLowerCase();
+  final groqLower = groq.toLowerCase();
+  const inventedTryClaims = [
+    'lint filter',
+    'lint screen',
+    'vent hood',
+    'exhaust restriction',
+    'visible vent hose',
+    'cleaned the lint',
+    'checked airflow',
+  ];
+  for (final claim in inventedTryClaims) {
+    if (groqLower.contains(claim) && !packagedLower.contains(claim)) {
+      return true;
+    }
   }
   return false;
 }

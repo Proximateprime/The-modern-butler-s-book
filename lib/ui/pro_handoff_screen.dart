@@ -13,6 +13,21 @@ import 'brand_mark.dart';
 import 'primary_cta.dart';
 import 'product_chrome.dart';
 
+List<String> _completedGuidanceStepIdsFor(
+  AppDependencies dependencies,
+  String sessionId,
+) {
+  final sessionIds = dependencies.repairSessionRepository
+          .getSession(sessionId)
+          ?.completedGuidanceStepIds ??
+      const <String>[];
+  if (sessionIds.isNotEmpty) {
+    return sessionIds;
+  }
+  return dependencies.uiResumeForSession(sessionId)?.completedGuidanceStepIds ??
+      const <String>[];
+}
+
 /// After “Needs a professional”: preview, share, and copy a technician handoff.
 class ProHandoffScreen extends StatelessWidget {
   const ProHandoffScreen({
@@ -35,6 +50,10 @@ class ProHandoffScreen extends StatelessWidget {
       applianceName: appliance.name,
       appliance: appliance,
       outcome: outcome,
+      completedGuidanceStepIds: _completedGuidanceStepIdsFor(
+        dependencies,
+        outcome.sessionId,
+      ),
     );
   }
 
@@ -185,6 +204,10 @@ class _ProHandoffSpokenCardState extends State<_ProHandoffSpokenCard> {
           .evidenceForSession(widget.outcome.sessionId),
       applianceName: widget.appliance.name,
       outcome: widget.outcome,
+      completedGuidanceStepIds: _completedGuidanceStepIdsFor(
+        widget.dependencies,
+        widget.outcome.sessionId,
+      ),
     );
     if (widget.dependencies.groqPhrasing.shouldCallNetwork) {
       unawaited(_swap());
