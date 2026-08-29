@@ -1,6 +1,21 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
+
+/// Mouse / trackpad / touch all drag-scroll. Pages testers are often on a
+/// laptop; the default Material behavior only dragged with touch.
+class ButlerScrollBehavior extends MaterialScrollBehavior {
+  const ButlerScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+  };
+}
 
 ButlerColors butlerColors(BuildContext context) {
   return Theme.of(context).extension<ButlerColors>() ??

@@ -11,6 +11,14 @@ Future<void> prepareTallSurface(WidgetTester tester) async {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
+/// Hosted Pages short viewport (~656 logical px height) George walked.
+Future<void> prepareShortViewport(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(800, 656);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
 Future<void> confirmAddAppliance(WidgetTester tester) async {
   final save = find.byKey(const Key('add-appliance-save-button'));
   if (save.evaluate().isEmpty) {
@@ -25,8 +33,16 @@ Future<void> openDryerSession(
   AppDependencies dependencies,
   String householdName, {
   bool skipProblemStarter = true,
+  Size? viewSize,
 }) async {
-  await prepareTallSurface(tester);
+  if (viewSize != null) {
+    tester.view.physicalSize = viewSize;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  } else {
+    await prepareTallSurface(tester);
+  }
   await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
   await tester.tap(find.byKey(const Key('create-household-button')));
   await tester.pumpAndSettle();
@@ -171,8 +187,10 @@ Future<void> tapInspectOrAnswerChoice(
 }
 
 Future<void> startRepairFromDetail(WidgetTester tester) async {
-  await tester.tap(find.byKey(const Key('appliance-detail-start-repair')));
-  await tester.pumpAndSettle();
+  await tapVisible(
+    tester,
+    find.byKey(const Key('appliance-detail-start-repair')),
+  );
 }
 
 /// Skips the deterministic problem starter so interview tests stay focused.

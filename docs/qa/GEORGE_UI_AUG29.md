@@ -424,6 +424,63 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Session scroll, Skip, quieter card — 0.1.4+4 (do not reopen leftover)
+
+Fix only. Leftover 1–12 / +5…+9 stay done. `GOLDEN_LABELS` **Call a pro**
+and inspect **Matches / OK** stay frozen. Voice-as-required stays locked.
+Groq stays talk-only. `UNMATCHED_PROBLEM_V1` stays HOLD.
+
+App **0.1.4+4**. Tests: `test/session_scroll_skip_test.dart` plus existing
+first-run / safety-stop / Other / describe suites.
+
+### Fixes
+
+1. **Short viewport scroll.** Session body is `Expanded` + `SingleChildScrollView`
+   (`session-scroll-view`) so a ~656px Pages pane can reach Current question,
+   Why ask this?, and chips including Other / describe. Mouse / trackpad /
+   touch all drag (`ButlerScrollBehavior` on `MaterialApp`). Do not wrap the
+   Stop banner in that scroll view.
+2. **First-run Skip, first tap.** Skip has a 48px hit target, autofocus, and
+   post-frame focus. Compact wordmark so the title cannot cover Skip. Completing
+   first-run still shows **I understand** when the disclaimer is outstanding.
+3. **Quieter question card.** `other-observations-picker`,
+   `evidence-history-tile`, `failure-modes-tile`, `package-summary-tile`,
+   `hypotheses-tile`, and `decision-context-tile` sit under a muted
+   `session-secondary-details` heading (**More about this session**), without
+   the old stacked card chrome. Evidence / history is kept. Each tile stays
+   default collapsed. Not a session rebuild.
+4. **Pinned Stop.** When `safetyStop != null`, `safety-stop-banner` sits above
+   the scroll view so it cannot be scrolled off. Title stays **Needs a
+   professional**. Body still unplug AND ventilate AND don’t keep running.
+
+### Phone (Given / tap / expect)
+
+Phone or hosted Pages, height about **656px**. Install **0.1.4+4**. First-run:
+**one Skip tap** → **I understand**. Exact labels. Do not file GOLDEN_LABELS
+**Call a pro**. Groq must not mint chips, how-to, or failure modes.
+
+#### A. Short session reaches Other / describe
+
+- **Given** a dryer session on a ~656px viewport (`Start repair` on a dryer).
+- **Expect** the session body scrolls. Current question, Why ask this?, and
+  chips including **Other / describe** can be reached.
+- **Tap** **Other / describe**, type a note, **Save**.
+- **Expect** recorded answer `Other / describe: {note}`.
+
+#### B. Skip is one tap
+
+- **Given** first launch after splash.
+- **Tap** **Skip** once.
+- **Expect** first-run is gone. **I understand** disclaimer is next if not
+  already acknowledged. House Book is not next.
+
+#### C. Burning smell Stop stays on SCREEN
+
+- **Given** a dryer session. **Tap** **Burning smell / smoke** → **Confirm**.
+- **Expect** banner title **Needs a professional**. Body includes unplug if
+  safe, ventilate, and do not keep running. Banner stays on screen if the
+  rest of the session is scrolled. Ordinary questions are gone.
+
 ## Other / describe type-in phrasing — 0.1.4+3 (do not reopen leftover)
 
 Same seven ON hooks. Groq still changes how we talk, not what we conclude.

@@ -20,7 +20,7 @@ Read from code on **2026-08-22**. Tests: `test/first_run_empty_states_test.dart`
 
 Uninstall the app or clear app storage so SharedPreferences is empty.
 
-1. Launch. After splash: **What Butler does** (**1 of 3**). **Skip** is in the app bar.
+1. Launch. After splash: **What Butler does** (**1 of 3**). **Skip** is in the app bar. The first tap on Skip completes first-run.
 2. **Next** → **What it doesn’t do**. **Next** → privacy. **Get started**.
 3. One-time **Safety disclaimer** → **I understand** (if not already acknowledged).
 4. Home. Kill and reopen: onboarding does **not** return.

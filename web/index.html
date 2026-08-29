@@ -14,6 +14,19 @@
   <title>The Modern Butler's Book</title>
 </head>
 <body>
+  <script>
+    // First click after load must reach Flutter widgets (Skip, chips).
+    window.addEventListener('flutter-first-frame', function () {
+      var view = document.querySelector('flutter-view');
+      if (view && typeof view.focus === 'function') {
+        view.focus();
+      }
+      var canvas = document.querySelector('canvas');
+      if (canvas && typeof canvas.focus === 'function') {
+        canvas.focus();
+      }
+    });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -6,6 +6,7 @@ import 'ui/app_theme.dart';
 import 'ui/first_run_screen.dart';
 import 'ui/home_screen.dart';
 import 'ui/safety_disclaimer_screen.dart';
+import 'ui/product_chrome.dart';
 import 'ui/splash_screen.dart';
 
 Future<void> main() async {
@@ -112,6 +113,7 @@ class _ModernButlerAppState extends State<ModernButlerApp>
     return MaterialApp(
       title: 'The Modern Butler’s Book',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const ButlerScrollBehavior(),
       theme: _lightTheme,
       darkTheme: buildDarkAppTheme(),
       themeMode: _themeMode,
