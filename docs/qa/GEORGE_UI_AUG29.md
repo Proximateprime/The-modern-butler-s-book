@@ -87,7 +87,7 @@ App **0.1.3+5**. Tests: `test/george_ui_aug29_test.dart` plus `test/george_ui_le
 - Blocking line is presentation-only. Burning-smell banner body stays `safetyStopDisplayCopy` / `safetyStopOfficial`.
 - History path overlay is display-time from `washerLoadStyle`. Stored failure-mode id stays `washer-door-not-latched`.
 - Home history meta is one ellipsized line so the `isThreeLine` ListTile does not clip at phone width. Trailing stays export icon only. `PaperCard` is a `Material` ancestor so those tiles keep a valid ink parent.
-- Appliance-detail history **title** is one ellipsized line at phone width (same clip rule as the home row).
+- Appliance-detail history **title**, **cause**, and each **extra** line are one ellipsized line at phone width (same clip rule as the home row). Cause/extra sit under the `ListTile` so they cannot blow the three-line subtitle slot.
 - `GOLDEN_LABELS.md` still freezes I'll-repair **Call a pro** / missing-tool **Call a professional** as QA chrome. That freeze is not Bible. This pack does not reopen washer inspect / GOLDEN_LABELS door copy. Tests that asserted **Stop — Call a professional** now assert **Needs a professional** on the stop banner title.
 - Do not restore **Calling a professional**, **End Session as Resolved**, or Stay-alert `#C4A035`. Stay-alert gold stays `#6B4E0E`.
 
@@ -122,5 +122,5 @@ Phone or Android emulator, width about **360px**. Install **0.1.3+5**. First-run
 
 - **Given** House Book on a ~360px phone with at least one completed repair whose status is **Needs a professional** and a long appliance name or note.
 - **Expect** the home **Repair history** row: status one line, date/detail one line, trailing export icon only. No clipped text, no overflow stripe. Tap the row still opens the closed session.
-- **Given** that appliance’s detail **Repair history** with a long headline.
-- **Expect** the history title ellipsizes on one line. No overflow stripe.
+- **Given** that appliance’s detail **Repair history** with a long headline, cause, or note.
+- **Expect** the history title, cause, and extra lines each ellipsize on one line. No overflow stripe.

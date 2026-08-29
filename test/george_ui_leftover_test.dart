@@ -291,6 +291,19 @@ void main() {
         sessionId: sessionId,
         closeKind: SessionCloseKind.fixed,
         whatFixedIt: 'Cleared the crushed vent hose',
+        rootCause:
+            'Restricted exhaust overheated the cabinet and packed lint behind '
+            'the drum for months without a vent cleaning on this phone-width row',
+        userNote:
+            'Also told the technician about the warm plug we did not keep using '
+            'and the crushed hose behind the dryer that still needs a clamp',
+        contributingFactors: const [
+          'Skipped filter cleaning for a long stretch of weekly loads',
+        ],
+        preventiveActions: const [
+          'Check pockets before washing and clean the lint filter about every '
+              'thirty days so this does not pack again',
+        ],
       );
 
       tester.view.physicalSize = const Size(360, 800);
@@ -330,6 +343,16 @@ void main() {
       );
       expect(title.maxLines, 1);
       expect(title.overflow, TextOverflow.ellipsis);
+      final causeText = tester.widget<Text>(
+        find.byKey(Key('repair-history-cause-$sessionId')),
+      );
+      expect(causeText.maxLines, 1);
+      expect(causeText.overflow, TextOverflow.ellipsis);
+      final extraText = tester.widget<Text>(
+        find.byKey(Key('repair-history-extra-0-$sessionId')),
+      );
+      expect(extraText.maxLines, 1);
+      expect(extraText.overflow, TextOverflow.ellipsis);
       expect(tester.takeException(), isNull);
       expect(overflows, isEmpty, reason: overflows.join('\n'));
     },

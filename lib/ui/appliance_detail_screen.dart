@@ -459,53 +459,61 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
         '${formatRepairHistoryDate(item.completedAt)} · '
         '${sessionCloseKindLabel(outcome.closeKind)}'
         '${by == null ? '' : ' · $by'}';
-    return ListTile(
-      key: Key('repair-history-${outcome.sessionId}'),
-      isThreeLine: cause != null || extras.isNotEmpty,
-      title: Text(
-        repairHistoryHeadline(
-          outcome,
-          washerLoadStyle: widget.appliance.washerLoadStyle,
-        ),
-        key: Key('repair-history-headline-${outcome.sessionId}'),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          key: Key('repair-history-${outcome.sessionId}'),
+          isThreeLine: false,
+          title: Text(
+            repairHistoryHeadline(
+              outcome,
+              washerLoadStyle: widget.appliance.washerLoadStyle,
+            ),
+            key: Key('repair-history-headline-${outcome.sessionId}'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
             when,
             key: Key('repair-history-when-${outcome.sessionId}'),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          if (cause != null)
-            Text(
-              cause,
-              key: Key('repair-history-cause-${outcome.sessionId}'),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+          trailing: RepairLogExportButton(
+            sessionId: outcome.sessionId,
+            applianceName: item.applianceName,
+            date: item.completedAt,
+            outcome: outcome,
+            dependencies: widget.dependencies,
+            appliance: widget.appliance,
+          ),
+          onTap: () => _openHistoryItem(item),
+        ),
+        if (cause != null || extras.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (cause != null)
+                  Text(
+                    cause,
+                    key: Key('repair-history-cause-${outcome.sessionId}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                for (var i = 0; i < extras.length; i++)
+                  Text(
+                    extras[i],
+                    key: Key('repair-history-extra-$i-${outcome.sessionId}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
             ),
-          for (var i = 0; i < extras.length; i++)
-            Text(
-              extras[i],
-              key: Key('repair-history-extra-$i-${outcome.sessionId}'),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-        ],
-      ),
-      trailing: RepairLogExportButton(
-        sessionId: outcome.sessionId,
-        applianceName: item.applianceName,
-        date: item.completedAt,
-        outcome: outcome,
-        dependencies: widget.dependencies,
-        appliance: widget.appliance,
-      ),
-      onTap: () => _openHistoryItem(item),
+          ),
+      ],
     );
   }
 }
