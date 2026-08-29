@@ -112,6 +112,7 @@ void main() {
       find.textContaining(RegExp('lint', caseSensitive: false)),
       findsWidgets,
     );
-    expect(find.text('Evidence recorded: 7'), findsOneWidget);
+    expect(find.byKey(const Key('outcome-evidence-count')), findsOneWidget);
+    expect(find.text('Evidence recorded: 5'), findsOneWidget);
   });
 }
