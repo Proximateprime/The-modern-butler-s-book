@@ -30,6 +30,7 @@ class SafetyStop {
 /// - `electric-supply-connection-fault`, `motor-failure`, `start-switch-failure`
 /// - `start-capacitor-or-start-assist-weak`,
 ///   `gas-dryer-no-ignition-professional-only`
+/// - `internal-duct-lint-collapse`, `blower-wheel-obstruction`
 /// - any close path with `allowResolvedWhenConfirmed: false` (e.g. thermal fuse)
 /// - heater-circuit DIY-cannot-complete leaders (heating-element, high-limit,
 ///   cycling thermostat, relay/control, thermistor, timer heat segment)
@@ -150,6 +151,8 @@ const Set<String> _gatedProfessionalFailureModeIds = {
   'start-switch-failure',
   'start-capacitor-or-start-assist-weak',
   'gas-dryer-no-ignition-professional-only',
+  'internal-duct-lint-collapse',
+  'blower-wheel-obstruction',
 };
 const List<_EvidenceSafetyRule> _evidenceRules = [
   _EvidenceSafetyRule(

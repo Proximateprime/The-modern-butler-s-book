@@ -1044,7 +1044,7 @@ const List<Map<String, Object?>> _dryerBatch02Modes = [
         'Beginner filter/hose checks only. Internal duct work is professional.',
     'commonality': 'common',
     'safetyNotes': 'No beginner cabinet teardown for internal ducts.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
