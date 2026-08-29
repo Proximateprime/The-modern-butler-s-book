@@ -447,7 +447,10 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
 
   Widget _repairHistoryTile(RecentSessionOutcome item) {
     final outcome = item.outcome;
-    final cause = repairHistoryCauseLine(outcome);
+    final cause = repairHistoryCauseLine(
+      outcome,
+      washerLoadStyle: widget.appliance.washerLoadStyle,
+    );
     final extras = repairHistoryExtraLines(outcome);
     final by = repairHistoryMemberLine(
       widget.dependencies.displayNameForUserId(item.session.createdByUserId),
@@ -460,7 +463,10 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
       key: Key('repair-history-${outcome.sessionId}'),
       isThreeLine: cause != null || extras.isNotEmpty,
       title: Text(
-        repairHistoryHeadline(outcome),
+        repairHistoryHeadline(
+          outcome,
+          washerLoadStyle: widget.appliance.washerLoadStyle,
+        ),
         key: Key('repair-history-headline-${outcome.sessionId}'),
       ),
       subtitle: Column(

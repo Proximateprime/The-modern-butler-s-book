@@ -127,6 +127,11 @@ SafetyLightKind safetyLightForSession({
       level.contains('stop')) {
     return SafetyLightKind.stop;
   }
+  // Locked leftover pick (Safety Gate): professional must not fall through
+  // to calm / "Safe to continue".
+  if (level.contains('professional')) {
+    return SafetyLightKind.caution;
+  }
   if (closePathActive) {
     return SafetyLightKind.caution;
   }

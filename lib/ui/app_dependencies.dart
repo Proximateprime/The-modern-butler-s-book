@@ -1029,6 +1029,7 @@ class AppDependencies {
       lastRepairLine: inventoryLastRepairLine(
         completedAt: item.completedAt,
         outcome: item.outcome,
+        washerLoadStyle: appliance.washerLoadStyle,
       ),
       lastRepairRootCause: item.outcome.rootCause,
       lastRepairContributing: item.outcome.contributingFactors,

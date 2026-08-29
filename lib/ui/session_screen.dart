@@ -6476,7 +6476,7 @@ class _SafetyStopBanner extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Stop — Call a professional',
+              'Needs a professional',
               key: const Key('safety-stop-title'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: scheme.onErrorContainer,

@@ -68,7 +68,7 @@ Unmarked rows (neither I have nor I don’t) use: **Mark I have or I don’t for
 
 | Gate | Line (exact) |
 |---|---|
-| Safety hard-stop | `This step is blocked for safety—call a pro.` |
+| Safety hard-stop | `This step is blocked for safety — Needs a professional.` |
 | Incomplete inspect | `Finish this look before opening a panel or pulling the appliance out.` |
 | Dryer easy airflow | `Next: check the lint filter before opening the cabinet.` (or outside vent / visible hose) |
 | Missing required tool | `You need a … for the next steps.` |
