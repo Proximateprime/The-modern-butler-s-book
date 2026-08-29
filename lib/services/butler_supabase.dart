@@ -9,14 +9,6 @@ Future<bool> ensureButlerSupabase() async {
   if (!supabasePhrasingBackendConfigured()) {
     return false;
   }
-  try {
-    // Throws when initialize() has not run. Never reads GROQ_API_KEY.
-    if (Supabase.instance.client.supabaseUrl.isNotEmpty) {
-      return true;
-    }
-  } catch (_) {
-    // Not initialized yet.
-  }
   await Supabase.initialize(
     url: kBundledSupabaseUrl.trim(),
     anonKey: kBundledSupabaseAnonKey.trim(),

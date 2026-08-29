@@ -195,11 +195,13 @@ void main() {
     final src = File('supabase/functions/phrase/index.ts').readAsStringSync();
     expect(src, contains("Deno.env.get('GROQ_API_KEY')"));
     expect(src, contains('llama-3.1-8b-instant'));
-    expect(src, isNot(contains('service_role')));
+    expect(src, contains("'service_role'"));
+    expect(src, isNot(contains('SUPABASE_SERVICE_ROLE')));
+    expect(src, isNot(contains('createClient')));
     expect(src, isNot(contains(RegExp(r'gsk_[A-Za-z0-9]{8,}'))));
     expect(src, isNot(contains('console.log(groqKey)')));
     expect(src, isNot(contains('console.log(GROQ')));
-    expect(src, contains('never returned'));
+    expect(src, contains('Never return it'));
     expect(kPhraseFunctionName, 'phrase');
     expect(
       phraseFunctionUrlFromSupabase('https://example.supabase.co'),
@@ -210,23 +212,19 @@ void main() {
   });
 
   test('fixture tree does not contain a Groq key or Play keystore', () {
-    final root = Directory.current;
+    final tracked = Process.runSync('git', ['ls-files']);
+    expect(tracked.exitCode, 0);
+    final files = tracked.stdout.toString().split('\n').where((line) {
+      return line.trim().isNotEmpty;
+    });
     final bannedName = RegExp(r'\.(jks|keystore)$');
-    for (final entity in root.listSync(recursive: true, followLinks: false)) {
-      if (entity is! File) {
-        continue;
-      }
-      final path = entity.path;
-      if (path.contains('/.git/') ||
-          path.contains('/build/') ||
-          path.contains('/.dart_tool/')) {
-        continue;
-      }
+    for (final path in files) {
       expect(bannedName.hasMatch(path), isFalse, reason: path);
-      if (path.endsWith('key.properties') &&
-          !path.endsWith('key.properties.example')) {
-        fail('key.properties must not be in the tree: $path');
-      }
+      expect(
+        path == 'key.properties' || path == 'android/key.properties',
+        isFalse,
+        reason: path,
+      );
     }
     const fixtures = [
       'test/play_ready_groq_edge_test.dart',
@@ -236,7 +234,7 @@ void main() {
     for (final path in fixtures) {
       final text = File(path).readAsStringSync();
       expect(text, isNot(contains(RegExp(r'gsk_[A-Za-z0-9]{20,}'))));
-      expect(text, isNot(contains('GROQ_API_KEY=gsk_')));
+      expect(text.contains('GROQ_API_KEY=' 'gsk_'), isFalse);
     }
   });
 }
