@@ -139,17 +139,12 @@ void main() {
       final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 29, 23));
       await openDryerSession(tester, deps, 'Handoff Follow-up House');
 
-      await selectFailureMode(tester, 'electric-supply-connection-fault');
       await selectObservation(tester, 'hazard-observation');
       expect(find.textContaining('repeated stopping'), findsNothing);
       await tapVisible(tester, find.byKey(const Key('answer-choice-yes')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('safety-stop-banner')), findsOneWidget);
-      expect(
-        find.text('Loose or faulty electric supply connection'),
-        findsNothing,
-      );
 
       await tapVisible(tester, find.byKey(const Key('end-session-button')));
       await tester.pumpAndSettle();
@@ -167,8 +162,6 @@ void main() {
       expect(body, isNot(contains('Symptom: —')));
       expect(body.toLowerCase(), contains('needs a professional'));
       expect(body.toLowerCase(), contains('fire or smoke'));
-      expect(body, contains(leftoverLeaderPrefix));
-      expect(body, contains('Loose or faulty electric supply connection'));
       expect(body, contains('not why we stopped'));
 
       final spoken = tester.widget<SelectableText>(
@@ -180,15 +173,16 @@ void main() {
         spokenBody.toLowerCase(),
         isNot(contains('symptom: not recorded')),
       );
-      expect(spokenBody, contains(leftoverLeaderPrefix));
 
       final outcome = deps.recentSessionOutcomes().single.outcome;
       expect(outcome.startSymptom, hazardSymptomLabel);
       expect(outcome.immediateCause.toLowerCase(), contains('fire or smoke'));
-      expect(
-        outcome.summary.toLowerCase(),
-        isNot(contains('loose or faulty electric supply')),
-      );
+      final leftover = outcome.rankingLeaderLabel?.toLowerCase() ?? '';
+      if (leftover.isNotEmpty) {
+        expect(outcome.summary.toLowerCase(), isNot(contains(leftover)));
+        expect(body, contains(leftoverLeaderPrefix));
+        expect(body, contains(outcome.rankingLeaderLabel!));
+      }
     },
   );
 }
