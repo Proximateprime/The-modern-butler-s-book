@@ -126,6 +126,14 @@ abstract final class UserFacingCopy {
       'This file isn’t a household backup from this app. Your current data is unchanged.';
   static const backupImported = 'Household data restored from the backup.';
   static const backupExported = 'Household backup ready to save on this device.';
+  static const wipeHouseBookTitle = 'Delete household data';
+  static const wipeHouseBookSubtitle =
+      'Homes, appliances, sessions, photos, tools, and reminders on this device';
+  static const wipeHouseBookConfirmTitle = 'Delete all household data?';
+  static const wipeHouseBookConfirmBody =
+      'This removes your House Book on this device. It cannot be undone unless '
+      'you already exported a backup. There is no cloud account.';
+  static const wipeHouseBookConfirmAction = 'Delete everything';
   static const staleSessionTitle = 'This session is old';
   static String get staleSessionBody =>
       'Evidence was recorded more than $staleOpenSessionHours hours ago and '
@@ -273,6 +281,12 @@ abstract final class UserFacingCopy {
       'Stop. Unplug if it is safe, ventilate, and do not keep running the '
       'machine. Call a professional.';
   static const voiceHazardConfirm = safetyStopOfficial;
+  /// Confirm ≠ Fixed packaged source of truth. Closest shipped line was
+  /// thermal-fuse “Confirming no warmth is not a completed repair.”
+  /// Groq may rephrase this; it must not flip eligibility or offer Fixed.
+  static const confirmNotFixedPackaged =
+      'We confirmed the part is open. The dryer still isn’t fixed until '
+      'heat returns.';
   static const expertModeNeedAdult =
       'Confirm the adult checkbox first. Expert Mode stays off until you do.';
   static const reminderPingScheduled =

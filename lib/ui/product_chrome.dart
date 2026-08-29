@@ -73,11 +73,12 @@ class PaperCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final colors = butlerColors(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: tint ?? scheme.surface,
+    return Material(
+      color: tint ?? scheme.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
+        side: BorderSide(
           color: emphasized
               ? scheme.primary.withValues(alpha: 0.45)
               : colors.rule,
@@ -126,6 +127,11 @@ SafetyLightKind safetyLightForSession({
       level.contains('hazard') ||
       level.contains('stop')) {
     return SafetyLightKind.stop;
+  }
+  // Locked leftover pick (Safety Gate): professional must not fall through
+  // to calm / "Safe to continue".
+  if (level.contains('professional')) {
+    return SafetyLightKind.caution;
   }
   if (closePathActive) {
     return SafetyLightKind.caution;

@@ -17,4 +17,6 @@ class StubEnrichmentProvider implements EnrichmentProvider {
 
 /// Runtime enrichment is authoring-adjacent storage, not live diagnosis.
 /// Keep false unless a real provider is wired and reviewed.
+/// [StubEnrichmentProvider] stays the default. [EnrichmentSource.llm] is not
+/// diagnosis.
 const bool kRuntimeEnrichmentCallsEnabled = false;

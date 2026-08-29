@@ -76,13 +76,75 @@ void main() {
     expect(stop?.reason, 'Requires professional electrical work');
   });
 
-  test('stops when primary hypothesis requires a professional', () {
+  test('gated professional Primary is not a hazard hard-stop', () {
+    expect(
+      evaluateSafetyStop(
+        evidence: const [],
+        primaryFailureModeId: 'electric-supply-connection-fault',
+      ),
+      isNull,
+    );
+    expect(
+      evaluateSafetyStop(
+        evidence: const [],
+        primaryFailureModeId: 'motor-failure',
+      ),
+      isNull,
+    );
+  });
+
+  test('electrical-burning-smell-hazard Primary remains a hard stop', () {
     final stop = evaluateSafetyStop(
       evidence: const [],
-      primaryFailureModeId: 'electric-supply-connection-fault',
+      primaryFailureModeId: 'electrical-burning-smell-hazard',
     );
 
-    expect(stop?.reason, 'Requires professional electrical work');
+    expect(stop?.reason, 'Possible fire or smoke hazard');
+  });
+
+  test('sessionSafetyLevelFor emits professional for gated FMs, stop for hard stop', () {
+    expect(
+      sessionSafetyLevelFor(
+        evidence: const [],
+        primaryFailureModeId: 'thermal-fuse-open',
+      ),
+      'professional',
+    );
+    expect(
+      sessionSafetyLevelFor(
+        evidence: const [],
+        primaryFailureModeId: 'electric-supply-connection-fault',
+      ),
+      'professional',
+    );
+    expect(
+      sessionSafetyLevelFor(
+        evidence: const [],
+        primaryFailureModeId: 'motor-failure',
+      ),
+      'professional',
+    );
+    expect(
+      sessionSafetyLevelFor(
+        evidence: const [],
+        primaryFailureModeId: 'electrical-burning-smell-hazard',
+      ),
+      'stop',
+    );
+    expect(
+      sessionSafetyLevelFor(
+        evidence: const [],
+        primaryFailureModeId: 'restricted-exhaust-airflow',
+      ),
+      'clear',
+    );
+    expect(
+      sessionSafetyLevelFor(
+        evidence: [evidence('There is a burning smell near the dryer.')],
+        primaryFailureModeId: 'thermal-fuse-open',
+      ),
+      'stop',
+    );
   });
 
   test('thermal-fuse-open Primary is not a hazard hard-stop', () {

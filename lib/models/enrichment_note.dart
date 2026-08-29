@@ -68,6 +68,8 @@ class EnrichmentNote {
   }
 }
 
+/// [llm] is authoring-adjacent storage only — never diagnosis.
+/// Runtime provider calls stay off (`kRuntimeEnrichmentCallsEnabled`).
 enum EnrichmentSource { household, stubProvider, llm }
 
 EnrichmentSource enrichmentSourceFromName(String? raw) {

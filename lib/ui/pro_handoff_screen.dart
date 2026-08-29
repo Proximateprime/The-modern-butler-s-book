@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../helpers/groq_phrasing.dart';
 import '../helpers/pro_handoff.dart';
 import '../helpers/repair_log_share.dart';
 import '../helpers/user_facing_error.dart';
@@ -101,6 +104,12 @@ class ProHandoffScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
+                _ProHandoffSpokenCard(
+                  dependencies: dependencies,
+                  appliance: appliance,
+                  outcome: outcome,
+                ),
+                const SizedBox(height: 16),
                 PaperCard(
                   child: SelectableText(
                     handoff,
@@ -131,6 +140,87 @@ class ProHandoffScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProHandoffSpokenCard extends StatefulWidget {
+  const _ProHandoffSpokenCard({
+    required this.dependencies,
+    required this.appliance,
+    required this.outcome,
+  });
+
+  final AppDependencies dependencies;
+  final Appliance appliance;
+  final SessionOutcome outcome;
+
+  @override
+  State<_ProHandoffSpokenCard> createState() => _ProHandoffSpokenCardState();
+}
+
+class _ProHandoffSpokenCardState extends State<_ProHandoffSpokenCard> {
+  late String _paragraph;
+
+  @override
+  void initState() {
+    super.initState();
+    _paragraph = formatProHandoffSpokenForSession(
+      evidence: widget.dependencies.repairSessionRepository
+          .evidenceForSession(widget.outcome.sessionId),
+      applianceName: widget.appliance.name,
+      outcome: widget.outcome,
+    );
+    if (widget.dependencies.groqPhrasing.shouldCallNetwork) {
+      unawaited(_swap());
+    }
+  }
+
+  Future<void> _swap() async {
+    final packaged = _paragraph;
+    final accepted = await widget.dependencies.groqPhrasing.phrase(
+      GroqPhrasingRequest(
+        hook: GroqPhrasingHook.proHandoff,
+        family: widget.appliance.category,
+        energy: groqEnergyTokenFromAppliance(widget.appliance),
+        state: 'guidance',
+        comfort: groqComfortToken(
+          widget.dependencies.repairComfort.levelFor(
+            widget.appliance.category,
+          ),
+        ),
+        evidenceNeeded: 'pro-handoff',
+        options: const [],
+        lastObs: '',
+        whyEngine: packaged,
+        safety: 'none',
+        packagedTitle: kProHandoffSpokenHeading,
+        packagedWhyOneLine: packaged,
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _paragraph = accepted.whyOneLine;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return PaperCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(kProHandoffSpokenHeading, style: text.titleSmall),
+          const SizedBox(height: 8),
+          SelectableText(
+            _paragraph,
+            key: const Key('pro-handoff-spoken'),
           ),
         ],
       ),

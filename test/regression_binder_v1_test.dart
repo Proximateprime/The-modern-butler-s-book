@@ -171,9 +171,12 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('answer-choice-yes')));
 
     expect(find.byKey(const Key('safety-stop-banner')), findsOneWidget);
-    expect(find.text('Stop — Call a professional'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('safety-stop-title'))).data,
+      'Needs a professional',
+    );
     expect(find.byKey(const Key('answer-choice-panel')), findsNothing);
-    expect(find.text('Needs a professional'), findsOneWidget);
+    expect(find.text('Needs a professional'), findsWidgets);
 
     await tapVisible(tester, find.byKey(const Key('end-session-button')));
     await tester.pumpAndSettle();

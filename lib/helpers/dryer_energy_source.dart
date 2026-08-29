@@ -111,12 +111,22 @@ bool isTemplateRecordedId({
 }
 
 /// Electric heating-generation modes. Not the primary path on a gas dryer.
+///
+/// Aligned with heater-circuit DIY-cannot-complete leaders plus missing-leg
+/// 240V and loose electric cord. Extra exclude counts only in fuel steering.
+/// Resettable thermal cutoff is not in this set.
 const Set<String> electricHeatGenerationModeIds = {
+  'thermal-fuse-open',
   'heating-element-failed',
+  'high-limit-thermostat-open',
+  'cycling-thermostat-failed',
+  'cycling-thermostat-stuck-open',
+  'cycling-thermostat-stuck-closed',
   'relay-or-control-no-heat-output',
+  'thermistor-fault-electronic',
+  'timer-advanced-no-heat-portion',
   'missing-leg-240v-supply',
   'loose-power-cord-connection-electric',
-  'thermal-fuse-open',
 };
 
 String applianceEnergySourceLabel(ApplianceEnergySource source) {

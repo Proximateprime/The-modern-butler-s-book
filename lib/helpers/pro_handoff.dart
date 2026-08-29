@@ -6,6 +6,7 @@ import '../models/session_objective.dart';
 import '../models/session_outcome.dart';
 import 'dryer_close_path.dart';
 import 'dryer_problem_starter.dart';
+import 'groq_phrasing.dart';
 import 'pro_scope.dart';
 import 'session_timeline.dart';
 
@@ -88,6 +89,47 @@ String formatProHandoffSummary({
   return lines.join('\n');
 }
 
+/// One paragraph they can read to a tech. Observed / not done — not a diagnosis.
+/// Groq may rephrase; it must not invent a diagnosis.
+String formatProHandoffSpokenParagraph({
+  required String applianceName,
+  String? symptom,
+  required List<SessionTimelineObservation> observations,
+  required List<String> alreadyTried,
+  String? leaderHypothesis,
+  String? groqParagraph,
+}) {
+  final packaged = packagedProHandoffSpokenParagraph(
+    applianceName: applianceName,
+    symptom: symptom,
+    observations: observations,
+    alreadyTried: alreadyTried,
+    leaderHypothesis: leaderHypothesis,
+  );
+  final overlay = groqParagraph?.trim() ?? '';
+  if (overlay.isEmpty) {
+    return packaged;
+  }
+  final accepted = acceptGroqPhrasing(
+    request: GroqPhrasingRequest(
+      hook: GroqPhrasingHook.proHandoff,
+      family: 'dryer',
+      energy: 'unknown',
+      state: 'guidance',
+      comfort: 'normal',
+      evidenceNeeded: 'pro-handoff',
+      options: const [],
+      lastObs: '',
+      whyEngine: packaged,
+      safety: 'none',
+      packagedTitle: kProHandoffSpokenHeading,
+      packagedWhyOneLine: packaged,
+    ),
+    parsed: GroqPhrasingJson(whyOneLine: overlay),
+  );
+  return accepted?.whyOneLine ?? packaged;
+}
+
 /// Builds a handoff from a closed session's evidence and outcome.
 String formatProHandoffForSession({
   required List<Evidence> evidence,
@@ -117,6 +159,24 @@ String formatProHandoffForSession({
     sessionObjective: outcome.sessionObjective,
     whyStopping: path == null ? null : proHandoffWhy(path),
     tellTechnician: path == null ? null : proHandoffTellTechnician(path),
+  );
+}
+
+/// Spoken paragraph from a closed session. Display only.
+String formatProHandoffSpokenForSession({
+  required List<Evidence> evidence,
+  required String applianceName,
+  required SessionOutcome outcome,
+  String? groqParagraph,
+}) {
+  final leaderId = outcome.rankingLeaderFailureModeId;
+  return formatProHandoffSpokenParagraph(
+    applianceName: applianceName,
+    symptom: outcome.startSymptom ?? _symptomFromEvidence(evidence),
+    observations: sessionTimelineObservations(evidence),
+    alreadyTried: alreadyTriedStepsForLeader(leaderId),
+    leaderHypothesis: outcome.rankingLeaderLabel,
+    groqParagraph: groqParagraph,
   );
 }
 

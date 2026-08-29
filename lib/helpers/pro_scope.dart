@@ -59,10 +59,16 @@ bool isProHandoffGuidanceStep(String step) {
 }
 
 /// Package marks this path as unable to finish as beginner DIY at home.
+///
+/// Heater-circuit leaders are an id set — not the
+/// [isProHandoffGuidanceStep] substring. Resettable thermal cutoff stays DIY.
 bool closePathDiyCannotComplete(FailureModeClosePath path) {
   if (isResettableThermalPath(path.failureModeId) &&
       path.allowResolvedWhenConfirmed) {
     return false;
+  }
+  if (isHeaterCircuitDiyCannotCompleteLeader(path.failureModeId)) {
+    return true;
   }
   if (!path.allowResolvedWhenConfirmed) {
     return true;

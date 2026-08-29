@@ -208,6 +208,10 @@ void main() {
         closePathForFailureMode('factory-demo-mode')?.verificationAsk,
         'Did the demo check pass?',
       );
+      expect(
+        closePathForFailureMode('factory-demo-mode')!.allowResolvedWhenConfirmed,
+        isFalse,
+      );
       final heat = repo
           .loadById('dryer-core')!
           .evidenceTemplates

@@ -101,7 +101,7 @@ const List<Map<String, Object?>> _dryerBatch02Modes = [
         'Observation only for beginners. Thermostat service is professional.',
     'commonality': 'common',
     'safetyNotes': 'Do not guide live thermostat testing.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
@@ -190,7 +190,7 @@ const List<Map<String, Object?>> _dryerBatch02Modes = [
         'Stop-and-observe for beginners. Thermostat service is professional.',
     'commonality': 'moderate',
     'safetyNotes': 'Never bypass thermostats. Stop for smoke or burning smell.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
@@ -276,7 +276,7 @@ const List<Map<String, Object?>> _dryerBatch02Modes = [
     'difficultyNotes': 'Observation only. Thermistor service is professional.',
     'commonality': 'common',
     'safetyNotes': 'Do not guide live sensor or board testing.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
@@ -366,7 +366,7 @@ const List<Map<String, Object?>> _dryerBatch02Modes = [
     'commonality': 'common',
     'safetyNotes':
         'Do not guide live electrical testing of control or heater circuits.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
@@ -618,7 +618,7 @@ const List<Map<String, Object?>> _dryerBatch02Modes = [
     'difficultyNotes': 'Dial setting is beginner-safe. Timer repair is professional.',
     'commonality': 'common',
     'safetyNotes': 'Settings and observation only. No timer wiring work.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {
@@ -1044,7 +1044,7 @@ const List<Map<String, Object?>> _dryerBatch02Modes = [
         'Beginner filter/hose checks only. Internal duct work is professional.',
     'commonality': 'common',
     'safetyNotes': 'No beginner cabinet teardown for internal ducts.',
-    'allowResolvedWhenConfirmed': true,
+    'allowResolvedWhenConfirmed': false,
     'preferProfessionalWhenNotConfirmed': true,
   },
   {

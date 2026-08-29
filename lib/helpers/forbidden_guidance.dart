@@ -87,6 +87,21 @@ List<String> sanitizeGuidanceSteps(
   ];
 }
 
+/// Household-facing how-to after the existing Safety Validator.
+///
+/// Empty means the line must not be painted. Prohibition lines
+/// ("do not" / "never") stay visible via [isSafetyLimitLanguage].
+String visibleHouseholdHowTo(String text, {required bool expertMode}) {
+  final trimmed = text.trim();
+  if (trimmed.isEmpty) {
+    return '';
+  }
+  if (shouldHideGuidanceStep(trimmed, expertMode: expertMode)) {
+    return '';
+  }
+  return trimmed;
+}
+
 bool _instructsRefrigerantOrSealedSystem(String lower) {
   if (lower.contains('refrigerant') &&
       (lower.contains('add') ||

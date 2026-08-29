@@ -88,7 +88,7 @@ void main() {
       expect(result.closePath!.safeGuidanceSteps, isNotEmpty);
     });
 
-    test('verification Confirmed allows Resolved', () {
+    test('verification Confirmed on heating-element still needs a professional', () {
       final result = reasoning.evaluate(
         package: package,
         evidence: [
@@ -110,10 +110,10 @@ void main() {
       );
 
       expect(result.verificationOutcome, VerificationOutcome.supported);
-      expect(result.canResolveAsFixed, isTrue);
+      expect(result.canResolveAsFixed, isFalse);
       expect(
         result.resolveEligibility,
-        CloseResolveEligibility.allowResolved,
+        CloseResolveEligibility.needsProfessional,
       );
     });
 

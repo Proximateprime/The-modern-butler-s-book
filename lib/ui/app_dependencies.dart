@@ -18,6 +18,7 @@ import '../helpers/pattern_hint.dart';
 import '../helpers/inventory_export.dart';
 import '../helpers/package_resolve.dart';
 import '../helpers/local_backup.dart';
+import '../helpers/house_book_wipe.dart';
 import '../helpers/maintenance_reminder_copy.dart';
 import '../helpers/safety_stop.dart';
 import '../helpers/stale_session.dart';
@@ -51,6 +52,7 @@ import '../services/repair_session_repository.dart';
 import '../services/session_coordinator.dart';
 import '../services/voice_answer.dart';
 import '../services/voice_answer_speech.dart';
+import '../services/groq_phrasing_service.dart';
 import 'app_theme.dart';
 
 /// In-memory composition root for the developer UI.
@@ -73,6 +75,7 @@ class AppDependencies {
     Listenable? onlineListenable,
     MaintenanceNotifier? maintenanceNotifier,
     EnrichmentProvider? enrichmentProvider,
+    GroqPhrasingService? groqPhrasing,
   }) {
     late final AppDependencies dependencies;
     void onChanged() => dependencies._schedulePersist();
@@ -109,6 +112,7 @@ class AppDependencies {
       onlineListenable: onlineListenable,
       maintenanceNotifier: maintenanceNotifier ?? SilentMaintenanceNotifier(),
       enrichmentProvider: enrichmentProvider ?? const StubEnrichmentProvider(),
+      groqPhrasing: groqPhrasing ?? GroqPhrasingService(),
     );
     return dependencies;
   }
@@ -157,6 +161,7 @@ class AppDependencies {
     this.onlineListenable,
     required this.maintenanceNotifier,
     required this.enrichmentProvider,
+    required this.groqPhrasing,
   }) : _store = store,
        _clock = clock,
        _isOnline = isOnline;
@@ -172,6 +177,7 @@ class AppDependencies {
   final VoiceAnswerListener voiceAnswer;
   final MaintenanceNotifier maintenanceNotifier;
   final EnrichmentProvider enrichmentProvider;
+  final GroqPhrasingService groqPhrasing;
   final Listenable? onlineListenable;
   final LocalDomainStore? _store;
   final DateTime Function() _clock;
@@ -214,6 +220,36 @@ class AppDependencies {
   Future<void> completeFirstRun() async {
     firstRunComplete = true;
     await _store?.saveFirstRunComplete();
+  }
+
+  /// Wipes local House Book. Caller must have confirmed in the UI.
+  /// Silent wipe is illegal.
+  Future<void> wipeLocalHouseBook() async {
+    final photoPaths = [
+      for (final item in repairSessionRepository.listAllEvidence())
+        item.localPhotoPath,
+      for (final appliance in applianceRepository.listAll())
+        appliance.ratingLabelPhotoPath,
+    ];
+    for (final reminder in List<MaintenanceReminder>.from(_maintenanceReminders)) {
+      await maintenanceNotifier.cancel(reminder.id);
+    }
+    applyHouseholdSnapshot(emptyHouseBookSnapshot());
+    currentHousehold = null;
+    currentMemberId = null;
+    firstRunComplete = false;
+    expertMode = false;
+    householdProEnabled = false;
+    repairComfort = const RepairComfortProfile();
+    final store = _store;
+    if (store != null) {
+      await store.clearDomain();
+      await store.clearOwnedToolsOverlay();
+      await store.clearFirstRunComplete();
+    }
+    await deleteLocalHouseholdPhotoFiles(photoPaths);
+    _schedulePersist();
+    await flushPersist();
   }
 
   Future<void> acknowledgeDisclaimer() async {
@@ -1029,6 +1065,7 @@ class AppDependencies {
       lastRepairLine: inventoryLastRepairLine(
         completedAt: item.completedAt,
         outcome: item.outcome,
+        washerLoadStyle: appliance.washerLoadStyle,
       ),
       lastRepairRootCause: item.outcome.rootCause,
       lastRepairContributing: item.outcome.contributingFactors,
