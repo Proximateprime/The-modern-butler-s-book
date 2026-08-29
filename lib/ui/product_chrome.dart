@@ -73,11 +73,11 @@ class PaperCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final colors = butlerColors(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: tint ?? scheme.surface,
+    return Material(
+      color: tint ?? scheme.surface,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
+        side: BorderSide(
           color: emphasized
               ? scheme.primary.withValues(alpha: 0.45)
               : colors.rule,

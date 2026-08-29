@@ -5,6 +5,7 @@ import 'package:modern_butlers_book/helpers/repair_history_display.dart';
 import 'package:modern_butlers_book/helpers/safety_stop.dart';
 import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/models/appliance.dart';
+import 'package:modern_butlers_book/models/repair_session.dart';
 import 'package:modern_butlers_book/models/session_outcome.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
 import 'package:modern_butlers_book/ui/appliance_detail_screen.dart';
