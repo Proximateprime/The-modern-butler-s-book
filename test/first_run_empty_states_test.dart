@@ -42,9 +42,11 @@ void main() {
 
     expect(find.byKey(const Key('first-run-screen')), findsOneWidget);
     expect(find.byKey(const Key('first-run-page-what')), findsOneWidget);
+    expect(find.text(UserFacingCopy.firstRunGreeting), findsOneWidget);
     expect(find.text(UserFacingCopy.firstRunDoesTitle), findsOneWidget);
     expect(find.textContaining('House Book'), findsOneWidget);
-    expect(find.text('1 of 3'), findsOneWidget);
+    expect(find.text('1 of 3'), findsNothing);
+    expect(find.byKey(const Key('first-run-progress')), findsNothing);
     expect(find.byKey(const Key('create-household-button')), findsNothing);
 
     await tester.tap(find.byKey(const Key('first-run-next-button')));
@@ -54,7 +56,8 @@ void main() {
     expect(find.text(UserFacingCopy.firstRunDoesNotTitle), findsOneWidget);
     expect(find.textContaining('camera never diagnoses'), findsOneWidget);
     expect(find.textContaining('gas'), findsOneWidget);
-    expect(find.text('2 of 3'), findsOneWidget);
+    expect(find.text(UserFacingCopy.firstRunGreeting), findsNothing);
+    expect(find.text('2 of 3'), findsNothing);
 
     await tester.tap(find.byKey(const Key('first-run-next-button')));
     await tester.pump();
@@ -62,10 +65,13 @@ void main() {
     expect(find.byKey(const Key('first-run-page-privacy')), findsOneWidget);
     expect(find.text(UserFacingCopy.firstRunPrivacyTitle), findsOneWidget);
     expect(find.textContaining('this device'), findsWidgets);
-    expect(find.textContaining('cloud account'), findsOneWidget);
-    expect(find.textContaining('Groq'), findsOneWidget);
-    expect(find.textContaining('butler backend'), findsOneWidget);
-    expect(find.text('3 of 3'), findsOneWidget);
+    expect(find.textContaining('Names, appliances, photos'), findsOneWidget);
+    expect(find.textContaining('Diagnosis stays on this device'), findsOneWidget);
+    expect(find.textContaining('Groq'), findsNothing);
+    expect(find.textContaining('butler backend'), findsNothing);
+    expect(find.textContaining('cloud account'), findsNothing);
+    expect(find.textContaining('Nothing is uploaded'), findsNothing);
+    expect(find.text('3 of 3'), findsNothing);
     expect(find.byKey(const Key('first-run-done-button')), findsOneWidget);
   });
 
@@ -144,8 +150,15 @@ void main() {
     await tester.pumpWidget(ModernButlerApp(dependencies: deps));
 
     expect(find.byKey(const Key('create-household-button')), findsOneWidget);
-    expect(find.byKey(const Key('empty-home-create-household')), findsOneWidget);
-    expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsWidgets);
+    expect(find.byKey(const Key('empty-home-create-household')), findsNothing);
+    expect(find.byKey(const Key('empty-home-load-sample')), findsNothing);
+    expect(find.byKey(const Key('load-sample-home-button')), findsOneWidget);
+    expect(find.byKey(const Key('empty-home-appliances')), findsNothing);
+    expect(find.text(UserFacingCopy.createHouseholdAction), findsOneWidget);
+    expect(find.text('Load sample home'), findsOneWidget);
+    expect(find.text(UserFacingCopy.emptyHomeNoHousehold), findsOneWidget);
+    expect(find.text(UserFacingCopy.noDryersYet), findsNothing);
+    expect(find.text('Create Household'), findsNothing);
     expect(find.text(UserFacingCopy.noRepairsYet), findsOneWidget);
     expect(find.byKey(const Key('add-dryer-button')), findsNothing);
 
@@ -159,6 +172,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('add-dryer-button')), findsOneWidget);
+    expect(find.byKey(const Key('empty-home-appliances')), findsOneWidget);
     expect(find.text(UserFacingCopy.noDryersYet), findsOneWidget);
     expect(find.text(UserFacingCopy.emptyHomeNoDryer), findsOneWidget);
     expect(find.text(UserFacingCopy.noRepairsYet), findsOneWidget);

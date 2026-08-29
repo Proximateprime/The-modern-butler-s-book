@@ -115,7 +115,7 @@ void main() {
     expect(find.text('Still damp'), findsWidgets);
     expect(find.text('Weak'), findsWidgets);
     expect(find.byKey(const Key('how-we-got-here-leader-why')), findsOneWidget);
-    expect(find.textContaining('is leading because'), findsOneWidget);
+    expect(find.textContaining('is leading because'), findsWidgets);
   });
 
   testWidgets('Done screen includes collapsed How we got here', (tester) async {

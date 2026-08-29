@@ -73,7 +73,7 @@ import 'package_manager_screen.dart';
 import 'warranty_hint_card.dart';
 import 'why_ask_this_tile.dart';
 
-/// Minimal developer screen for recording observations against one session.
+/// Household repair session — observations, safety, and guidance for one appliance.
 class SessionScreen extends StatefulWidget {
   const SessionScreen({
     required this.dependencies,

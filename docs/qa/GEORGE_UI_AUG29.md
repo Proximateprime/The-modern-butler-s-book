@@ -424,6 +424,47 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Natural UI — first-run, home start, pro handoff — 0.1.4+5
+
+Presentation only. Leftover 1–13 / session scroll / Skip first-tap / quieter card stay done. Do not reopen those. John’s APP nits (800×656 not 360-wide, 8px Stop spacer, Qodo tall-banner overflow) stay parked. `GOLDEN_LABELS` **Call a pro** and inspect **Matches / OK** stay frozen. Groq stays talk-only. `UNMATCHED_PROBLEM_V1` stays HOLD. No session rebuild.
+
+App **0.1.4+5**. Tests: `test/natural_ui_v1_test.dart` plus existing first-run Skip and pro-handoff key suites.
+
+### Surfaces
+
+1. **First-run greeting.** Drop “1 of 3” / `first-run-progress`. Keep the three UserFacingCopy beats and page keys `first-run-page-what|not|privacy`. Greeting uses `textTheme.headlineSmall` (book theme — no bare Georgia family). Privacy is local-first household copy: data stays on this device; diagnosis stays on this device. First-run does not name Groq or the butler backend — that disclosure stays on Settings/About (`privacyPhrasingBackend`). Slide 1 has no “premium add-on” line. Skip keeps 48px, autofocus, and post-frame focus. **Next** is now **Continue** (`first-run-next-button`). Last page still **Get started** (`first-run-done-button`). Source `web/index.html` / `web/manifest.json` use a household-book description and paper `#F3EDE3` (not generated `site/`).
+2. **Home empty/start.** **Create Household** → **Name this home**. “Choose an appliance…” → household voice. Empty home (no household) paints one helper, one Name this home (`create-household-button`), and one Load sample (`load-sample-home-button`). The Appliances section — including `empty-home-appliances` — waits until the house is named. Keys: `create-household-button`, `load-sample-home-button`, `household-name`. Frozen chrome (Continue repair, Start repair, I’ll repair, Call a pro, Most likely, Current question, Why ask this?, Matches / OK, Doesn’t match / Not OK) is untouched.
+3. **Pro handoff chrome.** AppBar is Wordmark like Home, not Material “Technician handoff”. Share / Copy are PrimaryCta. Keys stay: `pro-handoff-screen`, `pro-handoff-preview`, `pro-handoff-share`, `pro-handoff-copy`, `completion-save-home`. Engine handoff text and Groq spoken paragraph are unchanged.
+
+### Phone (Given / tap / expect)
+
+Phone or hosted Pages. Install **0.1.4+5**. First-run: greeting, no “1 of 3”. **one Skip tap** → **I understand**. Exact leftover session labels stay. Do not file GOLDEN_LABELS **Call a pro**.
+
+#### A. First-run is a greeting
+
+- **Given** first launch after splash.
+- **Expect** “Welcome. A few words before we open the book.” plus **What Butler does**. No “1 of 3”.
+- **Tap** **Continue** → **What it doesn’t do** → **Continue** → privacy → **Get started**.
+- **Expect** disclaimer if outstanding, then empty home **Name this home**.
+
+#### B. Skip is still one tap
+
+- **Given** first launch after splash.
+- **Tap** **Skip** once.
+- **Expect** first-run is gone. **I understand** disclaimer is next if not already acknowledged.
+
+#### C. Empty home voice
+
+- **Given** a finished first-run and no household.
+- **Expect** one helper, one **Name this home**, one **Load sample home**. No second pair and no Appliances card until the house is named.
+- **Tap** **Name this home**, save a name, add a dryer.
+- **Expect** “Open an appliance when something needs looking at.”
+
+#### D. Pro handoff chrome
+
+- **Given** a dryer no-warmth path ended as Needs a professional.
+- **Expect** Wordmark app bar, “Hand this page to the technician.”, Share and Copy as book CTAs. Preview still contains engine “Technician handoff” text.
+
 ## Session scroll, Skip, quieter card — 0.1.4+4 (do not reopen leftover)
 
 Fix only. Leftover 1–12 / +5…+9 stay done. `GOLDEN_LABELS` **Call a pro**

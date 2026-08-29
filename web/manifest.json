@@ -3,7 +3,7 @@
   "short_name": "Modern Butler",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#FFFFFF",
-  "theme_color": "#3F51B5",
-  "description": "The Modern Butler's Book developer demo."
+  "background_color": "#F3EDE3",
+  "theme_color": "#F3EDE3",
+  "description": "A household repair book. Diagnosis stays on this device."
 }

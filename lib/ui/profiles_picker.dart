@@ -23,8 +23,8 @@ Future<void> showProfilesPicker({
 
 Future<String?> promptHouseholdName({
   required BuildContext context,
-  String title = 'Create Household',
-  String confirmLabel = 'Create',
+  String title = UserFacingCopy.createHouseholdAction,
+  String confirmLabel = 'Save',
   String fieldLabel = 'Household name',
   Key fieldKey = const Key('household-name-field'),
 }) {
@@ -41,8 +41,8 @@ Future<String?> promptHouseholdName({
 
 class HouseholdNameDialog extends StatefulWidget {
   const HouseholdNameDialog({
-    this.title = 'Create Household',
-    this.confirmLabel = 'Create',
+    this.title = UserFacingCopy.createHouseholdAction,
+    this.confirmLabel = 'Save',
     this.fieldLabel = 'Household name',
     this.fieldKey = const Key('household-name-field'),
     super.key,

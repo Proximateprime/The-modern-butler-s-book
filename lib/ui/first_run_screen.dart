@@ -34,7 +34,7 @@ const List<_FirstRunSlide> _firstRunSlides = [
   ),
 ];
 
-/// First-launch intro. Skip and Done both complete it for good.
+/// First-launch greeting. Skip and the last page both complete it for good.
 class FirstRunScreen extends StatefulWidget {
   const FirstRunScreen({required this.onFinished, super.key});
 
@@ -84,8 +84,6 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
     final last = _page >= _firstRunSlides.length - 1;
     final slide = _firstRunSlides[_page];
 
@@ -121,23 +119,16 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
                 key: slide.pageKey,
                 title: slide.title,
                 body: slide.body,
+                showGreeting: _page == 0,
               ),
             ),
-            Text(
-              '${_page + 1} of ${_firstRunSlides.length}',
-              key: const Key('first-run-progress'),
-              textAlign: TextAlign.center,
-              style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 16),
             if (!last)
-              FilledButton(
+              PrimaryCta(
                 key: const Key('first-run-next-button'),
-                onPressed:
-                    _busy
-                        ? null
-                        : () => setState(() => _page += 1),
-                child: const Text('Next'),
+                label: UserFacingCopy.firstRunContinue,
+                semanticLabel: PrimaryCtaSemantics.continueAction,
+                style: PrimaryCtaStyle.outlined,
+                onPressed: _busy ? null : () => setState(() => _page += 1),
               )
             else
               PrimaryCta(
@@ -157,23 +148,38 @@ class _FirstRunPage extends StatelessWidget {
   const _FirstRunPage({
     required this.title,
     required this.body,
+    required this.showGreeting,
     super.key,
   });
 
   final String title;
   final String body;
+  final bool showGreeting;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
-          Text(title, style: text.headlineSmall),
-          const SizedBox(height: 16),
-          Text(body, style: text.bodyLarge?.copyWith(height: 1.45)),
+          if (showGreeting) ...[
+            Text(
+              UserFacingCopy.firstRunGreeting,
+              style: text.headlineSmall,
+            ),
+            const SizedBox(height: 16),
+          ],
+          PaperCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: text.titleLarge),
+                const SizedBox(height: 12),
+                Text(body, style: text.bodyLarge?.copyWith(height: 1.45)),
+              ],
+            ),
+          ),
         ],
       ),
     );

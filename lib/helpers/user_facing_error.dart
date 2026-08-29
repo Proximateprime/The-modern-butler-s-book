@@ -48,16 +48,22 @@ abstract final class UserFacingCopy {
       'This repair isn’t on this device anymore.';
   static const sessionAlreadyFinished = 'This repair is already finished.';
   static const reminderNeedsTitle = 'Add a short title for this reminder.';
-  static const noDryersYet = 'No appliances yet.';
+  static const noDryersYet = 'No appliances in this house yet.';
   static const emptyHomeNoHousehold =
-      'Add a household to get started, then add an appliance.';
-  static const emptyHomeNoDryer = 'Add an appliance to start a repair.';
+      'This book is empty until you name the house it belongs to.';
+  static const emptyHomeNoDryer =
+      'Nothing is listed yet. Add what you have in the house.';
+  static const emptyHomeHasAppliances =
+      'Open an appliance when something needs looking at.';
+  static const createHouseholdAction = 'Name this home';
+  static const firstRunGreeting =
+      'Welcome. A few words before we open the book.';
+  static const firstRunContinue = 'Continue';
   static const firstRunDoesTitle = 'What Butler does';
   static const firstRunDoesBody =
       'You notice. The book asks simple questions.\n\n'
       'It guides only beginner-safe checks.\n\n'
-      'Appliances and repairs you finish stay in your House Book on this device '
-      '(local repair history — not a premium add-on).';
+      'Appliances and repairs you finish stay in your House Book on this device.';
   static const firstRunDoesNotTitle = 'What it doesn’t do';
   static const firstRunDoesNotBody =
       'It does not walk you through dangerous work — no gas, live electrical, '
@@ -65,11 +71,10 @@ abstract final class UserFacingCopy {
       'The camera never diagnoses. What you tap or type is what the book uses.';
   static const firstRunPrivacyTitle = 'Your household stays here';
   static const firstRunPrivacyBody =
-      'Names, appliances, photos, tools, and repair notes are for this book '
+      'Names, appliances, photos, tools, and repair notes stay in this book '
       'on this device.\n\n'
-      'Nothing is uploaded to a cloud account.\n\n'
-      'Some on-screen wording may be sent to Groq through the butler backend '
-      'so the app can talk more clearly. Diagnosis stays on this device.';
+      'Diagnosis stays on this device.';
+  static const proHandoffLead = 'Hand this page to the technician.';
   static const safetyDisclaimerTitle = 'Safety disclaimer';
   static const safetyDisclaimerBody =
       'This book is not a substitute for a licensed professional.\n\n'
@@ -103,7 +108,7 @@ abstract final class UserFacingCopy {
       'No barcode or QR mapped to a model. You can enter the details by hand.';
   static const privacyLocalFirst =
       'Local-first: household data stays on this device. Guides install from '
-      'copies stored here. Nothing is uploaded to a cloud account.';
+      'copies stored here.';
   static const privacyWhatIsStored =
       'Stored here: household profiles, appliances, repair sessions and '
       'outcomes, photos you attach, tools you list, reminders, and appearance. '

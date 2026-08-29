@@ -152,9 +152,7 @@ void main() {
     await tester.tap(find.byKey(const Key('outcome-save-button')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('pro-handoff-screen')), findsOneWidget);
-    await tester.ensureVisible(find.byKey(const Key('completion-save-home')));
-    await tester.tap(find.byKey(const Key('completion-save-home')));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(const Key('completion-save-home')));
     expect(find.byKey(const Key('recent-activity-title')), findsOneWidget);
       expect(find.text('Needs a professional'), findsWidgets);
   });
