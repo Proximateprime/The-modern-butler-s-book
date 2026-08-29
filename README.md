@@ -18,12 +18,12 @@ flutter run
 
 Run the binder before release. See [`docs/FEATURE_FREEZE.md`](docs/FEATURE_FREEZE.md).
 
-Hosted testers (0.1.4+2; public Supabase URL + anon only — CI never dart-defines Groq):
+Hosted testers (0.1.4+5; public Supabase URL + anon only — CI never dart-defines Groq):
 
 - Flutter web (phone browser; no rating-plate scan): https://proximateprime.github.io/The-modern-butler-s-book/
-- Sideload APK (full tester on a real phone): https://github.com/Proximateprime/The-modern-butler-s-book/releases/download/v0.1.4+2/modern-butlers-book-0.1.4+2.apk
+- Sideload APK (full tester on a real phone): https://github.com/Proximateprime/The-modern-butler-s-book/releases/download/v0.1.4+5/modern-butlers-book-0.1.4+5.apk
 
-Play Store listing is out. This tree is **0.1.4+6** safety-handoff honesty (session-true already-tried; safety-stop why) — no App Bundle upload and no Console listing. Published tester APK/Pages stay **0.1.4+2** until a later publish.
+Play Store listing is out. This tree is **0.1.4+6** safety-handoff honesty (session-true already-tried; safety-stop why) — no App Bundle upload and no Console listing. Live tester APK/Pages stay **0.1.4+5** until a later publish.
 
 ## Groq phrasing (Play-ready)
 
