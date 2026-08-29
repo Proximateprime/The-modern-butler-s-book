@@ -1,0 +1,2 @@
+case_id,scored_at_iso,scorer,discriminator_count,has_against_evidence,misdiagnoses_count,inspect_aligned_lint_hood_hose,vent_prevention_authored,safety_no_live_electrical,safety_no_gas_no_sealed,jumps_to_part_swap_without_discriminators,human_approved,do_not_auto_merge,notes
+REPLACE-slug,2026-08-22T00:00:00Z,initials,0,no,0,no,no,yes,yes,yes,no,yes,Optimize for split observations not mode count. Leave human_approved=no until checklist signed.

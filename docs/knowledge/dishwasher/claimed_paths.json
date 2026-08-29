@@ -1,0 +1,45 @@
+{
+  "packageId": "dishwasher-core",
+  "expectedVersion": "0.2.3",
+  "regressionDocs": [
+    "docs/qa/DW_PATHS.md",
+    "docs/qa/REGRESSION_PHASE1.md",
+    "docs/qa/REGRESSION_PHONE.md"
+  ],
+  "paths": [
+    {
+      "symptomId": "standing-water",
+      "modeIds": ["clogged-dishwasher-filter"]
+    },
+    {
+      "symptomId": "wont-drain",
+      "modeIds": [
+        "kinked-or-clogged-dishwasher-drain",
+        "clogged-dishwasher-filter"
+      ]
+    },
+    {
+      "symptomId": "wont-fill",
+      "modeIds": ["closed-dishwasher-supply-or-air-gap"]
+    },
+    {
+      "symptomId": "poor-clean",
+      "modeIds": [
+        "clogged-dishwasher-spray-arms",
+        "clogged-dishwasher-filter"
+      ]
+    },
+    {
+      "symptomId": "leaks",
+      "modeIds": ["dishwasher-door-seal-or-loose-connection"]
+    },
+    {
+      "symptomId": "wont-start",
+      "modeIds": ["dishwasher-door-not-latched"]
+    },
+    {
+      "symptomId": "door-wont-close",
+      "modeIds": ["dishwasher-door-not-latched"]
+    }
+  ]
+}

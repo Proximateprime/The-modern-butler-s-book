@@ -1,0 +1,2 @@
+source_id,retrieved_at_iso,citation_or_url,retrieved_by,used_for,trust_tier,license_or_tos_note,offline_copy_path,notes
+SRC-001,2026-08-22T00:00:00Z,REPLACE_WITH_CITATION_NOT_FETCHED_BY_APP,human-initials,dryer-no-heat-discriminators,unverified,human-retrieved-offline,,Authoring intake only. The Flutter app must never GET this URL.

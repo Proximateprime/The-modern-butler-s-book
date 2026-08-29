@@ -1,0 +1,249 @@
+## Device-test fix pack (2026-08-25)
+
+App **0.1.1+2**, dryer-core **1.4.2**. Real-APK feedback: **Review what you checked** no longer undoes diagnosis; resettable thermal cutoff vs pro-only fuse; multi-select first symptoms; easier-first dual hypotheses; brick-risk warnings; local maintenance notify + hide empty manufacturer cards; enrichment store stub (not live diagnosis). Details: [`docs/qa/TEST_FEEDBACK_AUG25.md`](docs/qa/TEST_FEEDBACK_AUG25.md).
+
+## MVP audit and polish (2026-08-22)
+
+Pro-only paths (thermal fuse, heating element, door switch) no longer show a **DIY** price or **I'll repair** on Parts & cost, and the *A full fix likely needs a pro* notice now appears on the **Most likely** card instead of only at the guidance step. Parked AR code deleted (visual guide screen, inspect diagram widget, unbundled SVGs, **Show me where**). Meters removed from the addable tools catalog. **Household Pro (debug)** is compiled out of release builds. Nine pre-existing widget-test failures fixed; the full suite is green. No knowledge content or package versions changed. Details: [`docs/qa/AUDIT_POLISH_MVP.md`](docs/qa/AUDIT_POLISH_MVP.md).
+
+## MVP definition freeze (2026-08-22)
+
+P2-16: [`docs/MVP_DEFINITION.md`](docs/MVP_DEFINITION.md) — MVP is Phase 1+2 as implemented (not the 2026-07 Version 1 wish list). Phase 3, AR, and Knowledge Factory stay out of the app until external validation.
+
+## Phase 2 candidate APK (2026-08-22)
+
+P2-15: release APK `build/app/outputs/flutter-apk/app-release.apk` (99.2 MB). Docs: [`docs/qa/BUILD_NOTES_PHASE2.md`](docs/qa/BUILD_NOTES_PHASE2.md), [`docs/qa/REGRESSION_PHASE2.md`](docs/qa/REGRESSION_PHASE2.md), [`docs/qa/TESTER_BRIEF_PHASE2.md`](docs/qa/TESTER_BRIEF_PHASE2.md), [`docs/qa/PHASE2_EXIT_CHECKLIST.md`](docs/qa/PHASE2_EXIT_CHECKLIST.md) (**PARTIAL** overall). No Phase 3.
+
+## Household Pro debug hook (2026-08-22)
+
+P2-14: honest entitlement placeholder. Core repair, House Book, and safety stops stay free. Settings **Household Pro (debug)** adds extra export formatting. No Store billing, no fake urgency. [`docs/qa/MONETIZATION_HOOK.md`](docs/qa/MONETIZATION_HOOK.md).
+
+## Fridge observational paths documented (2026-08-22)
+
+P2-13: `fridge-core` **1.0.1** stays PRIMARY observational (no refrigerant / sealed-system / compressor live DIY). Trust bar: [`docs/qa/FRIDGE_PATHS.md`](docs/qa/FRIDGE_PATHS.md). No package version bump.
+
+## Repair readiness inventory round-trip (2026-08-22)
+
+Required tools on the pre-guidance checklist show **In your tools** vs **Not in your tools** from household inventory. Remove a required tool → missing; add it back → clears. Parts stay on the leading-path Parts step. Continue-with-caution is unchanged for non-electrical gaps.
+
+## Pattern hints from verified history (2026-08-22)
+
+If an appliance has two or more verified Fixed (or matching maintenance) records in the same vent / drain-filter / coils family, the appliance page shows a dismissible note based on household history. One record shows nothing. No cloud, no ranking change.
+
+## Light household members (2026-08-22)
+
+People in the same home share appliances, tools, and House Book. Switch who is using the app from Profiles. Homes on this device stay separate. No accounts or roles.
+
+## Washer and dishwasher primary-path second pass 0.2.3 (2026-08-22)
+
+Washer `washer-core` **0.2.3** and dishwasher `dishwasher-core` **0.2.3**: discriminators and inspect polarity on existing top paths (drain-filter packed vs clear; DW filter-first easy checks). No new families. Dryer and fridge versions unchanged. Details: `docs/knowledge/washer/CHANGELOG.md`, `docs/knowledge/dishwasher/CHANGELOG.md`.
+
+## Park AR / generated diagrams (2026-08-20)
+
+Location pictures, Show me where, and generated dryer schematics are parked (`locationVisualAidsEnabled = false`). Inspect stays text: LOOK FOR, OK / Not OK, chips. Optional inspect camera is flashlight only (no part box).
+
+## Dryer inspect diagrams (2026-08-19)
+
+Dryer lint-filter, outside-vent, and visible-hose inspect steps show a packaged typical-location schematic with a labeled rectangle on that part, a specific LOOK FOR line, and confirmation chips. Optional camera is a flashlight only — the diagram stays. Washer and dishwasher inspect stay text-only.
+
+## Guided inspect in the live path (2026-08-19)
+
+Inspect is no longer a fake cabinet drawing after Tools. Dryer heat/vent/filter easy-checks show the inspect card (LOOK FOR + OK / Not OK + chips). Close path runs the same chain after Parts / I'll repair and **before Tools**. No generated pictures or orange boxes; optional **Use camera while I look**. Chips still write the existing templates and gate invasive steps.
+
+## Path-only Fixed wrap-up (2026-08-19)
+
+After **Fixed**, Done shows that path's prevention (no dryer lint fallback), a next-due line when the path has a calendar interval, and cost rows only for parts that path replaces. Home and appliance history still get one row. Inspect answers no longer move End Session eligibility off the path you just confirmed.
+
+## Fridge inspect + Show me where typical-only (2026-08-19)
+
+Fridge `fridge-core` **1.0.1** adds look-only inspect on cooling/door/setpoint paths (temps → gasket → vents; coils look before pull-out on the dirty-coils mode). Chips write existing fridge templates. Ranking is unchanged. Show me where treats the dryer access panel as a typical diagram (no live pin / `visual-guide-target-box`). No YOLO, quotes, or ranking changes.
+
+## Door-not-latched inspect (2026-08-19)
+
+Washer and dishwasher **door-not-latched** now run the existing latch inspect before any seal teardown or switch bypass (skipped if the interview already recorded the door-click template). Won’t-drain inspect is unchanged: washer door → coin trap; dishwasher filter → door → high-loop/hose. No new appliances or ranking templates.
+
+## Inspect hone (Phase E, 2026-08-19)
+
+Inspect cards show **Inspect N of M** for the real chain, a diagram-only typical-area rectangle labeled **Typical area — confirm on yours.**, and a blocking line if required inspect is incomplete before invasive guidance. `look_for` copy names one physical check. Live camera still does not diagnose and no longer draws a tracking box. Docs: `docs/qa/INSPECT_STEPS.md`. Package versions unchanged.
+
+## Inspect look-only camera (2026-08-19)
+
+Inspect steps with view-only camera offer **Diagram** and **Camera**. Camera is look-only: the same safety and look-for copy stay on screen, with the caption **Camera does not diagnose. Confirm what you see with the buttons.** Chips still advance the step. Denied or missing camera falls back to the diagram. No object detection and no “found the part” boxes.
+
+## Prior workmanship inspect hooks 0.2.2 (2026-08-19)
+
+Washer `washer-core` **0.2.2** adds a look-only inspect chain on drain-hose **not seated** (and hose-run on the kinked-drain mode): standpipe seating, then stuffed/disconnected hose. Ranking still uses the existing leak and drain-hose templates. Dishwasher `dishwasher-core` **0.2.2** names leftover disposal knockout on the existing high-loop / air-gap inspect. No HVAC/AC package and no mains-wiring how-to. Fridge and dryer versions are unchanged.
+
+## Washer and dishwasher inspect steps 0.2.1 (2026-08-19)
+
+Washer `washer-core` **0.2.1** adds a won’t-drain inspect chain (door latch, then visible coin trap / drain filter) before opening the filter. Dishwasher `dishwasher-core` **0.2.1** adds filter/sump, door latch, then drain-hose / high-loop / air-gap look-only inspect on won’t-drain and standing-water drain modes. Chips write the existing easy-check templates. Ranking is unchanged. Dryer and fridge packages are unchanged.
+
+## Dryer inspect steps 1.4.1 (2026-08-19)
+
+Dryer `dryer-core` **1.4.1** adds an inspect chain on no-heat / long-dry / overheat modes: lint filter mesh, outside vent hood (stand clear), then visible flexible hose. Chips still write the existing airflow templates. Ranking is unchanged. Washer, fridge, and dishwasher packages are unchanged.
+
+## Fridge package v1 (2026-08-19)
+
+Fridge `fridge-core` **1.0.0** covers eight starter paths (not cooling, fridge warm/freezer cold, too cold, leak, ice maker, noisy, door, won’t run) with observational easy checks first. Guidance never covers refrigerant, sealed-system work, compressor live diagnostics, or piercing lines. Dryer, washer, and dishwasher packages are unchanged.
+
+## Washer and dishwasher primary-path bar (2026-08-19)
+
+Washer `washer-core` **0.2.0** and dishwasher `dishwasher-core` **0.2.0** now follow the dryer easy-checks-first pattern on their primary real-world paths (drain, fill, spin/start, leak, door / poor clean). Fridge stays `0.1.0`. Dryer ranking and `dryer-core` **1.4.0** are unchanged.
+
+## Launcher icon (2026-08-19)
+
+Home-screen and Android cold-start use the existing Butler mark (`assets/brand/app_icon.png`) instead of the default Flutter logo. Rebuild the APK to see it on a device. No iOS project is configured yet.
+
+## Show me where copy (2026-08-19)
+
+Show me where and camera/mic help talk about a **typical location — yours may vary.** They do not say the camera diagnoses, that a pin is exact, or that beginners should do live electrical, gas, or sealed-system work. Conclusion copy names the most likely cause; live-electrical tools are labeled **Not for beginner steps**.
+
+## Chip-only repair without camera or mic (2026-08-19)
+
+Scan, photo, and voice hide after a deny, when the hardware is missing, or when **Simulate camera & microphone denied** is on. Typed brand/model and answer chips still finish a repair. Show me where keeps the diagram; **Use camera** stays off. Diagnosis is never blocked.
+
+## Continue repair landing (2026-08-19)
+
+Leaving mid-guidance, after tools are marked, or on **Most likely** before **I'll repair** still restores the same session. Continue repair returns to the first incomplete Safe Guidance step, keeps completed observations and **I did this** steps, opens step 1 when tools are done but guidance has not started, and stays on the conclusion / I'll-repair choice until that is chosen. A missing saved question does not blank the session.
+
+## Dishwasher repair history summaries (2026-08-19)
+
+Fixed/verified outcomes on dryer, washer, and dishwasher still append **Repair history** (newest first; in-progress stays off the list). Dishwasher starter answers (`dishwasher-complaint`) are stored as the history symptom, and dishwasher paths use short labels (tub filter, drain hose, door latch, spray arms).
+
+## Already checked on easy checks (2026-08-19)
+
+Dryer filter/vent/airflow, washer door/filter, and dishwasher door/filter/hose questions offer **Already checked** next to **Not sure**. Safe Guidance easy steps offer **I already did this**. Both count for gating the same as **I did this**. **I couldn't** stays. Maintenance dates do not auto-skip.
+
+## Blocking reason line (2026-08-19)
+
+When a required tool is missing, an easy check is still open, or a safety stop is on, the session shows one calm sentence (what is blocked and what to do next), for example **Next: check outside vent before opening the cabinet.** or **You need a screwdriver for the next steps.** It replaces the generic next-step cue and clears when the gate opens.
+
+## Parts & cost on the selected path (2026-08-19)
+
+Close-path, recommended, Record outcome, and Done use the same path filter: replace/seat rows for this leader only. Lint-filter, vent-kit, and drain-trap purchase lines stay off cleaning/restriction paths. Helper copy is still **Estimates only. Not a quote.**
+
+## Parts & cost on outcome (2026-08-19)
+
+Record outcome and Done only list cost rows for parts the leading close path actually replaces. Vent/restriction cleaning paths hide lint-filter and vent-kit purchase lines. Helper copy is **Estimates only. Not a quote.**
+
+## Household tools persist (2026-08-19)
+
+Adding or removing a tool from the repair checklist or Tools screen writes household tool memory immediately, and that list is restored even if the larger local snapshot is stale. Owned tools stay after leaving the screen and after a restart, and the next repair checklist pre-marks them.
+
+## Lint filter Show me where (2026-08-19)
+
+Dryer lint filter is a static schematic plus **Typical dryer lint filter at the door opening — a pull-out mesh. Yours may vary.** No fixed highlight box on live or stock imagery. Washer and dishwasher never reuse dryer lint-filter anchors. Camera still never diagnoses.
+
+## Version visibility (2026-08-18)
+
+Settings **About** shows **App 0.1.0+1**. Package manager and About list installed guide ids and versions (`dryer-core 1.4.0`, `washer-core 0.1.0`, `fridge-core 0.1.0`, `dishwasher-core 0.1.0`) so screenshots can cite the UI. Same labels as `docs/qa/PACKAGE_INVENTORY.md`. Click path: `docs/qa/VERSIONS.md`.
+
+
+## Permission denied still completes repair (2026-08-18)
+
+Camera, microphone, scan, and OCR are optional. After a deny (or **Settings → Demo → Simulate camera & microphone denied** on Chrome), those controls hide. Diagram, typed brand/model, and answer chips still reach a dryer conclusion. Manual path: `docs/qa/PERMISSIONS_DENIED.md`.
+
+
+## Backup export/restore smoke (2026-08-18)
+
+Local household backup already round-trips appliances, tools, maintenance, and repair history. Invalid files keep current data and show a calm message. Chrome export may use the share sheet or clipboard instead of a Downloads file. Steps: `docs/qa/BACKUP_SMOKE.md`. Tests: `test/local_backup_test.dart`.
+
+## Golden path labels freeze (2026-08-18)
+
+Exact chrome for dryer no-heat + drum turns and washer won’t-drain is listed in `docs/qa/GOLDEN_LABELS.md`. `test/golden_labels_test.dart` asserts the easy-check prompts, tool row names, and first guidance titles against the live helpers.
+
+## Sample home reset reliability (2026-08-18)
+
+**Load sample home** seeds a Whirlpool WED5000DW dryer and WTW5000DW washer. **Reset sample data** restores that canned home, or does nothing if sample was never loaded (no crash, including double-reset). **Clear open session** is always tappable: no **Continue repair**, no leftover guidance, no crash when nothing is open. **Include sample open session** only adds the dryer Continue-repair sample when it is on. Click path: `docs/qa/DEMO_RESET.md`.
+
+Files: `lib/helpers/demo_sample_home.dart`, `lib/ui/app_dependencies.dart`, `lib/ui/settings_screen.dart`, `test/demo_mode_test.dart`, `docs/qa/DEMO_RESET.md`.
+
+
+## Already checked on easy checks (2026-08-18)
+
+Dryer airflow and washer door/filter easy checks offer **Already checked**. That mark counts for the easy-check gate the same as a normal answer or **I did this**. **Not sure** and **I couldn't** stay available. Invasive steps stay locked until the easy checks are answered, already-checked, done, or skipped. Maintenance dates do not auto-skip. Ranking is unchanged.
+
+Files: `lib/helpers/easy_check_already_checked.dart`, `lib/helpers/evidence_prompt_match.dart`, `lib/ui/session_screen.dart`, `test/easy_check_already_checked_test.dart`, `test/easy_airflow_checks_test.dart`, `test/washer_easy_checks_test.dart`.
+
+
+## Appliance Repair history (completed only) (2026-08-18)
+
+Marking a repair **Fixed** (or another completed outcome) appends a row on the appliance **Repair history**: date plus a short plain summary. In-progress sessions are not listed. Newest first. **No repairs yet** only when this appliance has no completed outcomes.
+
+Files: `lib/ui/app_dependencies.dart`, `lib/ui/appliance_detail_screen.dart`, `test/appliance_detail_test.dart`.
+
+## Guidance progress on the repair session (2026-08-18)
+
+**I did this** writes `guidanceStepIndex` and `completedGuidanceStepIds` onto the local repair session (and existing UI resume). **Continue repair** restores the first incomplete Safe Guidance step. Observation evidence is unchanged on resume. SharedPreferences only — no cloud.
+
+Files: `lib/models/repair_session.dart`, `lib/services/repair_session_repository.dart`, `lib/services/local_domain_store.dart`, `lib/ui/app_dependencies.dart`, `lib/ui/session_screen.dart`, `test/session_resume_test.dart`.
+
+## Easy-checks-first on no-heat / long-dry / overheat (2026-08-18)
+
+On those dryer paths only, next steps put lint filter → outside vent → visible hose before panel or replace-part work, even when conclusion still names a part. Invasive steps stay locked until those three checks are answered or skipped (**I couldn't**). Won't-start / door paths are unchanged. Ranking is unchanged.
+
+Files: `lib/helpers/easy_airflow_checks.dart`, `lib/helpers/suggest_next_observation.dart`, `lib/ui/session_screen.dart`, `test/easy_airflow_checks_test.dart`.
+
+## Tools inventory on repair checklist (2026-08-18)
+
+Owned household tools pre-mark the repair checklist as **I have this** (with an **In your tools** caption). The checklist still shows so the user can change a mark. **I don't** on a required tool still blocks panel/invasive steps. Marking **I have this** does not write inventory; **Also save to my tools** is the explicit add.
+
+Files: `lib/ui/session_screen.dart`, `lib/ui/app_dependencies.dart`, `lib/ui/tools_inventory_screen.dart`, `test/tools_inventory_test.dart`, `test/repair_readiness_test.dart`, `test/support/session_test_helpers.dart`.
+
+## Add-appliance copy + scan affordance (2026-08-18)
+
+Web Add appliance shows one hint: type brand and model here; rating-plate scan is phone-only when this platform has no scan control. **Scan rating plate** appears only when OCR or barcode reading actually exists. No OCR promise without that control. Manual entry still works.
+
+Files: `lib/helpers/add_appliance_scan_copy.dart`, `lib/helpers/user_facing_error.dart`, `lib/ui/add_appliance_screen.dart`, `lib/ui/appliance_detail_screen.dart`, `test/add_appliance_copy_test.dart`, `test/ocr_model_label_test.dart`, `test/barcode_assist_test.dart`.
+
+## Maintenance due / next-due copy (2026-08-18)
+
+Reminder rows show last done (when it exists) and next due whenever an interval is stored, plus **About every N days**. Checking Done stamps last done as today and rolls next due by that interval. Past due uses a calm **Overdue** suffix on the next-due line. No push notifications. No new reminder engine.
+
+Files: `lib/helpers/maintenance_reminder_copy.dart`, `lib/models/maintenance_reminder.dart`, `lib/ui/maintenance_list.dart`, `lib/ui/app_dependencies.dart`, `lib/ui/appliance_detail_screen.dart`, `lib/ui/home_screen.dart`, `lib/ui/session_completion_screen.dart`, `test/maintenance_list_test.dart`.
+
+## Repair history on appliance (2026-08-18)
+
+Appliance Repair history lists completed sessions newest first with a short plain-language line, the date, and optional stored cause. In-progress repairs stay off the list. Empty copy is only shown when this appliance has no completed outcomes.
+
+Files: `lib/helpers/repair_history_display.dart`, `lib/ui/appliance_detail_screen.dart`, `lib/ui/app_dependencies.dart`, `test/repair_history_display_test.dart`, `test/appliance_detail_test.dart`.
+
+## Guidance step completion + resume (2026-08-18)
+
+Continue repair returns to the first incomplete Safe Guidance step. **I did this** records the step id and index; completed steps stay completed after leave, app kill, or navigate away. Guidance not started still lands on conclusion/decision. Answered observation chips are not re-asked unless the session is restarted.
+
+Files: `lib/helpers/close_path_phase.dart`, `lib/ui/session_screen.dart`, `lib/models/session_ui_resume_state.dart`, `test/close_path_step_flow_test.dart`, `test/session_resume_test.dart`.
+
+## Easy-checks-first for dryer (2026-08-18)
+
+On no-heat / long-dry / overheat paths, lint filter → outside vent hood → visible vent hose come before panel or replace-part guidance. Invasive steps stay locked until those checks are answered, done, or skipped with **I couldn't**. Copy: “This can be a failed part. It can also be restricted airflow. Check [easy thing] before opening the cabinet.”
+
+Files: `lib/helpers/easy_airflow_checks.dart`, `lib/helpers/suggest_next_observation.dart`, `lib/helpers/close_path_phase.dart` (existing invasive helper), `lib/ui/session_screen.dart`, `lib/helpers/dryer_close_path.dart`, `lib/knowledge_factory/dryer_batch_01.dart`, `lib/services/knowledge_package_repository.dart`, `lib/helpers/guidance_display.dart`, `lib/helpers/dryer_problem_starter.dart`, `lib/helpers/observation_prompt_quality.dart`.
+
+## Repair UX density + step completion (2026-08-18)
+
+Stepped close-path so a dryer no-heat run is usable on web without one scroll wall.
+
+### Screens / flow
+- **Conclusion** — most likely + why; other possibilities collapsed
+- **Decision** — I'll repair | Call a pro
+- **Parts** — estimates only (no DIY vs pro CTAs)
+- **Tools** — compact required/optional checklist; missing required tool blocks panel/parts steps
+- **Guidance** — one step per screen with Step X of N, **I did this**, **I couldn't**, Back
+- **Verification** — after guidance steps are confirmed
+- **While you're there** — optional extras
+- **Done** — End Session + household memory / maintenance due copy
+
+### Session fields added (`SessionUiResumeState`)
+- `closePathPhase`
+- `choseRepair`
+- `guidanceStepIndex`
+- `completedGuidanceStepIds`
+
+Resume returns to the last incomplete guidance step.
+
+### Copy
+- Vent/outside-airflow questions framed early on no-heat / long-dry / overheat paths
+- Web appliance identity: “Type brand and model here.”
+- Diagram caption: typical layout, yours may vary
+- Done screen shows typical 30-day interval / next due

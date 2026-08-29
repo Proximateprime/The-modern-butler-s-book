@@ -1,0 +1,189 @@
+[
+  {
+    "id": "DRYER-NH-01",
+    "title": "No heat, drum turns, weak exterior airflow",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["No heat", "Drum spins"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "drum-turns", "answer": "Turns normally"},
+      {"templateId": "exterior-airflow", "answer": "Weak"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["restricted-exhaust-airflow"],
+      "notSupported": ["broken-drive-belt", "motor-failure"],
+      "netGreater": [
+        ["restricted-exhaust-airflow", "heating-element-failed"],
+        ["thermal-fuse-open", "heating-element-failed"]
+      ],
+      "leaderIn": ["restricted-exhaust-airflow", "thermal-fuse-open"],
+      "scanGuidanceModeIds": [
+        "restricted-exhaust-airflow",
+        "heating-element-failed",
+        "thermal-fuse-open"
+      ]
+    }
+  },
+  {
+    "id": "DRYER-NH-02",
+    "title": "No heat, drum turns, strong exterior airflow",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["No heat", "Drum spins"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "drum-turns", "answer": "Turns normally"},
+      {"templateId": "cycle-heat-setting", "answer": "Yes, heat cycle"},
+      {"templateId": "exterior-airflow", "answer": "Normal"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["heating-element-failed"],
+      "notSupported": ["restricted-exhaust-airflow"],
+      "netGreater": [
+        ["heating-element-failed", "thermal-fuse-open"],
+        ["heating-element-failed", "restricted-exhaust-airflow"]
+      ],
+      "leaderIn": ["heating-element-failed"],
+      "scanGuidanceModeIds": [
+        "heating-element-failed",
+        "thermal-fuse-open"
+      ]
+    }
+  },
+  {
+    "id": "DRYER-NH-03",
+    "title": "No heat after overheat with weak vent",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["No heat", "Recent overheat"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "drum-turns", "answer": "Turns normally"},
+      {"templateId": "cycle-heat-setting", "answer": "Yes, heat cycle"},
+      {"templateId": "recent-overheat", "answer": "Yes, very hot or shut off from heat"},
+      {"templateId": "exterior-airflow", "answer": "Weak"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["thermal-fuse-open"],
+      "netGreaterOrEqual": [
+        ["thermal-fuse-open", "heating-element-failed"]
+      ],
+      "leaderIn": ["thermal-fuse-open"],
+      "scanGuidanceModeIds": [
+        "thermal-fuse-open",
+        "heating-element-failed",
+        "restricted-exhaust-airflow"
+      ]
+    }
+  },
+  {
+    "id": "DRYER-NH-04",
+    "title": "Always cold on this complaint",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["No heat", "Never heated on this complaint"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "drum-turns", "answer": "Turns normally"},
+      {"templateId": "cycle-heat-setting", "answer": "Yes, heat cycle"},
+      {"templateId": "heat-before-failure", "answer": "Never heated on this complaint / always cold"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["heating-element-failed"],
+      "netGreater": [
+        ["heating-element-failed", "thermal-fuse-open"]
+      ],
+      "leaderIn": ["heating-element-failed"],
+      "scanGuidanceModeIds": ["heating-element-failed", "thermal-fuse-open"]
+    }
+  },
+  {
+    "id": "DRYER-NH-05",
+    "title": "Air-only / fluff setting",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["No heat"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "cycle-heat-setting", "answer": "No, air-only / fluff"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "notSupported": ["heating-element-failed", "thermal-fuse-open"],
+      "scanGuidanceModeIds": ["heating-element-failed", "thermal-fuse-open"]
+    }
+  },
+  {
+    "id": "DRYER-NH-06",
+    "title": "Cold damp clothes and normal exterior airflow",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["No heat", "Clothes cold and damp"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "drum-turns", "answer": "Turns normally"},
+      {"templateId": "clothes-feel-after-cycle", "answer": "Cold and still damp"},
+      {"templateId": "exterior-airflow", "answer": "Normal"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["heating-element-failed"],
+      "notSupported": ["restricted-exhaust-airflow"],
+      "netGreater": [
+        ["heating-element-failed", "restricted-exhaust-airflow"]
+      ],
+      "scanGuidanceModeIds": [
+        "heating-element-failed",
+        "restricted-exhaust-airflow"
+      ]
+    }
+  },
+  {
+    "id": "DRYER-NH-07",
+    "title": "Warm damp clothes and weak vent",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["Warm damp clothes", "Weak vent"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "clothes-feel-after-cycle", "answer": "Warm or hot but still damp"},
+      {"templateId": "exterior-airflow", "answer": "Weak"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["restricted-exhaust-airflow"],
+      "netGreater": [
+        ["restricted-exhaust-airflow", "heating-element-failed"],
+        ["restricted-exhaust-airflow", "thermal-fuse-open"]
+      ],
+      "leaderIn": ["restricted-exhaust-airflow", "clogged-lint-pathway"],
+      "scanGuidanceModeIds": [
+        "restricted-exhaust-airflow",
+        "heating-element-failed"
+      ]
+    }
+  },
+  {
+    "id": "DRYER-NH-08",
+    "title": "Smoke or sparking on a no-heat start",
+    "packageId": "dryer-core",
+    "packageVersion": "1.4.2",
+    "userReports": ["No heat", "Smoke / sparking"],
+    "evidence": [
+      {"templateId": "problem-starter-complaint", "answer": "No heat"},
+      {"templateId": "hazard-observation", "answer": "Yes"}
+    ],
+    "expect": {
+      "safetyStop": true,
+      "scanGuidanceModeIds": [
+        "heating-element-failed",
+        "thermal-fuse-open"
+      ]
+    }
+  }
+]

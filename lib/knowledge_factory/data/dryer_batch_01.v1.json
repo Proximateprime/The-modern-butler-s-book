@@ -1,0 +1,2340 @@
+{
+  "schemaVersion": "1.0",
+  "batchId": "dryer-batch-01",
+  "applianceFamily": "dryer",
+  "failureModes": [
+    {
+      "schemaVersion": "1.0",
+      "id": "restricted-exhaust-airflow",
+      "title": "Restricted vent or exhaust airflow",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "slow dry",
+        "clothes hot but still damp",
+        "weak exterior vent airflow",
+        "dryer runs long cycles"
+      ],
+      "immediateCause": "Exhaust air cannot leave the dryer effectively, so moisture stays in the load.",
+      "rootCause": "A crushed hose, lint-packed vent run, or blocked exterior hood restricts airflow.",
+      "contributingFactors": [
+        "Crushed or kinked flexible vent hose",
+        "Lint packed in the vent run",
+        "Blocked exterior vent hood or bird nest",
+        "Over-long plastic flexible duct"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "clothes-remain-damp",
+          "answer": "Still damp"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Warm or hot but still damp"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Weak"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Almost none"
+        },
+        {
+          "templateId": "vent-hose-condition",
+          "answer": "Yes, restricted"
+        },
+        {
+          "templateId": "dry-time-change",
+          "answer": "Much longer"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Normal"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Cold and still damp"
+        },
+        {
+          "templateId": "clothes-remain-damp",
+          "answer": "Fully dry"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Very hot"
+        },
+        {
+          "templateId": "hazard-observation",
+          "answer": "Yes"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Heating element failed (clothes are warm/hot, so heat is present)",
+        "Moisture sensor fault assumed before checking the vent path",
+        "Timer/control failure assumed because cycles feel endless"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "exterior-airflow",
+          "promptText": "Go outside to the vent hood while the dryer runs. How strong is the airflow? (Most long-dry problems start here.)",
+          "answerChoices": [
+            "Weak",
+            "Almost none",
+            "Normal",
+            "Not sure",
+            "Other / describe"
+          ]
+        },
+        {
+          "templateId": "vent-hose-condition",
+          "promptText": "Look behind the dryer: is the visible vent hose crushed, kinked, or packed with lint?",
+          "answerChoices": [
+            "Yes, restricted",
+            "Looks clear",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After cleaning the lint filter and clearing crush/kinks in the visible vent hose, is exterior vent airflow clearly stronger?",
+      "verificationWhy": "Confirms whether a simple exhaust restriction was limiting drying.",
+      "verificationSteps": [
+        "Unplug the dryer before moving it",
+        "Clean the lint filter thoroughly",
+        "Straighten or clear crush/kinks/lint in the visible vent hose",
+        "Confirm the exterior vent hood opens and is not blocked",
+        "Restore power and re-check exterior airflow on a short run"
+      ],
+      "safeGuidanceBoundary": [
+        "Unplug the dryer (or switch off its breaker) before moving it",
+        "Clean the lint filter thoroughly until the mesh is clear",
+        "Check the visible vent hose for crush, kinks, or packed lint and straighten or clear what you can reach safely",
+        "Confirm the exterior vent hood opens freely and is not blocked",
+        "Do not cut into walls or open live electrical compartments to chase the vent"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, melting, sparking, or fire signs",
+        "Vent path is inside walls/ceiling and cannot be cleared safely",
+        "Dryer still overheats after visible vent and lint cleaning"
+      ],
+      "preventionActions": [
+        "Clean the lint filter before every load",
+        "Inspect the visible vent hose periodically for crush and lint",
+        "Keep the exterior vent hood clear of lint and nests",
+        "Prefer short, smooth vent runs over long crushed flexible duct"
+      ],
+      "toolsRequired": [
+        "Flashlight",
+        "Vacuum for accessible lint (optional)"
+      ],
+      "difficultyNotes": "Beginner-safe exterior and hose checks only. In-wall vent cleaning is professional.",
+      "commonality": "veryHigh",
+      "safetyNotes": "Use exterior observations only. Stop for smoke, burning smell, or continued overheating.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true,
+      "visualGuides": [
+        {
+          "target_id": "lint-filter",
+          "label": "Lint filter",
+          "imageAsset": "diagram:dryer-front",
+          "anchorX": 0.50,
+          "anchorY": 0.22
+        },
+        {
+          "target_id": "vent-hood",
+          "label": "Exterior vent",
+          "imageAsset": "diagram:dryer-rear",
+          "anchorX": 0.78,
+          "anchorY": 0.42
+        }
+      ],
+      "partsEstimates": [
+        {
+          "name": "Lint filter",
+          "diyEstimate": "$8–20",
+          "proEstimate": "$80–150"
+        },
+        {
+          "name": "Flexible vent kit",
+          "diyEstimate": "$15–40",
+          "proEstimate": "$120–250"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "clogged-lint-pathway",
+      "title": "Clogged lint filter housing or pathway",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "slow dry",
+        "lint filter always packed",
+        "poor airflow even after cleaning screen",
+        "clothes take forever"
+      ],
+      "immediateCause": "Lint restricts airflow at or just beyond the removable filter screen.",
+      "rootCause": "Neglected filter cleaning or lint packed in the filter slot/housing reduces exhaust flow.",
+      "contributingFactors": [
+        "Skipping lint-filter cleaning",
+        "Damaged or missing filter screen",
+        "Lint packed in the filter slot walls",
+        "Secondary contribution from a restricted vent run"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "lint-filter-condition",
+          "answer": "Heavily clogged"
+        },
+        {
+          "templateId": "lint-filter-condition",
+          "answer": "Missing / damaged"
+        },
+        {
+          "templateId": "lint-housing-slot",
+          "answer": "Packed with lint"
+        },
+        {
+          "templateId": "clothes-remain-damp",
+          "answer": "Still damp"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Warm or hot but still damp"
+        },
+        {
+          "templateId": "dry-time-change",
+          "answer": "Somewhat longer"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "lint-housing-slot",
+          "answer": "Looks clear"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Cold and still damp"
+        },
+        {
+          "templateId": "hazard-observation",
+          "answer": "Yes"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Heating element failed when clothes are still getting warm",
+        "Blaming only the outdoor vent when the filter slot is packed",
+        "Assuming the lint path is clear because the removable screen looks clean",
+        "Assuming a control fault from long cycle times alone"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "lint-filter-condition",
+          "promptText": "What do you observe on the lint filter?",
+          "answerChoices": [
+            "Clean",
+            "Light lint",
+            "Heavily clogged",
+            "Missing / damaged",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After cleaning the lint filter and accessible lint around the filter slot, do clothes dry more normally on a short test load?",
+      "verificationWhy": "Confirms whether lint restriction near the filter was limiting drying.",
+      "verificationSteps": [
+        "Unplug the dryer before inspecting the lint housing",
+        "Clean the lint filter and any safely accessible lint around the slot",
+        "Restore power and run a small heat-cycle test load",
+        "Compare dryness and exterior airflow"
+      ],
+      "safeGuidanceBoundary": [
+        "Unplug the dryer before inspecting the lint housing",
+        "Clean the lint filter and any safely accessible lint around the slot",
+        "Do not dismantle sealed cabinets or wiring",
+        "Restore power and run a small test load on a heat cycle"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, melting, or sparking",
+        "Lint pathway requires cabinet disassembly beyond the filter slot",
+        "Overheating continues after accessible lint cleaning"
+      ],
+      "preventionActions": [
+        "Clean the lint filter before every load",
+        "Vacuum accessible lint around the filter slot periodically",
+        "Replace a damaged or missing filter screen"
+      ],
+      "toolsRequired": [
+        "None for filter cleaning",
+        "Vacuum (optional)"
+      ],
+      "difficultyNotes": "Filter and slot cleaning is beginner-safe. Deep cabinet lint cleaning is professional.",
+      "commonality": "high",
+      "safetyNotes": "Inspect only safely accessible lint areas. Stop for smoke or burning smell.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true,
+      "visualGuides": [
+        {
+          "target_id": "lint-filter",
+          "label": "Lint filter",
+          "imageAsset": "diagram:dryer-front",
+          "anchorX": 0.50,
+          "anchorY": 0.22
+        },
+        {
+          "target_id": "access-panel",
+          "label": "Access panel",
+          "imageAsset": "diagram:dryer-front",
+          "anchorX": 0.50,
+          "anchorY": 0.62
+        }
+      ]
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "thermal-fuse-open",
+      "title": "Thermal fuse open",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "no heat",
+        "drum turns but clothes stay cold",
+        "no warmth on a heat cycle",
+        "worked before a hot/overheat episode"
+      ],
+      "immediateCause": "The thermal fuse has opened and interrupted power to the heater circuit.",
+      "rootCause": "The fuse opened after overheating, most often from restricted exhaust airflow or a clogged lint pathway.",
+      "contributingFactors": [
+        "Crushed, kinked, or lint-packed vent hose",
+        "Blocked exterior vent hood",
+        "Neglected lint filter cleaning",
+        "Repeated high-heat cycles with poor exhaust"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "heat-observed",
+          "answer": "No warmth"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "Yes, heat cycle"
+        },
+        {
+          "templateId": "recent-overheat",
+          "answer": "Yes, recent overheat / vent neglect"
+        },
+        {
+          "templateId": "heat-before-failure",
+          "answer": "Heated, then went cold after a very hot run or vent issue"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Cold and still damp"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Weak"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Almost none"
+        },
+        {
+          "templateId": "vent-hose-condition",
+          "answer": "Yes, restricted"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "heat-observed",
+          "answer": "Normal heat"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Very hot"
+        },
+        {
+          "templateId": "recent-overheat",
+          "answer": "No"
+        },
+        {
+          "templateId": "heat-before-failure",
+          "answer": "Never heated on this complaint / always cold"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "No, air-only / fluff"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Normal"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Heating element failed without considering overheat/vent history",
+        "Timer or control board failure assumed before heat-cycle and vent checks",
+        "Supply fault assumed when the drum still tumbles normally"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "exterior-airflow",
+          "promptText": "Go outside to the vent hood while the dryer runs. How strong is the airflow? (Most no-heat problems start here, before a fuse.)",
+          "answerChoices": [
+            "Weak",
+            "Almost none",
+            "Normal",
+            "Not sure",
+            "Other / describe"
+          ]
+        },
+        {
+          "templateId": "vent-hose-condition",
+          "promptText": "Look behind the dryer: is the visible vent hose crushed, kinked, or packed with lint?",
+          "answerChoices": [
+            "Yes, restricted",
+            "Looks clear",
+            "Not sure",
+            "Other / describe"
+          ]
+        },
+        {
+          "templateId": "recent-overheat",
+          "promptText": "Has the dryer recently overheated, shut off mid-cycle from heat, or been used with a badly clogged vent?",
+          "answerChoices": [
+            "Yes, recent overheat / vent neglect",
+            "No",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "With a heat cycle selected, the drum tumbling, and the lint filter and visible vent path already cleared, is there still no warmth at all on a short test run?",
+      "verificationWhy": "A thermal fuse is a one-shot safety device. Clearing the vent corrects the overheating that opened it, but it cannot restore heat on its own. Still completely cold after the airflow path is clear matches an open fuse, which a technician must test and replace — confirming this does not mean the dryer is fixed.",
+      "verificationSteps": [
+        "Confirm the cycle is set to heat (not air-only / fluff)",
+        "Clear the lint filter and the visible vent path so the overheating cause is corrected",
+        "Restore power and run a short heat cycle with the drum turning",
+        "Feel for warmth — still completely cold matches an open thermal fuse",
+        "Stop here and book a technician; do not meter live circuits or jumper the fuse"
+      ],
+      "safeGuidanceBoundary": [
+        "Check airflow before opening the cabinet. Pull the lint filter and look at the screen.",
+        "Check airflow before opening the cabinet. Go outside to the vent hood while the dryer runs.",
+        "Check airflow before opening the cabinet. Look behind the dryer at the visible vent hose for crush, kinks, packed lint, or a long run.",
+        "Unplug the dryer and turn OFF the dryer circuit breaker at the panel. Confirm the control panel shows no lights and Start does nothing.",
+        "Do not measure live voltage, test the fuse while energized, or bypass it with foil, wire, or a jumper.",
+        "Stop here and call a qualified technician to test and replace the thermal fuse. Confirming no warmth is not a completed repair.",
+        "A new fuse alone without fixing restricted airflow can open again.",
+        {
+          "text": "With the dryer unplugged and the breaker off, you may open an accessible heater service panel to locate the thermal fuse.",
+          "expert_ok": true
+        },
+        {
+          "text": "If you can reach it without live testing, you may replace the fuse with an exact-match part. Never jumper it. Reassemble before restoring power.",
+          "expert_ok": true
+        }
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, melting, sparking, or fire signs",
+        "Need to test or replace the fuse with live electrical work",
+        "Desire to bypass or jumper the thermal fuse",
+        "Cabinet must be opened for heater-circuit diagnosis beyond beginner-safe checks"
+      ],
+      "preventionActions": [
+        "Clean the lint filter before every load",
+        "Keep the vent hose and exterior hood clear",
+        "Stop using the dryer if it overheats until airflow is corrected"
+      ],
+      "toolsRequired": [
+        "None for beginner airflow and isolation checks",
+        "Screwdriver for Expert Mode panel work (optional)",
+        "Flashlight (optional)"
+      ],
+      "difficultyNotes": "Beginner-safe work stops at heat-cycle confirmation, lint cleaning, and exterior vent observation.",
+      "commonality": "high",
+      "safetyNotes": "Never bypass a thermal fuse. Do not guide live electrical testing. Fix restricted airflow before any fuse replacement by a technician.",
+      "allowResolvedWhenConfirmed": false,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "heating-element-failed",
+      "title": "Heating element open or failed",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "no heat",
+        "tumbles but never gets warm",
+        "cold air on a heat cycle",
+        "clothes stay damp and cold"
+      ],
+      "immediateCause": "The electric heating element no longer produces heat on a heat cycle.",
+      "rootCause": "The element circuit is open or failed, often after age or prior overheating stress, while the drum still tumbles.",
+      "contributingFactors": [
+        "Age and thermal cycling of the element",
+        "Prior restricted airflow that stressed the heater path",
+        "Confusion with air-only / fluff cycle selection"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "heat-observed",
+          "answer": "No warmth"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Slight warmth"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "Yes, heat cycle"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Normal"
+        },
+        {
+          "templateId": "wall-plug-seated",
+          "answer": "Fully seated, looks normal"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Cold and still damp"
+        },
+        {
+          "templateId": "heat-before-failure",
+          "answer": "Never heated on this complaint / always cold"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "heat-observed",
+          "answer": "Normal heat"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Very hot"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "No, air-only / fluff"
+        },
+        {
+          "templateId": "recent-overheat",
+          "answer": "Yes, recent overheat / vent neglect"
+        },
+        {
+          "templateId": "heat-before-failure",
+          "answer": "Heated, then went cold after a very hot run or vent issue"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Warm or hot but still damp"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Motor runs, drum still"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Does not turn"
+        },
+        {
+          "templateId": "moisture-sensor-bars",
+          "answer": "Visible residue on bars"
+        },
+        {
+          "templateId": "moisture-sensor-bars",
+          "answer": "Auto-dry ends early, clothes damp"
+        },
+        {
+          "templateId": "relay-heat-output",
+          "answer": "No heat despite heat cycle and tumble"
+        },
+        {
+          "templateId": "gas-dryer-type",
+          "answer": "Yes, gas dryer"
+        },
+        {
+          "templateId": "gas-ignition-observed",
+          "answer": "No flame / no ignition"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Thermal fuse open when there is no overheat/vent history",
+        "Air-only cycle left selected",
+        "Control board failure assumed before confirming heat cycle and external supply seating"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "heat-observed",
+          "promptText": "Is there any warmth after the dryer has run briefly?",
+          "answerChoices": [
+            "No warmth",
+            "Slight warmth",
+            "Normal heat",
+            "Very hot",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "With a heat cycle selected, the wall plug fully seated, and the drum turning, does a short run still produce no warmth?",
+      "verificationWhy": "Confirms beginner-safe setting and plug checks before escalating heater-circuit work.",
+      "verificationSteps": [
+        "Confirm heat cycle (not air-only / fluff)",
+        "Confirm the wall plug is fully seated and looks normal — do not probe live terminals",
+        "Run a short cycle with the drum turning and feel for warmth",
+        "If still cold, stop beginner DIY and call a technician"
+      ],
+      "safeGuidanceBoundary": [
+        "Do not measure live voltage or open the heater housing",
+        "Confirm heat cycle and that the drum turns",
+        "Confirm the wall plug is fully seated and undamaged from the outside only",
+        "If still no warmth, escalate to a qualified technician"
+      ],
+      "stopProfessionalConditions": [
+        "Any need to test the element, thermostats, or wiring electrically",
+        "Burning smell, smoke, melting, or sparking",
+        "Damaged plug, cord, or outlet discoloration"
+      ],
+      "preventionActions": [
+        "Keep the vent and lint path clear to reduce heater stress",
+        "Use the correct heat cycle for the fabric",
+        "Stop and escalate if the cabinet overheats abnormally"
+      ],
+      "toolsRequired": [
+        "None for beginner external checks"
+      ],
+      "difficultyNotes": "Element testing and replacement are professional tasks. Beginners only confirm settings, tumble, and external plug condition.",
+      "commonality": "high",
+      "safetyNotes": "Do not guide beginners through live electrical testing of the heater circuit.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "broken-drive-belt",
+      "title": "Broken drive belt",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "drum does not turn",
+        "motor runs but drum still",
+        "no tumble",
+        "clothes sit still while dryer sounds on"
+      ],
+      "immediateCause": "The drive belt no longer couples the motor to the drum.",
+      "rootCause": "The belt has broken, slipped off, or lost integrity so the drum stays still while the motor can still run.",
+      "contributingFactors": [
+        "Age-related belt wear",
+        "Seized drum rollers increasing belt stress",
+        "Foreign object jamming the drum"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "drum-turns",
+          "answer": "Does not turn"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Motor runs, drum still"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Yes, clear motor sound"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Starts normally"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "drum-turns",
+          "answer": "Turns normally"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Hum / struggle only"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Silent — no motor sound"
+        },
+        {
+          "templateId": "running-noise",
+          "answer": "Squeal"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Motor failure when a clear motor sound is present and the drum is still",
+        "Door switch failure when the machine otherwise seems to start",
+        "Control board failure assumed from no tumble alone"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "drum-turns",
+          "promptText": "Does the drum turn during the cycle?",
+          "answerChoices": [
+            "Turns normally",
+            "Does not turn",
+            "Motor runs, drum still",
+            "Turns briefly then stops",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "With the dryer started, do you still hear a clear motor sound while the drum stays still?",
+      "verificationWhy": "Supports a broken/slipped belt pattern before any internal repair.",
+      "verificationSteps": [
+        "Close the door firmly and start a cycle",
+        "Listen for a clear motor sound",
+        "Watch whether the drum stays still",
+        "Do not reach into a running drum; unplug before any internal look"
+      ],
+      "safeGuidanceBoundary": [
+        "Unplug the dryer before any internal inspection",
+        "Do not reach into a spinning or powered drum",
+        "Belt replacement requires cabinet access and is often a technician job",
+        "If motor sound is present and drum is still, escalate rather than forcing parts"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, or sparking",
+        "Belt replacement or roller service required",
+        "Any need to remove the front/rear cabinet panels if the user is not equipped"
+      ],
+      "preventionActions": [
+        "Avoid overloading the drum",
+        "Address loud roller/idler noises early before belt stress worsens",
+        "Keep foreign objects out of the drum and seals"
+      ],
+      "toolsRequired": [
+        "None for external observation",
+        "Cabinet tools only for pros"
+      ],
+      "difficultyNotes": "External motor-vs-drum observation is beginner-safe. Belt replacement is intermediate/pro.",
+      "commonality": "high",
+      "safetyNotes": "Inspect internally only after safe isolation. Never reach into a powered dryer.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "door-switch-failure",
+      "title": "Door switch failure",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "will not start",
+        "nothing happens when I press start",
+        "door does not click shut",
+        "starts then stops when door moves"
+      ],
+      "immediateCause": "The dryer does not detect a securely closed door, so the start circuit will not run.",
+      "rootCause": "A failed door switch, worn door strike, or door that will not latch prevents the interlock from closing.",
+      "contributingFactors": [
+        "Worn door catch/strike",
+        "Door not closing firmly",
+        "Failed door switch contacts"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "dryer-response",
+          "answer": "Nothing happens"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Starts then stops"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "Yes, panel responds"
+        },
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Soft close / no click"
+        },
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Will not stay closed"
+        },
+        {
+          "templateId": "door-held-closed-start",
+          "answer": "Starts only while I hold the door closed"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Silent — no motor sound"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "dryer-response",
+          "answer": "Starts normally"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Hums but does not start"
+        },
+        {
+          "templateId": "door-held-closed-start",
+          "answer": "Starts normally without holding the door"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "No lights at all"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Dead outlet / no power when the panel still responds",
+        "Motor failure when there is silence and a soft door latch",
+        "Assuming the door switch is fine because the door still clicks shut",
+        "Control board failure before checking door click and strike"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "door-closed-firmly",
+          "promptText": "Does the door click firmly shut and stay closed?",
+          "answerChoices": [
+            "Clicks shut firmly",
+            "Soft close / no click",
+            "Will not stay closed",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "With the door pressed firmly until it clicks, does Start still do nothing while the panel responds?",
+      "verificationWhy": "Separates a latch/switch problem from a dead-power or hum-motor pattern.",
+      "verificationSteps": [
+        "Close the door until you feel/hear a firm click",
+        "Confirm any panel lights or display still respond",
+        "Press Start and observe for silence vs hum vs normal start",
+        "Never bypass the door switch"
+      ],
+      "safeGuidanceBoundary": [
+        "Never bypass the door switch or safety interlock",
+        "Try a firm door click and verify panel response only",
+        "Do not probe switch terminals live",
+        "If the latch is broken or Start still does nothing with a firm click, call a technician"
+      ],
+      "stopProfessionalConditions": [
+        "Any plan to jumper/bypass the door switch",
+        "Switch replacement requiring wiring work",
+        "Burning smell, smoke, or sparking"
+      ],
+      "preventionActions": [
+        "Close the door firmly until it latches",
+        "Avoid slamming a damaged strike repeatedly",
+        "Replace a worn catch before it stops latching"
+      ],
+      "toolsRequired": [
+        "None for latch observation"
+      ],
+      "difficultyNotes": "Latch feel checks are beginner-safe. Switch replacement is professional.",
+      "commonality": "common",
+      "safetyNotes": "Never bypass the door switch or safety interlock.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "worn-drum-rollers",
+      "title": "Worn drum rollers",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "thumping while tumbling",
+        "rumble or thud each drum revolution",
+        "noisy dryer drum",
+        "thump that follows drum speed"
+      ],
+      "immediateCause": "Worn drum support rollers create a repeating thump or rumble while tumbling.",
+      "rootCause": "Roller wheels or shafts are worn flat or dry, so the drum no longer rides smoothly.",
+      "contributingFactors": [
+        "Age and high cycle count",
+        "Heavy loads over time",
+        "Deferred noise repairs that accelerate wear"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "running-noise",
+          "answer": "Thump"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Turns normally"
+        },
+        {
+          "templateId": "noise-timing",
+          "answer": "Repeats with each drum turn (thump/rumble)"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "running-noise",
+          "answer": "No unusual sound"
+        },
+        {
+          "templateId": "running-noise",
+          "answer": "Squeal"
+        },
+        {
+          "templateId": "noise-timing",
+          "answer": "Sharp squeal after a few minutes"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Motor runs, drum still"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Nothing happens"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Idler pulley wear (more often a high squeal than a thump)",
+        "Broken belt when the drum is still turning",
+        "Foreign object assumed without a repeating drum-timed thump"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "running-noise",
+          "promptText": "Do you hear a squeal, thump, grind, hum, or another sound?",
+          "answerChoices": [
+            "No unusual sound",
+            "Squeal",
+            "Thump",
+            "Grind",
+            "Hum",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "Does the thump repeat in time with the drum turning on an empty or light load?",
+      "verificationWhy": "A drum-timed thump points to rollers/supports rather than a start/no-heat fault.",
+      "verificationSteps": [
+        "Run briefly with a light load and listen",
+        "Note whether the thump follows drum rotation",
+        "Unplug before any internal inspection",
+        "Escalate for roller replacement"
+      ],
+      "safeGuidanceBoundary": [
+        "Limit checks to sound while the dryer runs normally",
+        "Unplug before opening the cabinet",
+        "Do not lubricate sealed assemblies with household oils as a fix",
+        "Roller replacement is a technician-level repair for most users"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, or grinding metal that worsens quickly",
+        "Cabinet disassembly required",
+        "Drum will not turn or motor struggles"
+      ],
+      "preventionActions": [
+        "Avoid chronic overloading",
+        "Address loud thumps early before belt damage"
+      ],
+      "toolsRequired": [
+        "None for listening checks"
+      ],
+      "difficultyNotes": "Listening checks are beginner-safe. Roller replacement is intermediate/pro.",
+      "commonality": "common",
+      "safetyNotes": "Limit checks to sound and safely isolated inspection.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "idler-pulley-wear",
+      "title": "Idler pulley wear",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "squealing dryer",
+        "high squeak while tumbling",
+        "squeal that starts after a few minutes",
+        "chirp from belt area"
+      ],
+      "immediateCause": "A worn belt-tension (idler) pulley creates a recurring squeal while the drum turns.",
+      "rootCause": "The idler bearing or wheel is dry/worn, so the belt rubs or chatters under tension.",
+      "contributingFactors": [
+        "Age-related bearing wear",
+        "Belt glazing from a failing idler",
+        "Dust and lint around the pulley"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "running-noise",
+          "answer": "Squeal"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Turns normally"
+        },
+        {
+          "templateId": "noise-timing",
+          "answer": "Sharp squeal after a few minutes"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "running-noise",
+          "answer": "No unusual sound"
+        },
+        {
+          "templateId": "running-noise",
+          "answer": "Thump"
+        },
+        {
+          "templateId": "noise-timing",
+          "answer": "Repeats with each drum turn (thump/rumble)"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Motor runs, drum still"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Hums but does not start"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Worn drum rollers (more thump/rumble than sharp squeal)",
+        "Motor failure when tumble is otherwise normal",
+        "Broken belt when the drum is still turning"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "running-noise",
+          "promptText": "Do you hear a squeal, thump, grind, hum, or another sound?",
+          "answerChoices": [
+            "No unusual sound",
+            "Squeal",
+            "Thump",
+            "Grind",
+            "Hum",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "Does a sharp squeal continue while the drum is turning normally?",
+      "verificationWhy": "Confirms a running mechanical squeal pattern rather than a no-start or no-tumble fault.",
+      "verificationSteps": [
+        "Start a normal tumble and listen for squeal",
+        "Confirm the drum is turning",
+        "Unplug before any internal look at the belt/idler",
+        "Escalate for idler/belt service"
+      ],
+      "safeGuidanceBoundary": [
+        "Listening while tumbling is the beginner check",
+        "Unplug before cabinet access",
+        "Do not spray lubricants into the cabinet as a permanent fix",
+        "Idler and belt service is typically professional"
+      ],
+      "stopProfessionalConditions": [
+        "Smoke, burning smell, or belt shredding",
+        "Internal pulley replacement required",
+        "Squeal plus failure to tumble"
+      ],
+      "preventionActions": [
+        "Service noisy idlers before belts fail",
+        "Avoid overloading that stresses the belt path"
+      ],
+      "toolsRequired": [
+        "None for listening checks"
+      ],
+      "difficultyNotes": "Sound checks are beginner-safe. Idler replacement is intermediate/pro.",
+      "commonality": "common",
+      "safetyNotes": "Internal inspection requires safe isolation.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "motor-failure",
+      "title": "Motor failure or inability to take load",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "hums but will not start",
+        "motor struggles",
+        "tries to start then clicks off",
+        "hum with no tumble"
+      ],
+      "immediateCause": "The motor hums or struggles without turning the drum normally.",
+      "rootCause": "The motor cannot start or carry load due to internal failure, a seized mechanism, or start-related motor faults — not a simple door-click issue.",
+      "contributingFactors": [
+        "Seized drum/blower increasing load",
+        "Failed motor start components",
+        "Age-related motor wear"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "dryer-response",
+          "answer": "Hums but does not start"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Hum / struggle only"
+        },
+        {
+          "templateId": "running-noise",
+          "answer": "Hum"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Does not turn"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "dryer-response",
+          "answer": "Starts normally"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Yes, clear motor sound"
+        },
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Soft close / no click"
+        },
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Clicks shut firmly"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "No lights at all"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Turns normally"
+        },
+        {
+          "templateId": "drum-turns",
+          "answer": "Turns briefly then stops"
+        },
+        {
+          "templateId": "running-noise",
+          "answer": "Squeal"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Broken belt when there is only a strained hum and no clear run sound",
+        "Door switch failure when the door clicks firmly and a hum is present",
+        "Simple control-lock issue when the machine is actively struggling"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "motor-audible",
+          "promptText": "While the dryer tries to run, do you hear the motor humming or whirring?",
+          "answerChoices": [
+            "Yes, clear motor sound",
+            "Hum / struggle only",
+            "Silent — no motor sound",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "With the door firmly latched, does Start still produce only a hum/struggle without normal tumble?",
+      "verificationWhy": "Confirms a motor/load failure pattern rather than a soft door latch.",
+      "verificationSteps": [
+        "Confirm the door clicks firmly shut",
+        "Press Start and listen for hum vs silence vs normal start",
+        "Do not continue repeated start attempts that overheat the motor",
+        "Unplug and call a technician"
+      ],
+      "safeGuidanceBoundary": [
+        "Do not repeatedly hammer Start if the motor only hums",
+        "Never open live motor wiring",
+        "Unplug if you smell hot insulation or hear harsh grinding",
+        "Motor diagnosis and replacement are professional tasks"
+      ],
+      "stopProfessionalConditions": [
+        "Hum with burning smell, smoke, or sparking",
+        "Any motor electrical testing",
+        "Cabinet access for motor replacement"
+      ],
+      "preventionActions": [
+        "Do not run the dryer with a seized drum or severe mechanical noise",
+        "Address belt/roller failures before they overload the motor"
+      ],
+      "toolsRequired": [
+        "None for external listening"
+      ],
+      "difficultyNotes": "Escalate rather than guide unsafe internal electrical work.",
+      "commonality": "moderate",
+      "safetyNotes": "Escalate rather than guide unsafe internal electrical work.",
+      "allowResolvedWhenConfirmed": false,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "electric-supply-connection-fault",
+      "title": "Loose or faulty electric supply connection",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "no heat but may tumble",
+        "loose dryer plug",
+        "plug or cord discolored",
+        "intermittent power at the dryer"
+      ],
+      "immediateCause": "The dryer is not receiving a complete, solid supply connection needed for full operation/heat.",
+      "rootCause": "A loose wall plug, damaged cord/plug, or faulty outlet/connection reduces or interrupts supply — high-voltage work beyond beginner repair.",
+      "contributingFactors": [
+        "Plug not fully seated",
+        "Damaged or discolored plug/cord",
+        "Loose dryer outlet in the wall box (professional)"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "heat-observed",
+          "answer": "No warmth"
+        },
+        {
+          "templateId": "wall-plug-seated",
+          "answer": "Loose or only partly seated"
+        },
+        {
+          "templateId": "wall-plug-seated",
+          "answer": "Plug or cord looks damaged / discolored"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "No lights at all"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "wall-plug-seated",
+          "answer": "Fully seated, looks normal"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "Yes, panel responds"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Normal heat"
+        },
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Soft close / no click"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Hums but does not start"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Heating element failed when the plug is loose or damaged",
+        "Door switch failure when there are no lights at all",
+        "Thermal fuse open without checking external plug condition"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "wall-plug-seated",
+          "promptText": "Is the dryer wall plug fully pushed in (no looseness; cord and plug look normal)?",
+          "answerChoices": [
+            "Fully seated, looks normal",
+            "Loose or only partly seated",
+            "Plug or cord looks damaged / discolored",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After firmly seating an undamaged-looking plug (power off first if you must reseat), do lights/heat behavior return to normal?",
+      "verificationWhy": "Allows only an external seating check. Damaged cords/outlets require a professional.",
+      "verificationSteps": [
+        "With power awareness, confirm the plug is fully seated from the outside",
+        "If the plug/cord is damaged or discolored, do not keep using it — call a professional",
+        "Do not measure live voltage at the terminal block",
+        "If seating a normal plug restores function, monitor; if not, escalate"
+      ],
+      "safeGuidanceBoundary": [
+        "High voltage: do not provide or perform live measurement instructions",
+        "External plug seating and visual cord condition only",
+        "Damaged plug, cord, outlet, or terminal block = professional",
+        "Do not open the dryer power terminal block as a beginner"
+      ],
+      "stopProfessionalConditions": [
+        "Damaged, burnt, or discolored plug, cord, or outlet",
+        "Any terminal-block or outlet wiring work",
+        "Burning smell, smoke, sparking, or heat at the plug",
+        "Need for live electrical testing"
+      ],
+      "preventionActions": [
+        "Push the dryer plug fully into a matching dryer outlet",
+        "Avoid yanking the cord when moving the dryer",
+        "Stop use if the plug or outlet feels hot"
+      ],
+      "toolsRequired": [
+        "None for external visual/seating check"
+      ],
+      "difficultyNotes": "External seating only. Outlet and terminal-block work is professional.",
+      "commonality": "moderate",
+      "safetyNotes": "High voltage: do not provide live measurement instructions.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "air-fluff-cycle-selected",
+      "title": "Air-fluff / no-heat cycle selected",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "no heat",
+        "only cold air",
+        "set to fluff or air only",
+        "forgot to select heat"
+      ],
+      "immediateCause": "The selected cycle is air-only / fluff, so the heater is not commanded on.",
+      "rootCause": "User or prior setting left the dryer on a no-heat cycle, producing tumble without warmth.",
+      "contributingFactors": [
+        "Accidental cycle selection",
+        "Shared laundry settings left on air fluff",
+        "Misreading of cycle labels"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "No, air-only / fluff"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "Yes, heat cycle"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Normal heat"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Very hot"
+        },
+        {
+          "templateId": "recent-overheat",
+          "answer": "Yes, recent overheat / vent neglect"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Heating element failed",
+        "Thermal fuse open",
+        "Supply connection fault"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "cycle-heat-setting",
+          "promptText": "Is the dryer set to a heat cycle rather than air-only / fluff?",
+          "answerChoices": [
+            "Yes, heat cycle",
+            "No, air-only / fluff",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After selecting a clearly labeled heat cycle, does warmth return on a short run?",
+      "verificationWhy": "Rules out a setting mistake before any parts diagnosis.",
+      "verificationSteps": [
+        "Select a heat cycle (not air-only / fluff)",
+        "Run a short cycle with the drum turning",
+        "Feel for warmth"
+      ],
+      "safeGuidanceBoundary": [
+        "Change cycle selection only — no electrical work",
+        "If a heat cycle still produces no warmth, continue guided checks for other no-heat modes",
+        "Do not open heater circuits"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, or sparking",
+        "Heat cycle still produces no warmth after setting correction and basic airflow checks — escalate via other modes/technician"
+      ],
+      "preventionActions": [
+        "Confirm heat vs air-fluff before starting",
+        "Return shared laundry machines to a default heat cycle after air-fluff use"
+      ],
+      "toolsRequired": [
+        "None"
+      ],
+      "difficultyNotes": "Beginner setting check only.",
+      "commonality": "veryHigh",
+      "safetyNotes": "Setting correction only. No electrical testing.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "cycling-thermostat-failed",
+      "title": "Cycling thermostat failed (intermittent heat)",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "intermittent heat",
+        "heat comes and goes",
+        "starts warm then goes cold",
+        "sometimes heats sometimes not"
+      ],
+      "immediateCause": "Heat is inconsistent because the cycling thermostat is not regulating the heater path reliably.",
+      "rootCause": "A failing cycling thermostat (or related temperature control) opens/closes incorrectly, causing intermittent warmth rather than steady heat.",
+      "contributingFactors": [
+        "Age-related thermostat failure",
+        "Prior overheating stress",
+        "Lint/heat damage near thermostat locations (professional inspection)"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "heat-pattern",
+          "answer": "Intermittent / comes and goes"
+        },
+        {
+          "templateId": "heat-pattern",
+          "answer": "Starts warm then goes cold"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Slight warmth"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "Yes, heat cycle"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "heat-pattern",
+          "answer": "Steady no heat the whole time"
+        },
+        {
+          "templateId": "heat-pattern",
+          "answer": "Steady normal heat"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "No warmth"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "No, air-only / fluff"
+        },
+        {
+          "templateId": "hazard-observation",
+          "answer": "Yes"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Heating element completely open when heat is actually intermittent",
+        "Thermal fuse open (usually steady no heat after an overheat event)",
+        "User setting mistake when a heat cycle is already selected"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "heat-pattern",
+          "promptText": "How does the heat behave during the cycle?",
+          "answerChoices": [
+            "Steady no heat the whole time",
+            "Intermittent / comes and goes",
+            "Starts warm then goes cold",
+            "Steady normal heat",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "On a heat cycle with good exterior airflow, does warmth still come and go rather than stay steady?",
+      "verificationWhy": "Separates intermittent thermostat behavior from steady no-heat element/fuse patterns after basic airflow checks.",
+      "verificationSteps": [
+        "Confirm heat cycle selected",
+        "Confirm lint filter clean and exterior airflow not obviously blocked",
+        "Run and note whether heat is intermittent",
+        "Do not test thermostats live — escalate"
+      ],
+      "safeGuidanceBoundary": [
+        "No live thermostat or heater-circuit testing",
+        "Confirm settings and beginner airflow checks only",
+        "Intermittent heat after those checks → qualified technician"
+      ],
+      "stopProfessionalConditions": [
+        "Any electrical testing of thermostats or heaters",
+        "Burning smell, smoke, or overheating cabinet",
+        "Need to open the heater housing"
+      ],
+      "preventionActions": [
+        "Keep venting clear to reduce thermal stress",
+        "Stop using the dryer if it overheats or smells hot/electrical"
+      ],
+      "toolsRequired": [
+        "None for observation"
+      ],
+      "difficultyNotes": "Observation only for beginners. Thermostat diagnosis is professional.",
+      "commonality": "common",
+      "safetyNotes": "Do not guide live thermostat testing.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "high-limit-thermostat-open",
+      "title": "High-limit thermostat open after overheating",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "no heat after overheating",
+        "dryer got very hot then lost heat",
+        "overheat shutoff",
+        "too hot then cold"
+      ],
+      "immediateCause": "A high-limit thermostat has opened and interrupted the heater path after excess temperature.",
+      "rootCause": "Restricted airflow or another overheat condition drove temperatures high enough to open the high-limit protection.",
+      "contributingFactors": [
+        "Restricted vent or lint path",
+        "Blocked exterior hood",
+        "Running with a clogged filter"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "heat-observed",
+          "answer": "No warmth"
+        },
+        {
+          "templateId": "recent-overheat",
+          "answer": "Yes, recent overheat / vent neglect"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "Yes, heat cycle"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "recent-overheat",
+          "answer": "No"
+        },
+        {
+          "templateId": "cycle-heat-setting",
+          "answer": "No, air-only / fluff"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "Normal heat"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Normal"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Heating element failed with no overheat story",
+        "Ignoring vent restriction and replacing parts only",
+        "Bypassing high-limit protection"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "exterior-airflow",
+          "promptText": "Go outside to the vent hood while the dryer runs. How strong is the airflow? (Overheating often starts with a restricted vent.)",
+          "answerChoices": [
+            "Weak",
+            "Almost none",
+            "Normal",
+            "Not sure",
+            "Other / describe"
+          ]
+        },
+        {
+          "templateId": "vent-hose-condition",
+          "promptText": "Look behind the dryer: is the visible vent hose crushed, kinked, or packed with lint?",
+          "answerChoices": [
+            "Yes, restricted",
+            "Looks clear",
+            "Not sure",
+            "Other / describe"
+          ]
+        },
+        {
+          "templateId": "recent-overheat",
+          "promptText": "Has the dryer recently overheated, shut off mid-cycle from heat, or been used with a badly clogged vent?",
+          "answerChoices": [
+            "Yes, recent overheat / vent neglect",
+            "No",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After correcting obvious lint/vent restrictions, does a short heat cycle still produce no warmth (without any bypass of safety parts)?",
+      "verificationWhy": "High-limit protection opens because of overheating. Correcting airflow fixes the cause, but the opened protection itself is technician work — still no warmth confirms the over-temp pattern rather than a completed repair.",
+      "verificationSteps": [
+        "Stop if burning smell or smoke is present",
+        "Clean the lint filter and clear visible vent restrictions",
+        "Confirm the exterior hood opens freely",
+        "Run a short heat cycle and feel for warmth — no live testing",
+        "Still cold confirms the over-temp pattern; book a technician rather than retrying"
+      ],
+      "safeGuidanceBoundary": [
+        "Never bypass or jumper a high-limit thermostat",
+        "Do not measure live voltage or open the heater housing",
+        "Clear lint and vent restrictions first — this fixes the overheating cause, not the opened protection",
+        "Run a short heat cycle to confirm whether it is still cold",
+        "Call a qualified technician to test and replace high-limit protection"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, melting, or sparking",
+        "Desire to jumper/bypass the high-limit",
+        "Thermostat replacement or heater-housing work"
+      ],
+      "preventionActions": [
+        "Clean lint filter every load",
+        "Keep vent hose and exterior hood clear",
+        "Stop use when the dryer overheats until airflow is fixed"
+      ],
+      "toolsRequired": [
+        "None for beginner airflow checks"
+      ],
+      "difficultyNotes": "Beginner airflow checks only. High-limit service is professional.",
+      "commonality": "common",
+      "safetyNotes": "Never bypass high-limit protection. No live testing guidance.",
+      "allowResolvedWhenConfirmed": false,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "start-switch-failure",
+      "title": "Start switch or start control failure",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "will not start",
+        "start button does nothing",
+        "door clicks but no start",
+        "panel on but start dead"
+      ],
+      "immediateCause": "The start control does not complete the start command even though the door appears latched and the panel can respond.",
+      "rootCause": "A failed start switch/relay/touch control prevents starting despite a firm door latch and available panel power.",
+      "contributingFactors": [
+        "Worn mechanical start button",
+        "Failed start relay on electronic controls",
+        "Confused with door-switch or control-lock issues"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "dryer-response",
+          "answer": "Nothing happens"
+        },
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Clicks shut firmly"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "Yes, panel responds"
+        },
+        {
+          "templateId": "control-lock-status",
+          "answer": "Lock off / not shown"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Silent — no motor sound"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Soft close / no click"
+        },
+        {
+          "templateId": "door-closed-firmly",
+          "answer": "Will not stay closed"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Hums but does not start"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Starts normally"
+        },
+        {
+          "templateId": "control-lock-status",
+          "answer": "Lock on"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "No lights at all"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Door switch failure when the door already clicks firmly",
+        "Control lock still engaged",
+        "Dead outlet when the panel still responds"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "control-lock-status",
+          "promptText": "Look at the control panel: do you see a lock icon or Control Lock / Child Lock light?",
+          "answerChoices": [
+            "Lock off / not shown",
+            "Lock on",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "With Control Lock off and the door clicked firmly shut, does Start still do nothing while the panel responds?",
+      "verificationWhy": "Rules out lock and latch before escalating start-control repair.",
+      "verificationSteps": [
+        "Confirm Control Lock is off",
+        "Close the door until it clicks firmly",
+        "Confirm panel responds",
+        "Press Start; if still silent with no hum, escalate"
+      ],
+      "safeGuidanceBoundary": [
+        "Do not open the control panel or probe live switches",
+        "Check lock and door latch only",
+        "Start switch/control repair is professional"
+      ],
+      "stopProfessionalConditions": [
+        "Control panel disassembly or live switch testing",
+        "Burning smell, smoke, or sparking at the console"
+      ],
+      "preventionActions": [
+        "Avoid forcing a sticky start button",
+        "Keep liquids away from the control console"
+      ],
+      "toolsRequired": [
+        "None for lock/latch checks"
+      ],
+      "difficultyNotes": "Lock and latch checks only. Start-control repair is professional.",
+      "commonality": "common",
+      "safetyNotes": "No live control-console testing for beginners.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "control-lock-engaged",
+      "title": "Control lock / child lock engaged",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "will not start",
+        "controls locked",
+        "child lock on",
+        "buttons do nothing"
+      ],
+      "immediateCause": "Control Lock / Child Lock is engaged, so Start and settings are ignored.",
+      "rootCause": "A lock feature was turned on intentionally or accidentally and must be cleared with the model’s unlock sequence.",
+      "contributingFactors": [
+        "Accidental long-press on a lock key",
+        "Shared laundry users leaving lock on",
+        "Unfamiliar control icons"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "control-lock-status",
+          "answer": "Lock on"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Nothing happens"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "Yes, panel responds"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "control-lock-status",
+          "answer": "Lock off / not shown"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Starts normally"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Hums but does not start"
+        },
+        {
+          "templateId": "panel-lights",
+          "answer": "No lights at all"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Door switch failure",
+        "Dead motor",
+        "Control board failure"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "control-lock-status",
+          "promptText": "Look at the control panel: do you see a lock icon or Control Lock / Child Lock light?",
+          "answerChoices": [
+            "Lock off / not shown",
+            "Lock on",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After turning Control Lock off using the model’s unlock method, does Start work normally?",
+      "verificationWhy": "A lock feature is a setting issue, not a parts failure.",
+      "verificationSteps": [
+        "Look for a lock indicator on the display/panel",
+        "Use the manual’s unlock sequence (often a 3-second hold) — no tools",
+        "Retry Start with the door firmly closed"
+      ],
+      "safeGuidanceBoundary": [
+        "Settings/unlock only — no tools or wiring",
+        "If no lock feature exists and Start still fails, continue other won’t-start modes",
+        "Do not force the console apart"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, or sparking",
+        "Unlock sequence fails and controls remain dead beyond a lock indicator — escalate"
+      ],
+      "preventionActions": [
+        "Know how to toggle Control Lock on your model",
+        "Check for a lock icon before assuming a parts failure"
+      ],
+      "toolsRequired": [
+        "Owner manual or model unlock tip (optional)"
+      ],
+      "difficultyNotes": "Beginner settings check.",
+      "commonality": "high",
+      "safetyNotes": "Settings only. No electrical work.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "no-power-at-outlet",
+      "title": "No power at outlet / tripped supply",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "will not start",
+        "no lights on dryer",
+        "dead dryer",
+        "breaker tripped"
+      ],
+      "immediateCause": "The dryer has no usable power at the cord/outlet, so lights and Start do nothing.",
+      "rootCause": "A tripped breaker/GFCI, dead outlet, or supply interruption — not an internal door-switch fault.",
+      "contributingFactors": [
+        "Tripped dryer breaker",
+        "GFCI/receptacle issue upstream",
+        "Outlet failure (professional)"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "panel-lights",
+          "answer": "No lights at all"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Nothing happens"
+        },
+        {
+          "templateId": "outlet-power-check",
+          "answer": "Outlet appears dead / breaker tripped"
+        },
+        {
+          "templateId": "motor-audible",
+          "answer": "Silent — no motor sound"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "panel-lights",
+          "answer": "Yes, panel responds"
+        },
+        {
+          "templateId": "outlet-power-check",
+          "answer": "Other nearby power looks normal; dryer still dead"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Hums but does not start"
+        },
+        {
+          "templateId": "dryer-response",
+          "answer": "Starts normally"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Door switch failure when there are no lights at all",
+        "Control board failure before checking the breaker",
+        "Motor failure when the machine is fully dead"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "outlet-power-check",
+          "promptText": "What do you observe about power at the dryer outlet / breaker (no outlet dismantling)?",
+          "answerChoices": [
+            "Outlet appears dead / breaker tripped",
+            "Breaker looks on; still no dryer lights",
+            "Other nearby power looks normal; dryer still dead",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After resetting a tripped dryer breaker (and only if the plug/outlet looks normal), do dryer lights return?",
+      "verificationWhy": "Restores a simple supply interruption without any live probing.",
+      "verificationSteps": [
+        "Check the dryer breaker for tripped position and reset once if tripped",
+        "Do not repeatedly reset a breaker that trips again — stop and call a professional",
+        "Confirm the plug looks undamaged",
+        "If lights return, retry a cycle; if not, escalate"
+      ],
+      "safeGuidanceBoundary": [
+        "Breaker visual check/reset once only — no outlet dismantling",
+        "Do not measure live voltage",
+        "Repeated breaker trips, burnt smell, or damaged outlet = professional immediately",
+        "Do not bypass breakers or use undersized adapters"
+      ],
+      "stopProfessionalConditions": [
+        "Breaker trips again after reset",
+        "Burning smell, smoke, hot plug, or discolored outlet",
+        "Any outlet or panel wiring work",
+        "Need for live electrical testing"
+      ],
+      "preventionActions": [
+        "Do not overload the dryer circuit with improper adapters",
+        "Investigate repeated trips with a licensed electrician"
+      ],
+      "toolsRequired": [
+        "None for breaker visual reset"
+      ],
+      "difficultyNotes": "Breaker glance/reset only. Outlet and panel work is professional.",
+      "commonality": "high",
+      "safetyNotes": "No live testing. Repeated trips or burnt connections require a professional.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "blower-wheel-obstruction",
+      "title": "Blower wheel obstruction or damage",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "weak airflow",
+        "grinding in dryer",
+        "slow dry with odd blower noise",
+        "airflow poor though vent hose looks clear"
+      ],
+      "immediateCause": "The blower wheel cannot move air normally because it is obstructed, loose, or damaged.",
+      "rootCause": "Lint chunk, foreign object, or a damaged blower wheel reduces airflow and may create grind/rattle noises.",
+      "contributingFactors": [
+        "Packed lint past the filter",
+        "Small items drawn into the blower path",
+        "Broken blower vanes"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Weak"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Almost none"
+        },
+        {
+          "templateId": "running-noise",
+          "answer": "Grind"
+        },
+        {
+          "templateId": "clothes-remain-damp",
+          "answer": "Still damp"
+        },
+        {
+          "templateId": "vent-hose-condition",
+          "answer": "Looks clear"
+        },
+        {
+          "templateId": "dry-time-change",
+          "answer": "Much longer"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Normal"
+        },
+        {
+          "templateId": "running-noise",
+          "answer": "No unusual sound"
+        },
+        {
+          "templateId": "clothes-feel-after-cycle",
+          "answer": "Cold and still damp"
+        },
+        {
+          "templateId": "hazard-observation",
+          "answer": "Yes"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Only an exterior vent hose problem when the hose looks clear",
+        "Heating element failure when clothes are warm but damp",
+        "Idler squeal when the sound is a grind/rattle with weak air"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "running-noise",
+          "promptText": "Do you hear a squeal, thump, grind, hum, or another sound?",
+          "answerChoices": [
+            "No unusual sound",
+            "Squeal",
+            "Thump",
+            "Grind",
+            "Hum",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "With the visible vent hose looking clear, is exterior airflow still weak while a grind/rattle is heard?",
+      "verificationWhy": "Points past a simple hose crush toward internal blower/air-path service.",
+      "verificationSteps": [
+        "Confirm lint filter is clean",
+        "Confirm visible vent hose is not crushed/packed",
+        "Run and note airflow plus grind/rattle",
+        "Unplug; do not dig into the blower housing as a beginner"
+      ],
+      "safeGuidanceBoundary": [
+        "External vent and filter checks only",
+        "Do not dismantle the blower housing unless qualified",
+        "Unplug before any internal access",
+        "Escalate for blower wheel service"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, or sparking",
+        "Blower housing disassembly required",
+        "Severe metal grinding"
+      ],
+      "preventionActions": [
+        "Clean the lint filter every load",
+        "Check pockets for coins and small items",
+        "Keep the vent path clear so lint does not pack toward the blower"
+      ],
+      "toolsRequired": [
+        "Flashlight for exterior checks"
+      ],
+      "difficultyNotes": "Beginner exterior checks only. Blower service is professional.",
+      "commonality": "common",
+      "safetyNotes": "Unplug before internal access. No beginner blower-housing teardown.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "overloaded-or-wet-load",
+      "title": "Overloaded or excessively wet load",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "slow dry",
+        "too many clothes",
+        "load still soaking when dried",
+        "dryer runs forever on big loads"
+      ],
+      "immediateCause": "The load is too large or too wet for the cycle to finish drying in a normal time.",
+      "rootCause": "Overloaded drum or washer spin failure leaves excess water, so drying time stretches even with decent airflow.",
+      "contributingFactors": [
+        "Packing the drum full",
+        "Washer not spinning well",
+        "Heavy fabrics in one mixed load"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "load-size-wetness",
+          "answer": "Overloaded / very large"
+        },
+        {
+          "templateId": "load-size-wetness",
+          "answer": "Clothes were still very wet from washer"
+        },
+        {
+          "templateId": "dry-time-change",
+          "answer": "Much longer"
+        },
+        {
+          "templateId": "clothes-remain-damp",
+          "answer": "Still damp"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Normal"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "load-size-wetness",
+          "answer": "Normal size and spun well"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Weak"
+        },
+        {
+          "templateId": "exterior-airflow",
+          "answer": "Almost none"
+        },
+        {
+          "templateId": "vent-hose-condition",
+          "answer": "Yes, restricted"
+        },
+        {
+          "templateId": "heat-observed",
+          "answer": "No warmth"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Restricted vent when exterior airflow is actually normal",
+        "Heating element failure when the load was overloaded/soaking",
+        "Sensor fault before trying a smaller, better-spun load"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "load-size-wetness",
+          "promptText": "How large/wet was the load compared with normal?",
+          "answerChoices": [
+            "Normal size and spun well",
+            "Overloaded / very large",
+            "Clothes were still very wet from washer",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "On a smaller, well-spun test load with normal exterior airflow, does dry time return closer to normal?",
+      "verificationWhy": "Confirms a loading/wetness issue before parts replacement.",
+      "verificationSteps": [
+        "Remove half the load or re-spin in the washer",
+        "Confirm lint filter is clean and exterior airflow looks normal",
+        "Run a heat cycle and compare dry time"
+      ],
+      "safeGuidanceBoundary": [
+        "Load-size and re-spin checks only",
+        "If a small load still stays damp with weak exterior air, return to vent/airflow modes",
+        "No electrical work"
+      ],
+      "stopProfessionalConditions": [
+        "Burning smell, smoke, or overheating",
+        "Washer spin failure diagnosis beyond a simple re-spin retry"
+      ],
+      "preventionActions": [
+        "Do not pack the dryer drum full",
+        "Re-spin very wet loads before drying",
+        "Dry heavy items in smaller batches"
+      ],
+      "toolsRequired": [
+        "None"
+      ],
+      "difficultyNotes": "Beginner loading practice.",
+      "commonality": "veryHigh",
+      "safetyNotes": "No electrical work. Stop for smoke or burning smell.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "electrical-burning-smell-hazard",
+      "title": "Electrical or hot-insulation burning smell (hazard)",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "burning smell",
+        "hot electrical smell",
+        "smoke from dryer",
+        "plastic burning odor"
+      ],
+      "immediateCause": "A sharp electrical, hot-insulation, or burning-plastic smell indicates a possible fire/electrical hazard.",
+      "rootCause": "Overheating wiring, connections, motor insulation, or related components — not a routine dusty-lint odor.",
+      "contributingFactors": [
+        "Loose high-voltage connections",
+        "Motor or wiring overheating",
+        "Continued use after first burning smell"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "hazard-observation",
+          "answer": "Yes"
+        },
+        {
+          "templateId": "odor-type",
+          "answer": "Sharp electrical or burning plastic"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "hazard-observation",
+          "answer": "No"
+        },
+        {
+          "templateId": "odor-type",
+          "answer": "No unusual smell"
+        },
+        {
+          "templateId": "odor-type",
+          "answer": "Dusty / warm lint smell only"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Ordinary dusty lint smell on first heats after cleaning",
+        "Continuing to run “just to finish the load”",
+        "Assuming a simple vent issue without stopping for smoke/burning signs"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "odor-type",
+          "promptText": "What kind of smell do you notice (if any)?",
+          "answerChoices": [
+            "No unusual smell",
+            "Dusty / warm lint smell only",
+            "Sharp electrical or burning plastic",
+            "Gas-like odor",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After unplugging and stopping use, has the sharp electrical/burning smell or any smoke fully cleared without further operation?",
+      "verificationWhy": "This path is stop-and-escalate, not DIY verification by continued running.",
+      "verificationSteps": [
+        "Stop the dryer immediately",
+        "Unplug or switch off the breaker",
+        "Keep the area clear; ventilate if safe",
+        "Do not restart to “test” the smell",
+        "Call a qualified technician"
+      ],
+      "safeGuidanceBoundary": [
+        "Hard stop: do not keep running the dryer",
+        "Unplug or switch off the breaker",
+        "Do not open live electrical compartments",
+        "Do not measure live voltage",
+        "Professional inspection required before reuse"
+      ],
+      "stopProfessionalConditions": [
+        "Any sharp electrical/burning-plastic smell",
+        "Any smoke, melting, sparking, or fire signs",
+        "Any desire to continue testing by running cycles",
+        "Gas-like odor — leave and follow gas emergency procedures"
+      ],
+      "preventionActions": [
+        "Stop at the first sharp electrical or smoke smell",
+        "Keep lint and vent paths clear to reduce overheating risk",
+        "Do not ignore hot plugs or discolored cords"
+      ],
+      "toolsRequired": [
+        "None — stop and escalate"
+      ],
+      "difficultyNotes": "Not a DIY repair path.",
+      "commonality": "moderate",
+      "safetyNotes": "Hard-stop hazard. Unplug, do not restart, and use a qualified professional. No live electrical testing.",
+      "allowResolvedWhenConfirmed": false,
+      "preferProfessionalWhenNotConfirmed": true
+    },
+    {
+      "schemaVersion": "1.0",
+      "id": "dusty-lint-smell",
+      "title": "Dusty / warm lint smell (non-hazard)",
+      "applianceFamily": "dryer",
+      "symptomPhrasings": [
+        "dusty smell when drying",
+        "warm lint odor",
+        "smells like dust on first run",
+        "mild laundry dust smell"
+      ],
+      "immediateCause": "A mild dusty or warm-lint odor is present without smoke or sharp electrical/burning-plastic smell.",
+      "rootCause": "Dust/lint heated on surfaces or after neglected cleaning — distinct from hazard-level electrical burning smells.",
+      "contributingFactors": [
+        "First heat after a long idle period",
+        "Lint filter overdue for cleaning",
+        "Dust on the cabinet/drum area"
+      ],
+      "evidenceSupports": [
+        {
+          "templateId": "odor-type",
+          "answer": "Dusty / warm lint smell only"
+        },
+        {
+          "templateId": "hazard-observation",
+          "answer": "No"
+        },
+        {
+          "templateId": "lint-filter-condition",
+          "answer": "Heavily clogged"
+        },
+        {
+          "templateId": "lint-filter-condition",
+          "answer": "Light lint"
+        }
+      ],
+      "evidenceExcludes": [
+        {
+          "templateId": "odor-type",
+          "answer": "Sharp electrical or burning plastic"
+        },
+        {
+          "templateId": "odor-type",
+          "answer": "Gas-like odor"
+        },
+        {
+          "templateId": "hazard-observation",
+          "answer": "Yes"
+        }
+      ],
+      "commonMisdiagnoses": [
+        "Treating every odor as an electrical fire hazard without distinguishing smell type",
+        "Ignoring a sharp electrical smell by calling it “just lint”",
+        "Assuming heater failure from odor alone"
+      ],
+      "firstLineQuestions": [
+        {
+          "templateId": "odor-type",
+          "promptText": "What kind of smell do you notice (if any)?",
+          "answerChoices": [
+            "No unusual smell",
+            "Dusty / warm lint smell only",
+            "Sharp electrical or burning plastic",
+            "Gas-like odor",
+            "Not sure",
+            "Other / describe"
+          ]
+        }
+      ],
+      "verificationAsk": "After cleaning the lint filter and confirming there is no smoke or sharp electrical smell, does the mild dusty odor improve on a short supervised run?",
+      "verificationWhy": "Allows a cautious non-hazard odor check while keeping a hard boundary for true hazard smells.",
+      "verificationSteps": [
+        "If smell is sharp electrical, smoky, or gas-like — stop; switch to hazard path",
+        "Clean the lint filter thoroughly",
+        "Confirm exterior vent is not blocked",
+        "Short supervised heat run only if the odor remains mild/dusty"
+      ],
+      "safeGuidanceBoundary": [
+        "Only for mild dusty/warm-lint odor with no smoke",
+        "Any sharp electrical, burning plastic, smoke, melting, or gas-like odor → stop immediately and escalate",
+        "Do not ignore escalating smell intensity",
+        "No electrical testing"
+      ],
+      "stopProfessionalConditions": [
+        "Smell becomes sharp electrical / burning plastic",
+        "Any smoke, melting, sparking, or fire signs",
+        "Gas-like odor",
+        "Odor persists strongly after cleaning and still concerns the user"
+      ],
+      "preventionActions": [
+        "Clean the lint filter every load",
+        "Do not let lint accumulate in the filter slot",
+        "Keep the vent path clear"
+      ],
+      "toolsRequired": [
+        "None for filter cleaning"
+      ],
+      "difficultyNotes": "Beginner cleaning only. Escalate immediately if the smell type is uncertain toward electrical/smoke.",
+      "commonality": "high",
+      "safetyNotes": "Non-hazard path only for mild dusty/warm-lint odor. Smoke or sharp electrical smells are a hard stop.",
+      "allowResolvedWhenConfirmed": true,
+      "preferProfessionalWhenNotConfirmed": true
+    }
+  ]
+}

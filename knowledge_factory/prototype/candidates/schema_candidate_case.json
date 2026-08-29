@@ -1,0 +1,63 @@
+{
+  "$comment": "Authoring-time candidate only. Not loaded by the Flutter app. Do not auto-merge into lib/knowledge_factory batches.",
+  "schemaVersion": "prototype-0.1",
+  "kind": "knowledge_factory_candidate_case",
+  "status": "template",
+  "doNotAutoMerge": true,
+  "runtimeImport": false,
+  "humanApprovalRequired": true,
+  "experiment": {
+    "id": "dryer-no-heat-kf-prototype",
+    "applianceFamily": "dryer",
+    "symptomId": "no-heat",
+    "packageIdHint": "dryer-core",
+    "lesson": "Do not jump to a part swap without discriminators (thermal-fuse / vent lesson)."
+  },
+  "candidate": {
+    "id": "REPLACE-slug-like-thermal-fuse-open",
+    "title": "REPLACE short label",
+    "competingModeIds": [
+      "restricted-exhaust-airflow",
+      "clogged-lint-pathway",
+      "heating-element-failed",
+      "thermal-fuse-open"
+    ],
+    "immediateCause": "",
+    "rootCause": "",
+    "contributingFactors": [],
+    "evidenceSupports": [
+      { "templateId": "exterior-airflow", "answer": "Weak", "whySplits": "Restriction vs clear-vent no-heat" }
+    ],
+    "evidenceExcludes": [
+      { "templateId": "exterior-airflow", "answer": "Normal", "whySplits": "Argues against vent-as-primary" }
+    ],
+    "firstLineQuestions": [
+      {
+        "templateId": "lint-filter-condition",
+        "promptText": "Look at the lint screen — packed vs you can see through it.",
+        "answerChoices": ["Clean", "Light lint", "Heavily clogged", "Not sure"]
+      }
+    ],
+    "commonMisdiagnoses": [
+      "Replace heating element first because clothes are cold — skipped lint / hood / hose."
+    ],
+    "inspectAlignment": {
+      "lookForTemplateIds": [
+        "inspect-lint-filter",
+        "inspect-vent-hood",
+        "inspect-vent-hose"
+      ],
+      "notes": "Text LOOK FOR must match interview chips. Camera never diagnoses."
+    },
+    "preventionIfVentRelated": [
+      "Clean the lint filter every load.",
+      "Check the outside hood and visible hose for crush, kinks, and packed lint."
+    ],
+    "safetyNotes": "No beginner live-electrical how-to. No gas DIY. No sealed-system work.",
+    "allowResolvedWhenConfirmed": false,
+    "preferProfessionalWhenNotConfirmed": true
+  },
+  "provenanceRef": "provenance/schema_provenance.json",
+  "intakeRef": "intake/sources_template.csv",
+  "metricsRef": "metrics/metrics_template.csv"
+}

@@ -1,0 +1,205 @@
+MODULE 3.5 — DIAGNOSTIC WORKFLOW & STATE MACHINE
+Status: Locked Architecture
+Version: 1.1
+Date: 2026-07-17
+Authority: Architecture Specification
+Depends On:
+
+Safety Invariants
+Non-Negotiables
+App Promise
+Module 01: Appliance Table
+Module 02: Knowledge Graph Structure
+Module 03: Knowledge Graph Seeding (MVP Phase 1)
+Critical Design Decisions Addendum (2026-07-17)
+
+
+Purpose
+This document defines the authoritative lifecycle of every troubleshooting and repair session in The Modern Butler’s Book.
+The Butler’s purpose is not limited to restoring function. It exists to help users understand why failures occur and how to reduce the likelihood of recurrence. Every completed session must attempt to identify root cause and generate prevention recommendations. The system improves over the lifetime of a household by remembering prior root causes, maintenance history, and verified outcomes while strictly respecting privacy principles.
+This specification governs the Repair Session data model, Evidence Engine, Reasoning Engine, Risk & Safety Engine, Conversation Engine, Household Memory Engine, Learning Engine, and all future implementation work.
+
+Core Principles
+The diagnostic workflow is governed by the following non-negotiable principles:
+
+Observation before conclusion
+Evidence before assumption
+Safety before convenience
+Verification before learning
+Explainability before fluency
+Root Cause before Session Completion
+Prevention before Goodbye
+No skipping of required phases
+
+The workflow must also support long-term household improvement by retaining and reusing root cause information and maintenance history, and by recognizing maintenance opportunities that arise during repair.
+
+The Diagnostic State Machine
+The Butler operates as a finite state machine. All diagnostic activity occurs within one of the defined states. Transitions are strictly controlled.
+State Definitions
+1. Idle
+Purpose: Session has not yet begun.
+Responsible Engine: Conversation Engine
+Entry Conditions: User opens the app or starts a new troubleshooting flow.
+Exit Conditions: User selects an appliance.
+Failure Recovery: Return to Idle on app restart or session timeout.
+2. Appliance Selection
+Purpose: Identify the specific appliance and surface relevant household history, including prior root causes and maintenance records.
+Responsible Engine: Conversation Engine + Household Memory Engine
+Entry Conditions: User initiates troubleshooting.
+Exit Conditions: Valid appliance selected and confirmed.
+Failure Recovery: Allow re-selection or creation of new appliance profile.
+3. Basic Condition Verification
+Purpose: Confirm the appliance is in a valid operating state before diagnosing internal failures.
+Responsible Engine: Reasoning Engine + Risk & Safety Engine
+Entry Conditions: Appliance selected.
+Exit Conditions: All applicable basic conditions verified or explicitly ruled out.
+Failure Recovery: If critical conditions cannot be verified, offer safe next steps or recommend professional assistance.
+4. Collect Initial Observations
+Purpose: Capture the user’s raw observations.
+Responsible Engine: Conversation Engine
+Entry Conditions: Basic conditions verified or ruled out.
+Exit Conditions: Sufficient initial observations recorded.
+Failure Recovery: Allow additional observations at any time.
+5. Convert Observations into Structured Evidence
+Purpose: Transform raw observations into typed Evidence objects.
+Responsible Engine: Evidence Engine
+Entry Conditions: Initial observations collected.
+Exit Conditions: Observations converted into Evidence.
+Failure Recovery: Allow re-interpretation or additional evidence entry.
+6. Generate Candidate Failure Modes
+Purpose: Retrieve possible failure modes from the Knowledge Graph. Candidate generation may be informed by relevant prior root cause patterns stored in Household Memory when they are applicable to the current evidence.
+Responsible Engine: Reasoning Engine + Knowledge Graph + Household Memory Engine
+Entry Conditions: Structured evidence exists.
+Exit Conditions: Ranked list of candidate failure modes generated.
+Failure Recovery: Re-evaluate and expand the candidate set when new evidence or historical patterns are introduced.
+7. Risk Evaluation
+Purpose: Assess safety and risk level of continuing investigation or issuing guidance.
+Responsible Engine: Risk & Safety Engine
+Entry Conditions: Candidate failure modes exist.
+Exit Conditions: Risk assessment complete and safety gates applied.
+Failure Recovery: Escalate to professional recommendation if risk is high and confidence is low.
+8. Adaptive Question Selection & Evidence Collection (Investigation Loop)
+Purpose: Select the highest-value next question or observation request. Question selection may be guided by prior root cause patterns when relevant.
+Responsible Engine: Reasoning Engine + Conversation Engine + Household Memory Engine
+Entry Conditions: Risk evaluation passed.
+Exit Conditions: New evidence collected or decision made to stop investigation.
+Failure Recovery: Allow user to provide additional observations.
+9. Hypothesis Building & Confidence Update
+Purpose: Update and rank hypotheses based on accumulated evidence and relevant historical root cause data.
+Responsible Engine: Reasoning Engine
+Entry Conditions: New evidence received.
+Exit Conditions: Confidence scores recalculated and hypotheses re-ranked.
+Failure Recovery: Re-evaluate previous hypotheses when contradictory evidence appears.
+10. Decision Point: Sufficient Confidence?
+Purpose: Determine whether investigation should continue or guidance may be issued.
+Responsible Engine: Reasoning Engine + Risk & Safety Engine
+Entry Conditions: After confidence update.
+Exit Conditions: Decision to continue investigation or move to guidance.
+Failure Recovery: Default to continued investigation on uncertainty.
+11. Generate Safe Guidance
+Purpose: Produce safe, skill-appropriate next steps. When the appliance is already partially disassembled, the system may identify maintenance opportunities that can be performed with minimal additional effort. Recommendations must clearly distinguish between Required Repair, Optional Maintenance, and Future Convenience Maintenance, and must explain benefits without using fear-based language.
+Responsible Engine: Reasoning Engine + Risk & Safety Engine + Conversation Engine
+Entry Conditions: Sufficient confidence and risk evaluation passed.
+Exit Conditions: Guidance generated and presented.
+Failure Recovery: Withhold guidance and recommend professional help if risk is unacceptable.
+12. User Performs Action + Verification
+Purpose: Record the action taken and verify the outcome.
+Responsible Engine: Evidence Engine + Conversation Engine
+Entry Conditions: Guidance issued.
+Exit Conditions: Outcome verified or recorded as unresolved.
+Failure Recovery: Allow multiple verification attempts.
+13. Resolution Check
+Purpose: Determine whether the reported problem has been resolved.
+Responsible Engine: Reasoning Engine
+Entry Conditions: Verification evidence exists.
+Exit Conditions: Resolution status determined.
+Failure Recovery: Return to Investigation Loop if unresolved.
+14. Root Cause Analysis
+Purpose: Determine why the failure occurred. The Butler must distinguish between Immediate Cause, Root Cause, Contributing Factors, and Preventive Actions. It must reference any prior root cause records for the same appliance stored in Household Memory when relevant.
+Responsible Engine: Root Cause & Prevention Engine + Reasoning Engine + Household Memory Engine
+Entry Conditions: Problem resolved or investigation complete.
+Exit Conditions: Root cause, contributing factors, and immediate cause identified (or noted as undetermined) with supporting evidence.
+Failure Recovery: Record when root cause cannot be determined with available evidence.
+15. Generate Prevention Recommendations
+Purpose: Produce specific, evidence-based prevention recommendations. Recommendations must be derived from root cause analysis, current evidence, and the appliance’s maintenance history stored in Household Memory.
+Responsible Engine: Root Cause & Prevention Engine + Household Memory Engine
+Entry Conditions: Root cause analysis completed.
+Exit Conditions: Prevention recommendations generated and recorded.
+Failure Recovery: Provide general prevention guidance when specific root cause is unknown.
+16. Create Session Summary & Update Household Memory
+Purpose: Produce a permanent record of the session, including root cause, prevention recommendations, and any maintenance performed. Update Household Memory with new root cause data and maintenance actions.
+Responsible Engine: Household Memory Engine
+Entry Conditions: Prevention recommendations complete.
+Exit Conditions: Session summary created and stored.
+Failure Recovery: Allow manual review and correction of summary before finalization.
+17. Submit Community Learning Candidate (Optional)
+Purpose: Propose anonymized, verified learning updates.
+Responsible Engine: Learning Engine
+Entry Conditions: Session summary complete and outcome verified.
+Exit Conditions: Learning candidate submitted or declined.
+Failure Recovery: Never submit unverified data.
+18. Session Closed
+Purpose: Final state. Session is complete and archived.
+Responsible Engine: All engines (final handoff)
+Entry Conditions: All prior states completed.
+Exit Conditions: Session archived.
+Failure Recovery: Allow reopening only for correction of verified errors.
+
+Responsibilities of Each Engine
+Conversation Engine
+Responsible for user interaction and structured presentation of questions and guidance.
+Reasoning Engine
+Responsible for hypothesis generation, confidence scoring, and interpretation of evidence against the Knowledge Graph and relevant household history (including prior root causes). Does not own truth.
+Knowledge Graph
+Owns structured engineering truth, including causal relationships between symptoms and failure modes.
+Evidence Engine
+Responsible for structuring and managing observations as Evidence.
+Risk & Safety Engine
+Has final authority over safety. May interrupt any state.
+Household Memory Engine
+Responsible for storing and retrieving appliance-specific history, including past root causes and maintenance actions (vent cleaning, filter cleaning, descaling, coil cleaning, lubrication, inspections, belt replacement, etc.). Provides historical context to improve future diagnostics and prevention recommendations.
+Learning Engine
+Responsible for proposing updates based solely on verified outcomes. Supports long-term improvement of diagnostics, root cause recognition, prevention recommendations, and maintenance planning across the household’s lifetime while respecting privacy principles.
+Root Cause & Prevention Engine
+Responsible for distinguishing Immediate Cause from Root Cause, identifying Contributing Factors, and generating prevention recommendations. May reference Household Maintenance History and prior root cause records.
+State Machine Controller
+Orchestrates state transitions and enforces required phases.
+
+Root Cause Determination
+Every completed session must distinguish between:
+
+Immediate Cause — What directly failed or stopped working.
+Root Cause — The underlying reason the immediate cause occurred.
+Contributing Factors — Conditions that made the failure more likely.
+Preventive Actions — Specific steps that can reduce recurrence.
+
+Root cause analysis must consider both current evidence and relevant historical root cause data stored in Household Memory. The system must never present activation of a protective device as the complete explanation when an underlying cause is probable.
+
+Prevention
+Every completed session must generate prevention recommendations. Recommendations must be specific, evidence-based, and tailored to the appliance and the household’s maintenance history when available. The Butler’s purpose includes reducing the likelihood of future failures.
+
+Opportunistic Maintenance
+When an appliance is already partially disassembled, the system may identify maintenance actions that can be performed at the same time with minimal additional effort. These must be clearly distinguished as Required Repair, Optional Maintenance, or Future Convenience Maintenance. Recommendations must explain benefits without using fear-based language.
+
+Explainability
+At every major decision point the system must be able to answer why a question was asked, why a hypothesis was ranked, why confidence changed, why investigation continued or stopped, and why a particular root cause or prevention recommendation was generated.
+
+Failure Recovery
+The state machine must handle offline operation, interrupted sessions, contradictory evidence, and new evidence that invalidates previous hypotheses while preserving existing evidence and allowing safe resumption.
+
+Learning
+Learning updates may only be proposed after verified outcomes. Every verified repair strengthens future diagnostics, root cause recognition, prevention recommendations, and maintenance planning while respecting the project’s privacy principles. Unverified outcomes never enter Community Intelligence or overwrite core engineering knowledge.
+
+Future Architecture Considerations
+Long-term architecture may include appliance-level metadata regarding repairability, reliability, parts availability, and maintenance burden to support repair-versus-replace decisions. Such capabilities are explicitly post-MVP and must never replace current diagnostic reasoning or the requirement to perform root cause analysis.
+
+Safety
+This workflow is subordinate to the Safety Invariants and Non-Negotiables. No state transition or guidance may bypass Safety Gates under any circumstances, including Expert Mode.
+
+Version History
+Version 1.0 — 2026-07-17
+Initial locked specification.
+Version 1.1 — 2026-07-17
+Integrated Root Cause Memory, Opportunistic Maintenance, Household Maintenance History, Prevention Philosophy, and Long-Term Learning Philosophy into the appropriate states and engine responsibilities. Updated Generate Candidate Failure Modes, Generate Safe Guidance, Root Cause Analysis, Generate Prevention Recommendations, and Household Memory Engine sections accordingly.
+
+This document is binding. Any implementation that contradicts the defined workflow, required phases, or engine responsibilities must be revised to conform.

@@ -1,0 +1,36 @@
+{
+  "$comment": "Authoring provenance. Not session evidence. Not shipped to the device as a package.",
+  "schemaVersion": "prototype-0.1",
+  "kind": "knowledge_factory_provenance",
+  "runtimeImport": false,
+  "doNotAutoMerge": true,
+  "caseId": "REPLACE-candidate-id",
+  "experimentId": "dryer-no-heat-kf-prototype",
+  "claims": [
+    {
+      "claimId": "CLM-001",
+      "statement": "Weak exterior airflow on a heat cycle supports restricted exhaust over a first-line element swap.",
+      "claimType": "discriminator",
+      "sourceIds": ["SRC-001"],
+      "confidenceAuthor": "low",
+      "safetyRelevant": false
+    }
+  ],
+  "review": {
+    "reviewer": "",
+    "reviewedAtIso": "",
+    "decision": "not_reviewed",
+    "decisionNotes": "Candidates are not production until a human signs docs/knowledge/PACKAGE_RELEASE_CHECKLIST.md.",
+    "allowedDecisions": [
+      "not_reviewed",
+      "reject",
+      "revise",
+      "approve_for_manual_authoring"
+    ]
+  },
+  "prohibited": {
+    "runtimeWebFetch": true,
+    "autoMergeToProductionPackage": true,
+    "llmAsSoleAuthority": true
+  }
+}

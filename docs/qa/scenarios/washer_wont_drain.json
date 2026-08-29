@@ -1,0 +1,128 @@
+[
+  {
+    "id": "WASHER-WD-01",
+    "title": "Won't drain complaint only",
+    "packageId": "washer-core",
+    "packageVersion": "0.2.3",
+    "userReports": ["Won't drain"],
+    "evidence": [
+      {"templateId": "washer-complaint", "answer": "Won't drain"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": [
+        "clogged-washer-drain-filter",
+        "kinked-or-clogged-washer-drain-hose"
+      ],
+      "notSupported": ["closed-taps-or-kinked-inlet"],
+      "scanGuidanceModeIds": [
+        "clogged-washer-drain-filter",
+        "kinked-or-clogged-washer-drain-hose"
+      ]
+    }
+  },
+  {
+    "id": "WASHER-WD-02",
+    "title": "Accessible drain filter or trap is in play",
+    "packageId": "washer-core",
+    "packageVersion": "0.2.3",
+    "userReports": ["Won't drain"],
+    "evidence": [
+      {"templateId": "washer-complaint", "answer": "Won't drain"},
+      {"templateId": "washer-drain-filter-access", "answer": "Yes"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["clogged-washer-drain-filter"],
+      "netGreater": [
+        ["clogged-washer-drain-filter", "kinked-or-clogged-washer-drain-hose"]
+      ],
+      "leaderIn": ["clogged-washer-drain-filter"],
+      "scanGuidanceModeIds": ["clogged-washer-drain-filter"]
+    }
+  },
+  {
+    "id": "WASHER-WD-03",
+    "title": "Visible drain hose kinked or stuffed",
+    "packageId": "washer-core",
+    "packageVersion": "0.2.3",
+    "userReports": ["Won't drain"],
+    "evidence": [
+      {"templateId": "washer-complaint", "answer": "Won't drain"},
+      {"templateId": "washer-drain-hose-look", "answer": "Yes"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["kinked-or-clogged-washer-drain-hose"],
+      "netGreaterOrEqual": [
+        ["kinked-or-clogged-washer-drain-hose", "clogged-washer-drain-filter"]
+      ],
+      "leaderIn": [
+        "kinked-or-clogged-washer-drain-hose",
+        "washer-drain-hose-not-seated"
+      ],
+      "scanGuidanceModeIds": [
+        "kinked-or-clogged-washer-drain-hose",
+        "clogged-washer-drain-filter"
+      ]
+    }
+  },
+  {
+    "id": "WASHER-WD-04",
+    "title": "Door clicks; drain still filter vs hose",
+    "packageId": "washer-core",
+    "packageVersion": "0.2.3",
+    "userReports": ["Won't drain", "Door latches"],
+    "evidence": [
+      {"templateId": "washer-complaint", "answer": "Won't drain"},
+      {"templateId": "washer-door-click", "answer": "Yes"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": [
+        "clogged-washer-drain-filter",
+        "kinked-or-clogged-washer-drain-hose"
+      ],
+      "notSupported": ["washer-door-not-latched"],
+      "scanGuidanceModeIds": ["clogged-washer-drain-filter"]
+    }
+  },
+  {
+    "id": "WASHER-WD-05",
+    "title": "Standing water in the drum on a drain complaint",
+    "packageId": "washer-core",
+    "packageVersion": "0.2.3",
+    "userReports": ["Won't drain", "Water still in the drum"],
+    "evidence": [
+      {"templateId": "washer-complaint", "answer": "Won't drain"},
+      {"templateId": "washer-water-in-drum", "answer": "Yes"}
+    ],
+    "expect": {
+      "safetyStop": false,
+      "supported": ["clogged-washer-drain-filter"],
+      "netGreater": [
+        ["clogged-washer-drain-filter", "unbalanced-washer-load"]
+      ],
+      "leaderIn": ["clogged-washer-drain-filter"],
+      "scanGuidanceModeIds": ["clogged-washer-drain-filter"]
+    }
+  },
+  {
+    "id": "WASHER-WD-06",
+    "title": "Smoke or sparking on won't drain",
+    "packageId": "washer-core",
+    "packageVersion": "0.2.3",
+    "userReports": ["Won't drain", "Burning smell / sparking"],
+    "evidence": [
+      {"templateId": "washer-complaint", "answer": "Won't drain"},
+      {"templateId": "hazard-observation", "answer": "Yes"}
+    ],
+    "expect": {
+      "safetyStop": true,
+      "scanGuidanceModeIds": [
+        "clogged-washer-drain-filter",
+        "kinked-or-clogged-washer-drain-hose"
+      ]
+    }
+  }
+]

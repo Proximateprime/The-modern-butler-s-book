@@ -1,0 +1,37 @@
+---
+description: Butler MVP standing product, architecture, AR, and quality rules
+alwaysApply: true
+---
+
+# Butler MVP (Phase 1 + Phase 2)
+
+MVP is keepable household repair + record. Phase 3 (public knowledge platform, domain OS, CV, 10k factory at scale) is out of scope.
+
+App promise: observe, don’t guess; safety over completing a repair; privacy; explain important asks.
+
+## Architecture (do not reopen)
+
+- Deterministic Core: diagnosis, safety, and ranking come from structured knowledge + evidence — not an LLM as sole authority.
+- Knowledge graph / packages own engineering truth. Evidence owns observations. Reasoning interprets only.
+- LLM = communication/translation only at runtime.
+- No runtime web research. No runtime invention of procedures.
+- Knowledge Factory research is authoring-time only, outside the app runtime.
+
+## AR / vision (parked)
+
+- AR and AI-generated part images are disabled (`locationVisualAidsEnabled` stays false unless a real curated raster exists).
+- Location help = text LOOK FOR + chips. Optional plain camera flashlight with the same text. No pins/boxes on junk images.
+- Do not implement CV, live AR tracking, or “wait for Grok 4.7” vision features.
+- Camera never diagnoses.
+
+## Quality
+
+- Prefer a long, correct implementation of the named task over drive-by refactors.
+- If already done, report DONE + paths and move on — no reruns.
+- Every batch of related work should leave the main dryer path compilable.
+- Safety: no gas, no sealed-system/refrigerant DIY, no beginner live electrical procedures.
+
+## Knowledge
+
+- Optimize for discriminators (observations that separate competing failure modes), not raw failure-mode count.
+- Popularity ≠ correctness. Candidates ≠ production until human approval in the authoring pipeline.

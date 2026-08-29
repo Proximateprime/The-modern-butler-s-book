@@ -1,0 +1,47 @@
+{
+  "packageId": "washer-core",
+  "expectedVersion": "0.2.3",
+  "regressionDocs": [
+    "docs/qa/WASHER_PATHS.md",
+    "docs/qa/REGRESSION_PHASE1.md",
+    "docs/qa/REGRESSION_PHONE.md"
+  ],
+  "paths": [
+    {
+      "symptomId": "wont-drain",
+      "modeIds": [
+        "clogged-washer-drain-filter",
+        "kinked-or-clogged-washer-drain-hose"
+      ]
+    },
+    {
+      "symptomId": "wont-fill",
+      "modeIds": [
+        "closed-taps-or-kinked-inlet",
+        "clogged-washer-inlet-screens"
+      ]
+    },
+    {
+      "symptomId": "wont-spin",
+      "modeIds": ["unbalanced-washer-load"]
+    },
+    {
+      "symptomId": "leaks",
+      "modeIds": [
+        "loose-inlet-hose",
+        "washer-drain-hose-not-seated"
+      ]
+    },
+    {
+      "symptomId": "wont-start",
+      "modeIds": [
+        "washer-door-not-latched",
+        "washer-no-power-or-control-lock"
+      ]
+    },
+    {
+      "symptomId": "door-wont-close",
+      "modeIds": ["washer-door-not-latched"]
+    }
+  ]
+}

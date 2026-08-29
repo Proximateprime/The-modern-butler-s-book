@@ -1,0 +1,54 @@
+{
+  "packageId": "dryer-core",
+  "expectedVersion": "1.4.2",
+  "regressionDocs": [
+    "docs/qa/REGRESSION_PHASE1.md",
+    "docs/qa/REGRESSION_PHONE.md",
+    "docs/qa/PACKAGE_INVENTORY.md"
+  ],
+  "paths": [
+    {
+      "symptomId": "no-heat",
+      "modeIds": [
+        "heating-element-failed",
+        "thermal-fuse-open",
+        "restricted-exhaust-airflow",
+        "accessible-thermal-reset"
+      ]
+    },
+    {
+      "symptomId": "long-dry-time",
+      "modeIds": [
+        "restricted-exhaust-airflow",
+        "clogged-lint-pathway"
+      ]
+    },
+    {
+      "symptomId": "clothes-hot-but-damp",
+      "modeIds": [
+        "restricted-exhaust-airflow",
+        "clogged-lint-pathway"
+      ]
+    },
+    {
+      "symptomId": "weak-exterior-airflow",
+      "modeIds": ["restricted-exhaust-airflow"]
+    },
+    {
+      "symptomId": "will-not-start",
+      "modeIds": ["door-switch-failure"]
+    },
+    {
+      "symptomId": "motor-runs-drum-still",
+      "modeIds": ["broken-drive-belt"]
+    },
+    {
+      "symptomId": "squealing-or-thumping",
+      "modeIds": ["worn-drum-rollers"]
+    },
+    {
+      "symptomId": "dryer-very-hot",
+      "modeIds": ["restricted-exhaust-airflow"]
+    }
+  ]
+}
