@@ -12,20 +12,68 @@
   <meta name="theme-color" content="#F3EDE3">
   <link rel="manifest" href="manifest.json">
   <title>The Modern Butler's Book</title>
+  <!--
+    Pages mouse hit-targets must match the painted Flutter surface.
+    Without a locked viewport, an oversized first-frame canvas (bitmap
+    pixels used as CSS size, often window height × devicePixelRatio)
+    makes the document scrollable. canvas.focus() then scroll-into-view
+    offsets pointer mapping by ~164px / 4 chip rows on a 656px pane at
+    125% DPR — Burning smell paints where Won't start still hits.
+    Keyboard Space is fine because it uses focus, not that pointer path.
+  -->
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background-color: #F3EDE3;
+    }
+    flutter-view {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    /* Raster only. Events stay on flutter-view (CSS box), not the bitmap. */
+    flutter-view canvas {
+      pointer-events: none !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  </style>
 </head>
 <body>
   <script>
-    // First click after load must reach Flutter widgets (Skip, chips).
-    window.addEventListener('flutter-first-frame', function () {
+    function bindFlutterPointerHost() {
       var view = document.querySelector('flutter-view');
-      if (view && typeof view.focus === 'function') {
-        view.focus();
+      if (!view) {
+        return;
       }
-      var canvas = document.querySelector('canvas');
-      if (canvas && typeof canvas.focus === 'function') {
-        canvas.focus();
+      // First click (Skip, chips, Home CTAs) must reach Flutter widgets.
+      // Focus the view, never the canvas — canvas focus uses bitmap
+      // coordinates and can scroll the page under the AppBar.
+      if (typeof view.focus === 'function') {
+        view.focus({ preventScroll: true });
       }
-    });
+      var canvases = view.querySelectorAll('canvas');
+      for (var i = 0; i < canvases.length; i++) {
+        var canvas = canvases[i];
+        canvas.style.pointerEvents = 'none';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.position = 'absolute';
+        canvas.style.left = '0';
+        canvas.style.top = '0';
+      }
+    }
+    window.addEventListener('flutter-first-frame', bindFlutterPointerHost);
+    window.addEventListener('resize', bindFlutterPointerHost);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', bindFlutterPointerHost);
+    }
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

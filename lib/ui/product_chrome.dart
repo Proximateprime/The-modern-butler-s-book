@@ -32,6 +32,10 @@ ButlerColors butlerColors(BuildContext context) {
 }
 
 /// Narrow, calm page column used on Home and Session.
+///
+/// Layout only — no [Transform] / scale. On Flutter web the document must
+/// not scroll under this column (see `web/index.html`); paint and pointer
+/// mapping share one `flutter-view` box, including the AppBar.
 class ButlerPageBody extends StatelessWidget {
   const ButlerPageBody({
     super.key,

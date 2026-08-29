@@ -424,9 +424,60 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Pages mouse hit mapping — 0.1.4+7
+
+PAGES_WEB_HIT. Pointer mapping only. Do not reopen leftover PRs #1–#6 or
+John’s SAFETY_HANDOFF_V1 (#15) nits. Do not edit alreadyTried / whyStopping
+honesty. Play listing stays out. Groq stays phrasing-only. No new chips,
+question ids, failure modes, or session-engine rewrite.
+
+App **0.1.4+7**. Tests: `test/pages_web_hit_test.dart`.
+
+Hosted Pages mouse testers saw hit-targets ~164px / 4 rows tall: a click on
+**Burning smell / smoke** selected **Won’t start**. Same class of offset on
+Home CTAs and What’s going on?. Space on the focused chip was fine.
+
+Cause: `web/index.html` focused the first-frame **canvas**. The canvas is the
+CanvasKit bitmap (`CSS size × devicePixelRatio`). Focusing it (1) makes the
+browser deliver `offsetX`/`offsetY` in bitmap space and (2) scroll-into-view
+an oversized canvas when html/body are not locked — ~164px on the 656px Pages
+pane at 125% DPR. AppBar is painted on the same `flutter-view`; a scrolled
+or DPR-mismatched canvas sits under that chrome.
+
+Fix (source `web/index.html` only; do not edit generated `site/`):
+
+1. html/body fill the window (`height: 100%`, `overflow: hidden`) so the
+   document cannot scroll under Flutter’s own `session-scroll-view`.
+2. `flutter-view` is `position: absolute; inset: 0`.
+3. First-frame focus is `flutter-view.focus({ preventScroll: true })`. Never
+   `canvas.focus()`.
+4. Canvas is raster-only: `pointer-events: none` and CSS size 100% of the
+   view (not bitmap pixels).
+
+`ButlerPageBody` stays a centered column with no Transform. SAFETY_HANDOFF
+honesty and NATURAL_UI_V1 chrome stay.
+
+### Phone / Pages (Given / tap / expect)
+
+Hosted Pages, mouse. Install **0.1.4+7**.
+
+#### A. What’s going on? row you click is the row that selects
+
+- **Given** a dryer session on **What’s going on?**
+- **Click** the painted **Burning smell / smoke** row (mouse, not Space).
+- **Expect** that row selects. **Won’t start** stays unselected.
+- **Click** the painted **Won’t start** row.
+- **Expect** that row selects.
+
+#### B. Home CTA is the painted button
+
+- **Given** empty home after first-run.
+- **Click** the painted **Name this home** (or **Load sample home**) button.
+- **Expect** that action, not a control above it.
+
 ## Safety handoff honesty — 0.1.4+6
 
-P0 honesty. Do not start PAGES_WEB_HIT. Do not reopen leftover PRs #1–#6.
+P0 honesty. PAGES_WEB_HIT is 0.1.4+7. Do not reopen leftover PRs #1–#6.
 Play listing stays out. Groq stays phrasing-only and must not invent tried
 steps. No session-engine rewrite. No new chips, question ids, failure modes,
 or Knowledge Factory runtime authoring.

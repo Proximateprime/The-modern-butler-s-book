@@ -1,3 +1,15 @@
+## Pages mouse hit mapping (2026-08-29)
+
+App **0.1.4+7**. GitHub Pages mouse clicks were landing ~164px / 4 chip rows
+above the painted control (Burning smell selected Won’t start). Keyboard
+Space on a focused chip was already correct — pointer mapping on Flutter web,
+not chip ids. `web/index.html` now locks html/body to the viewport, keeps
+events on `flutter-view` (canvas is raster-only, never focused), and sizes
+the canvas CSS box to the view instead of bitmap / device-pixel size.
+AppBar and `ButlerPageBody` stay on that same view box. No new chips,
+question ids, failure modes, or Play listing. Groq stays phrasing-only.
+Details: [`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md).
+
 ## Safety handoff honesty (2026-08-29)
 
 App **0.1.4+6**. Burning-smell → stop → pro handoff no longer copies the
