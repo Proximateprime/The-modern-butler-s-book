@@ -246,6 +246,11 @@ bool isExcessHeatEstablishedFromStarter({
     if (item.templateId != problemStarterComplaintTemplateId) {
       continue;
     }
+    // Unmatched Other is evidence only — do not treat the typed note as a
+    // too-hot complaint that was never confirmed on a chip.
+    if (_isUnmatchedOtherStarterObservation(item.observation)) {
+      continue;
+    }
     if (_starterComplaintEstablishesExcessHeat(
       item.answer ?? item.observation,
     )) {
@@ -350,6 +355,11 @@ bool isNoHeatEstablishedFromStarter({
     if (item.templateId != problemStarterComplaintTemplateId) {
       continue;
     }
+    // Unmatched Other is evidence only — do not treat the typed note as a
+    // warmth answer that was never shown.
+    if (_isUnmatchedOtherStarterObservation(item.observation)) {
+      continue;
+    }
     if (_starterComplaintEstablishesNoHeat(
       item.answer ?? item.observation,
     )) {
@@ -357,6 +367,10 @@ bool isNoHeatEstablishedFromStarter({
     }
   }
   return false;
+}
+
+bool _isUnmatchedOtherStarterObservation(String? observation) {
+  return observation?.trim().toLowerCase() == 'other / free-text';
 }
 
 /// Whether interview evidence already establishes a no-heat / no-warmth pattern.

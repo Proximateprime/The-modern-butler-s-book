@@ -20,6 +20,7 @@ import '../helpers/expert_mode.dart';
 import '../helpers/evidence_prompt_match.dart';
 import '../helpers/free_observation_intake.dart';
 import '../helpers/suggest_next_observation.dart';
+import '../helpers/unmatched_starter.dart';
 import '../helpers/guidance_display.dart';
 import '../helpers/inspect_steps.dart';
 import '../helpers/inspect_review.dart';
@@ -109,6 +110,7 @@ class _SessionScreenState extends State<SessionScreen>
   bool _guideInstalling = false;
   List<String> _starterSymptomIds = const [];
   final Set<String> _starterSelectedIds = {};
+  final Set<String> _starterMatcherDismissedIds = {};
   bool _starterNeedsClarification = false;
   bool _starterLimitedGuidance = false;
   bool _inspectReviewOnly = false;
@@ -258,6 +260,7 @@ class _SessionScreenState extends State<SessionScreen>
       if (package != null &&
           pendingClose == null &&
           pendingPrompt == null &&
+          !_starterLimitedGuidance &&
           dryerNeedsFuelQuestionBeforeHeatComponents(
             energySource: widget.appliance.energySource,
             recordedEvidence: decisionContext.evidence,
@@ -836,7 +839,11 @@ class _SessionScreenState extends State<SessionScreen>
     required List<FailureMode> orderedFailureModes,
     required Map<String, FailureModeStanding> standings,
     required List<FailureMode> packageModes,
+    bool unmatchedPath = false,
   }) {
+    if (unmatchedPath || _starterLimitedGuidance) {
+      return unmatchedWhyAskBody(template: template, templateId: template?.id);
+    }
     final remaining = [
       for (final mode in orderedFailureModes)
         if (!(standings[mode.id]?.isWeakened ?? false)) mode,
@@ -1193,10 +1200,16 @@ class _SessionScreenState extends State<SessionScreen>
       return;
     }
 
-    final resolution = resolveDryerStarter(
+    var resolution = resolveDryerStarter(
       selectedSymptomIds: chipIds,
       freeText: freeText,
     );
+    if (describing) {
+      resolution = resolutionWithoutHeatNoiseUnlessChecked(
+        resolution: resolution,
+        selectedSymptomIds: chipIds,
+      );
+    }
 
     if (!resolution.hasMatch && describing && freeText.trim().isNotEmpty) {
       if (_starterNeedsClarification) {
@@ -1204,10 +1217,8 @@ class _SessionScreenState extends State<SessionScreen>
       }
       _recordStarterEvidence(
         session: session,
-        answer: buildStarterComplaintAnswer(
-          resolution: resolution,
-          freeText: freeText,
-        ),
+        answer: freeText.trim(),
+        observation: unmatchedOtherObservation,
       );
       setState(() {
         _starterConfirmed = true;
@@ -1215,10 +1226,15 @@ class _SessionScreenState extends State<SessionScreen>
         _starterLimitedGuidance = true;
         _starterSymptomIds = const [];
         _pendingCloseVerification = null;
-        _pendingAnswerPrompt = starterFirstTemplate(
-          templates: package.evidenceTemplates,
-          firstTemplateId: dryerStarterDefaultTemplateId,
-        );
+        _pendingAnswerPrompt = nextUnmatchedUniversalTemplate(
+              templates: package.evidenceTemplates,
+              recordedEvidence: widget.dependencies.repairSessionRepository
+                  .evidenceForSession(session.id),
+            ) ??
+            starterFirstTemplate(
+              templates: package.evidenceTemplates,
+              firstTemplateId: dryerStarterDefaultTemplateId,
+            );
       });
       _persistUiResume();
       widget.dependencies.queueEnrichmentRequest(
@@ -1278,6 +1294,7 @@ class _SessionScreenState extends State<SessionScreen>
   void _recordStarterEvidence({
     required RepairSession session,
     required String answer,
+    String observation = "What's going on with the dryer?",
   }) {
     try {
       widget.dependencies.sessionCoordinator.addEvidence(
@@ -1286,7 +1303,7 @@ class _SessionScreenState extends State<SessionScreen>
           sessionId: session.id,
           applianceId: session.applianceId,
           type: EvidenceType.textObservation,
-          observation: "What's going on with the dryer?",
+          observation: observation,
           answer: answer,
           templateId: problemStarterComplaintTemplateId,
           collectedAt: widget.dependencies.nextTimestamp(),
@@ -1308,13 +1325,28 @@ class _SessionScreenState extends State<SessionScreen>
       _starterNeedsClarification = false;
       if (_starterSelectedIds.contains(id)) {
         _starterSelectedIds.remove(id);
+        _starterMatcherDismissedIds.add(id);
       } else {
         _starterSelectedIds.add(id);
+        _starterMatcherDismissedIds.remove(id);
       }
       if (!_starterSelectedIds.contains(dryerStarterOtherDescribeId)) {
         _starterFreeTextController.clear();
+      } else {
+        _applyStarterKeywordMatcher();
       }
     });
+  }
+
+  void _applyStarterKeywordMatcher() {
+    final next = applyStarterKeywordMatcher(
+      selectedIds: _starterSelectedIds,
+      freeText: _starterFreeTextController.text,
+      dismissedIds: _starterMatcherDismissedIds,
+    );
+    _starterSelectedIds
+      ..clear()
+      ..addAll(next);
   }
 
   void _clarifyStarterWith(String symptomId) {
@@ -2408,6 +2440,17 @@ class _SessionScreenState extends State<SessionScreen>
         )) {
       suggestedNext = null;
     }
+    if (_starterLimitedGuidance) {
+      suggestedNext = nextUnmatchedUniversalTemplate(
+        templates: prompts,
+        recordedEvidence: decisionContext.evidence,
+      );
+    }
+    final unmatchedNoMatch = _starterLimitedGuidance &&
+        unmatchedUniversalSetComplete(
+          templates: prompts,
+          recordedEvidence: decisionContext.evidence,
+        );
     var pendingForInterview = _pendingAnswerPrompt;
     if (pendingForInterview != null &&
         !isRevisingEvidence &&
@@ -2417,12 +2460,18 @@ class _SessionScreenState extends State<SessionScreen>
         )) {
       pendingForInterview = null;
     }
+    if (_starterLimitedGuidance &&
+        pendingForInterview != null &&
+        isRankedHeatOrNoiseInterviewTemplate(pendingForInterview.id)) {
+      pendingForInterview = null;
+    }
     final showClosePath =
         effectiveInvestigationStopped &&
         closePath != null &&
         safetyStop == null;
     FailureMode? recommendedPrimary;
-    if (!effectiveInvestigationStopped &&
+    if (!_starterLimitedGuidance &&
+        !effectiveInvestigationStopped &&
         safetyStop == null &&
         rule.showDiagnosis) {
       final diagnosisId =
@@ -2440,11 +2489,11 @@ class _SessionScreenState extends State<SessionScreen>
       }
     }
     final activeObservation =
-        hideNextQuestion || safetyStop != null
+        hideNextQuestion || safetyStop != null || unmatchedNoMatch
             ? (isRevisingEvidence ? _pendingAnswerPrompt : null)
             : (pendingForInterview ?? suggestedNext);
     final alternateObservations =
-        !hideNextQuestion
+        !hideNextQuestion && !_starterLimitedGuidance
             ? unusedTemplates(
               templates: prompts,
               recordedEvidence: decisionContext.evidence,
@@ -2458,7 +2507,17 @@ class _SessionScreenState extends State<SessionScreen>
                 templates: prompts,
               );
             }).toList()
-            : const <EvidenceTemplate>[];
+            : !_starterLimitedGuidance
+            ? const <EvidenceTemplate>[]
+            : unusedTemplates(
+              templates: prompts,
+              recordedEvidence: decisionContext.evidence,
+            ).where((prompt) {
+              if (prompt.id == activeObservation?.id) {
+                return false;
+              }
+              return unmatchedUniversalTemplateIds.contains(prompt.id);
+            }).toList();
     final canGoBack =
         !interactionsLocked &&
         activeObservation != null &&
@@ -2712,11 +2771,22 @@ class _SessionScreenState extends State<SessionScreen>
                 hint: priorHint,
               ),
             ],
-            if (!isTerminal && session.usingGeneralGuide && package.category == 'dryer') ...[
+            if (!isTerminal &&
+                dryerCoverageNotice(
+                      manufacturer: appliance.manufacturer,
+                      modelNumber: appliance.modelNumber,
+                      usingGeneralGuide: session.usingGeneralGuide,
+                      category: package.category,
+                    )
+                    case final coverage?) ...[
               const SizedBox(height: 16),
               Text(
-                generalDryerGuideNotice,
-                key: const Key('general-dryer-guide-notice'),
+                coverage,
+                key: Key(
+                  coverage == UserFacingCopy.missingMachinePlateNotice
+                      ? 'missing-plate-notice'
+                      : 'general-dryer-guide-notice',
+                ),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -2814,6 +2884,7 @@ class _SessionScreenState extends State<SessionScreen>
                   onClarify: _clarifyStarterWith,
                   onFreeTextChanged: (_) => setState(() {
                     _starterNeedsClarification = false;
+                    _applyStarterKeywordMatcher();
                   }),
                   onConfirm: _confirmProblemStarter,
                   onSkip: _skipProblemStarter,
@@ -2910,6 +2981,40 @@ class _SessionScreenState extends State<SessionScreen>
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 12),
+                Text(
+                  unmatchedNoteEcho(
+                    unmatchedOtherNote(decisionContext.evidence),
+                  ),
+                  key: const Key('unmatched-note-echo'),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (unmatchedNoMatch && !interactionsLocked) ...[
+                Text(
+                  UserFacingCopy.unmatchedNoMatchTitle,
+                  key: const Key('unmatched-no-match-title'),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  UserFacingCopy.unmatchedNoMatchBody,
+                  key: const Key('unmatched-no-match-body'),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+                PrimaryCta(
+                  key: const Key('unmatched-no-match-call-pro'),
+                  label: 'Call a pro',
+                  semanticLabel: 'Call a pro',
+                  onPressed: () => _endSession(
+                    eligibility: CloseResolveEligibility.needsProfessional,
+                    rankingLeaderLabel: null,
+                    rankingLeaderFailureModeId: null,
+                    initialCloseKind: SessionCloseKind.calledProfessional,
+                  ),
+                ),
+                const SizedBox(height: 12),
               ],
               if (widget.dependencies
                   .acceptedEnrichmentNotes(applianceId: appliance.id)
@@ -2924,7 +3029,9 @@ class _SessionScreenState extends State<SessionScreen>
                 ),
                 const SizedBox(height: 12),
               ],
-              if (rule.askAnotherQuestion && !interactionsLocked) ...[
+              if (rule.askAnotherQuestion &&
+                  !interactionsLocked &&
+                  !_starterLimitedGuidance) ...[
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton(
@@ -2964,8 +3071,12 @@ class _SessionScreenState extends State<SessionScreen>
                               )
                           ? phrasingOverlay
                           : null;
-                  final displayedWhy =
-                      questionOverlay?.whyOneLine ?? packagedWhy;
+                  // Unmatched Other: packaged observation-only why. Groq
+                  // may phrase the echo; it must not rewrite this into a
+                  // diagnosis they never gave.
+                  final displayedWhy = _starterLimitedGuidance
+                      ? packagedWhy
+                      : (questionOverlay?.whyOneLine ?? packagedWhy);
                   if (inspectStep != null) {
                     return InspectStepCard(
                       step: inspectStep,
@@ -4757,10 +4868,16 @@ class _ProblemStarterPanel extends StatelessWidget {
       for (final id in selectedIds)
         if (id != dryerStarterOtherDescribeId) id,
     };
-    final resolution = resolveDryerStarter(
+    var resolution = resolveDryerStarter(
       selectedSymptomIds: chipIds,
       freeText: describing ? freeTextController.text : '',
     );
+    if (describing) {
+      resolution = resolutionWithoutHeatNoiseUnlessChecked(
+        resolution: resolution,
+        selectedSymptomIds: chipIds,
+      );
+    }
     final canConfirm =
         selectedIds.isNotEmpty &&
         !needsClarification &&

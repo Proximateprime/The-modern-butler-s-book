@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:modern_butlers_book/helpers/package_resolve.dart';
+import 'package:modern_butlers_book/helpers/unmatched_starter.dart';
+import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/helpers/visual_guide.dart';
 import 'package:modern_butlers_book/knowledge/dryer_brand_overlays.dart';
 import 'package:modern_butlers_book/models/appliance.dart';
@@ -24,8 +26,44 @@ void main() {
     expect(resolution.basePackage.id, 'dryer-core');
     expect(resolution.overlay, isNull);
     expect(resolution.usingGeneralGuide, isTrue);
-    expect(resolution.coverageNotice, generalDryerGuideNotice);
     expect(resolution.package.id, 'dryer-core');
+    expect(
+      dryerCoverageNotice(
+        manufacturer: 'Demo Manufacturer',
+        modelNumber: 'DEMO-DRYER-1',
+        usingGeneralGuide: resolution.usingGeneralGuide,
+        category: 'dryer',
+      ),
+      UserFacingCopy.missingMachinePlateNotice,
+    );
+    expect(
+      dryerCoverageNotice(
+        manufacturer: 'Demo Manufacturer',
+        modelNumber: 'DEMO-DRYER-1',
+        usingGeneralGuide: resolution.usingGeneralGuide,
+        category: 'dryer',
+      ),
+      isNot(generalDryerGuideNotice),
+    );
+  });
+
+  test('unknown real brand/model still gets general dryer guide', () {
+    final resolution = resolveKnowledgePackage(
+      repository: repository,
+      category: 'dryer',
+      manufacturer: 'Acme',
+      modelNumber: 'X-1',
+    );
+    expect(resolution.usingGeneralGuide, isTrue);
+    expect(
+      dryerCoverageNotice(
+        manufacturer: 'Acme',
+        modelNumber: 'X-1',
+        usingGeneralGuide: resolution.usingGeneralGuide,
+        category: 'dryer',
+      ),
+      generalDryerGuideNotice,
+    );
   });
 
   test('Whirlpool model prefix resolves whirlpool/maytag/kenmore overlay', () {

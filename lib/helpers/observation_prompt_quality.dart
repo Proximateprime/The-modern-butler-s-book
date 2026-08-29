@@ -4,6 +4,7 @@ import 'dryer_problem_starter.dart';
 import 'evidence_prompt_match.dart';
 import 'package_authoring_index.dart';
 import 'power_steering.dart';
+import 'unmatched_starter.dart';
 
 /// Symptom families used to keep early interview questions on-topic.
 enum ObservationFamily {
@@ -206,6 +207,11 @@ Set<ObservationFamily> inferActiveObservationFamilies({
 
   for (final item in recordedEvidence) {
     if (item.templateId == problemStarterComplaintTemplateId) {
+      // Unmatched Other is evidence only. Do not invent heat / noise / odor
+      // families from the typed note (basement smell is not a hazard path).
+      if (isUnmatchedOtherEvidence(item)) {
+        continue;
+      }
       final answer = (item.answer ?? item.observation).toLowerCase();
       for (final family in dryerStarterFamilies) {
         if (answer.contains(family.label.toLowerCase()) ||
