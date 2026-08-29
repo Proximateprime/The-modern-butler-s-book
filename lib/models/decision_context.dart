@@ -60,6 +60,21 @@ class DecisionContext {
 
   String? get primaryFailureModeId => primaryHypothesis?.failureModeId;
 
+  /// Rebuilds this snapshot with a computed safety level.
+  DecisionContext withSafetyLevel(String safetyLevel) {
+    return DecisionContext._(
+      session: session,
+      evidence: evidence,
+      currentHypotheses: currentHypotheses,
+      safetyLevel: safetyLevel,
+      userComfortLevel: userComfortLevel,
+      availableTools: availableTools,
+      packageRef: packageRef,
+      package: package,
+      authoringIndex: authoringIndex,
+    );
+  }
+
   /// Attaches a loaded package without changing session evidence or hypotheses.
   DecisionContext withResolvedKnowledge({
     KnowledgePackage? package,

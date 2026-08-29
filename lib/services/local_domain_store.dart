@@ -438,6 +438,7 @@ Map<String, dynamic> _applianceToJson(Appliance value) {
     if (value.ratingLabelPhotoPath != null)
       'ratingLabelPhotoPath': value.ratingLabelPhotoPath,
     'energySource': value.energySource.name,
+    'washerLoadStyle': value.washerLoadStyle.name,
     'schemaVersion': value.schemaVersion,
     'createdAt': value.createdAt.toIso8601String(),
     'updatedAt': value.updatedAt.toIso8601String(),
@@ -462,6 +463,7 @@ Appliance _applianceFromJson(Map<String, dynamic> json) {
     estimatedAgeYears: json['estimatedAgeYears'] as int?,
     ratingLabelPhotoPath: json['ratingLabelPhotoPath'] as String?,
     energySource: applianceEnergySourceFromName(json['energySource'] as String?),
+    washerLoadStyle: washerLoadStyleFromName(json['washerLoadStyle'] as String?),
     schemaVersion: json['schemaVersion'] as String,
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),

@@ -1,4 +1,5 @@
 import '../models/evidence.dart';
+import 'user_facing_error.dart';
 
 /// Deterministic hard-stop result for the Session screen safety gate.
 ///
@@ -32,6 +33,38 @@ class SafetyStop {
 /// Safety Invariants win over symptom seeding and the interview: if this
 /// function returns a stop, the Session screen must not continue ordinary
 /// questions (including starter chips treated as normal evidence).
+/// Household-facing actions shown on every hard-stop path (chip, type, voice).
+String safetyStopOfficialCopy() => UserFacingCopy.safetyStopOfficial;
+
+/// Banner / cue body: why we stopped, then the official actions.
+String safetyStopDisplayCopy(SafetyStop stop) {
+  final why = stop.reason.trim();
+  final official = UserFacingCopy.safetyStopOfficial;
+  if (why.isEmpty || official.contains(why) || why == official) {
+    return official;
+  }
+  return '$why\n\n$official';
+}
+
+/// Stored session details level. Never the placeholder "not evaluated".
+String sessionSafetyLevelFor({
+  required List<Evidence> evidence,
+  String? primaryFailureModeId,
+}) {
+  if (evaluateSafetyStop(
+        evidence: evidence,
+        primaryFailureModeId: primaryFailureModeId,
+      ) !=
+      null) {
+    return 'stop';
+  }
+  if (primaryFailureModeId != null &&
+      _professionalFailureModeReasons.containsKey(primaryFailureModeId)) {
+    return 'professional';
+  }
+  return 'clear';
+}
+
 SafetyStop? evaluateSafetyStop({
   required List<Evidence> evidence,
   String? primaryFailureModeId,

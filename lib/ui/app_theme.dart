@@ -256,7 +256,7 @@ ThemeData _buildTheme(_ThemePalette palette) {
         muted: faint,
         rule: line,
         safetyCalm: brand,
-        safetyWatch: const Color(0xFFC4A035),
+        safetyWatch: const Color(0xFF6B4E0E),
         safetyCaution: const Color(0xFFC45E1A),
         safetyStop: const Color(0xFFB42318),
       ),

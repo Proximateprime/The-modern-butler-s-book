@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:modern_butlers_book/helpers/safety_stop.dart';
+import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
 
 import 'support/session_test_helpers.dart';
@@ -19,7 +21,10 @@ void main() {
 
     expect(find.byKey(const Key('safety-stop-banner')), findsOneWidget);
     expect(find.text('Stop — Call a professional'), findsOneWidget);
-    expect(find.text('Possible fire or smoke hazard'), findsOneWidget);
+    expect(find.textContaining('Possible fire or smoke hazard'), findsWidgets);
+    expect(find.textContaining('Unplug if it is safe'), findsOneWidget);
+    expect(find.textContaining('ventilate'), findsOneWidget);
+    expect(find.textContaining('do not keep running'), findsOneWidget);
     expect(find.byKey(const Key('blocking-reason-line')), findsOneWidget);
     expect(
       find.text('This step is blocked for safety—call a pro.'),
@@ -33,12 +38,43 @@ void main() {
     await expandEvidenceHistory(tester);
     expect(find.textContaining('Answer: Yes'), findsOneWidget);
 
-    expect(find.text('End Session — Needs professional'), findsOneWidget);
+    expect(find.byKey(const Key('end-session-button')), findsOneWidget);
+    final dryer = dependencies.appliancesForCurrentHousehold().single;
+    final sessionId = dependencies.startOrResumeSession(dryer);
+    expect(
+      dependencies.buildDecisionContext(sessionId).safetyLevel,
+      'stop',
+    );
+
     await tapVisible(tester, find.byKey(const Key('end-session-button')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('recent-activity-title')), findsOneWidget);
-    expect(find.text('Calling a professional'), findsWidgets);
-    expect(find.byKey(const Key('session-outcome-summary')), findsNothing);
+    expect(find.byKey(const Key('outcome-needs-professional')), findsOneWidget);
+    expect(find.byKey(const Key('outcome-note-field')), findsOneWidget);
+    expect(find.byKey(const Key('recent-activity-title')), findsNothing);
+
+    await tester.ensureVisible(find.byKey(const Key('outcome-save-button')));
+    await tester.tap(find.byKey(const Key('outcome-save-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('pro-handoff-screen')), findsOneWidget);
+    expect(find.byKey(const Key('pro-handoff-preview')), findsOneWidget);
+  });
+
+  test('official stop copy is shared', () {
+    expect(
+      UserFacingCopy.voiceHazardConfirm,
+      UserFacingCopy.safetyStopOfficial,
+    );
+    expect(UserFacingCopy.safetyStopOfficial.toLowerCase(), contains('unplug'));
+    expect(
+      UserFacingCopy.safetyStopOfficial.toLowerCase(),
+      contains('ventilate'),
+    );
+    expect(
+      safetyStopDisplayCopy(
+        const SafetyStop(reason: 'Possible fire or smoke hazard'),
+      ),
+      contains(UserFacingCopy.safetyStopOfficial),
+    );
   });
 }

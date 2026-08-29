@@ -51,7 +51,7 @@ void main() {
     );
 
     expect(find.byKey(const Key('recent-activity-title')), findsOneWidget);
-    expect(find.text('Calling a professional'), findsWidgets);
+    expect(find.text('Needs a professional'), findsWidgets);
     expect(find.byKey(const Key('session-outcome-summary')), findsNothing);
   });
 }

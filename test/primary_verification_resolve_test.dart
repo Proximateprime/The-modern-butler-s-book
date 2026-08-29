@@ -37,7 +37,7 @@ void main() {
     );
 
     expect(find.byKey(const Key('recent-activity-title')), findsOneWidget);
-    expect(find.text('Calling a professional'), findsWidgets);
+    expect(find.text('Needs a professional'), findsWidgets);
   });
 
   testWidgets('Path 1 — Not confirmed blocks Resolved', (tester) async {
@@ -61,7 +61,7 @@ void main() {
       tester,
       choiceKey: const Key('outcome-needs-professional'),
     );
-    expect(find.text('Calling a professional'), findsWidgets);
+    expect(find.text('Needs a professional'), findsWidgets);
   });
 
   testWidgets('Path 2 — vent restriction close path resolves', (tester) async {
@@ -84,7 +84,7 @@ void main() {
 
     await tapVisible(tester, find.byKey(const Key('answer-choice-confirmed')));
 
-    expect(find.text('End Session — Ready to resolve'), findsOneWidget);
+    expect(find.text('Fixed'), findsOneWidget);
     await tapVisible(tester, find.byKey(const Key('end-session-button')));
     await tester.pumpAndSettle();
     await saveSessionOutcome(tester);
@@ -100,7 +100,7 @@ void main() {
     await openDryerSession(tester, dependencies, 'Weak Evidence Household');
 
     expect(find.byKey(const Key('verification-card')), findsNothing);
-    expect(find.text('End Session — Unresolved / professional'), findsOneWidget);
+    expect(find.text('Unresolved'), findsOneWidget);
 
     await tapVisible(tester, find.byKey(const Key('end-session-button')));
     await tester.pumpAndSettle();

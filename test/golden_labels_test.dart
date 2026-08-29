@@ -96,7 +96,7 @@ void main() {
       washer.evidenceTemplates
           .firstWhere((item) => item.id == 'washer-door-click')
           .promptText,
-      'Does the door close firmly until you feel or hear a solid click?',
+      'Does the door or lid close firmly until you feel or hear a solid click?',
     );
     expect(
       washer.evidenceTemplates

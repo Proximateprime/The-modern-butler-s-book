@@ -10,7 +10,7 @@ ButlerColors butlerColors(BuildContext context) {
         muted: Color(0xFF6E6256),
         rule: Color(0xFFDDD2C3),
         safetyCalm: Color(0xFF3E5C4E),
-        safetyWatch: Color(0xFFC4A035),
+        safetyWatch: Color(0xFF6B4E0E),
         safetyCaution: Color(0xFFC45E1A),
         safetyStop: Color(0xFFB42318),
       );
@@ -249,7 +249,7 @@ class SessionChromeBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ],
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(72),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
           child: Column(
@@ -274,13 +274,9 @@ class SessionChromeBar extends StatelessWidget implements PreferredSizeWidget {
                 stateLabel,
                 key: const Key('current-session-state'),
                 style: text.bodySmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              if (memberLabel != null && memberLabel!.trim().isNotEmpty)
-                Text(
-                  memberLabel!,
-                  key: const Key('session-current-member'),
-                  style: text.bodySmall,
-                ),
             ],
           ),
         ),

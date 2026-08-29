@@ -268,9 +268,18 @@ abstract final class UserFacingCopy {
   static const bestMatchHumble =
       'This is the best match from your answers so far — not a certainty, '
       'and not a percentage.';
-  static const voiceHazardConfirm =
-      'Stop. A burning smell, smoke, or similar hazard is not a normal check. '
-      'Unplug if it is safe, ventilate, and call a professional.';
+  /// One official hard-stop body. Chip, typed text, and voice must share this.
+  static const safetyStopOfficial =
+      'Stop. Unplug if it is safe, ventilate, and do not keep running the '
+      'machine. Call a professional.';
+  static const voiceHazardConfirm = safetyStopOfficial;
+  static const expertModeNeedAdult =
+      'Confirm the adult checkbox first. Expert Mode stays off until you do.';
+  static const reminderPingScheduled =
+      'A reminder/ping is scheduled for when it comes due.';
+  static const reminderPingDenied =
+      'Notifications are off on this device, so nothing will ping. The '
+      'reminder is still saved here.';
   static const sessionObjectivePrompt =
       'What do you want from this session? (optional)';
   static const sessionObjectiveFixIt = 'Fix it';

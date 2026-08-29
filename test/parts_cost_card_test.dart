@@ -156,6 +156,6 @@ void main() {
     await tester.tap(find.byKey(const Key('completion-save-home')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('recent-activity-title')), findsOneWidget);
-    expect(find.text('Calling a professional'), findsWidgets);
+      expect(find.text('Needs a professional'), findsWidgets);
   });
 }

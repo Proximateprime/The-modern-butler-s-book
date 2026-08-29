@@ -142,7 +142,7 @@ void main() {
       await tapVisible(tester, find.byKey(const Key('completion-save-home')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Calling a professional'), findsWidgets);
+      expect(find.text('Needs a professional'), findsWidgets);
       final sessionId = deps.recentSessionOutcomes().single.outcome.sessionId;
       await tester.tap(find.byKey(Key('export-repair-$sessionId')));
       await tester.pumpAndSettle();

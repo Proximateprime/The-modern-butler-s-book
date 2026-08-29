@@ -146,7 +146,7 @@ void main() {
       expect(find.byKey(const Key('answer-choice-panel')), findsNothing);
       expect(find.byKey(const Key('failure-modes-tile')), findsNothing);
       expect(
-        find.text('End Session — Needs professional'),
+        find.text('Needs a professional'),
         findsOneWidget,
       );
   });

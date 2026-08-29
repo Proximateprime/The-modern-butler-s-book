@@ -100,7 +100,7 @@ String sessionCloseKindLabel(SessionCloseKind kind) {
     SessionCloseKind.fixed => 'Fixed',
     SessionCloseKind.notFixed => 'Not fixed',
     SessionCloseKind.stopped => 'Stopped',
-    SessionCloseKind.calledProfessional => 'Calling a professional',
+    SessionCloseKind.calledProfessional => 'Needs a professional',
   };
 }
 

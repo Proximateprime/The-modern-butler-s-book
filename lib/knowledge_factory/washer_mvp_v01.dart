@@ -175,7 +175,7 @@ KnowledgePackage buildWasherMvpPackage() {
           "Won't spin",
           'Leaks',
           "Won't start",
-          "Door won't close",
+          "Door won't close", // Front-load default; top-load overlay uses lid.
         ],
         supportByAnswer: const {
           "Won't drain": [
@@ -201,7 +201,7 @@ KnowledgePackage buildWasherMvpPackage() {
       EvidenceTemplate(
         id: 'washer-door-click',
         promptText:
-            'Does the door close firmly until you feel or hear a solid click?',
+            'Does the door or lid close firmly until you feel or hear a solid click?',
         expectedEvidenceType: EvidenceType.structuredAnswer,
         relatedFailureModeIds: const [washerDoorNotLatchedId],
         answerChoices: const ['Yes', 'No', 'Not sure'],

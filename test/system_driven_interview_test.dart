@@ -83,7 +83,7 @@ void main() {
         choiceKey: const Key('outcome-needs-professional'),
       );
 
-      expect(find.text('Calling a professional'), findsWidgets);
+      expect(find.text('Needs a professional'), findsWidgets);
     },
   );
 

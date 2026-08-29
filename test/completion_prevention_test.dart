@@ -139,7 +139,7 @@ void main() {
         choiceKey: const Key('outcome-needs-professional'),
       );
 
-      expect(find.textContaining('Calling a professional'), findsWidgets);
+      expect(find.textContaining('Needs a professional'), findsWidgets);
       final dryer = deps.appliancesForCurrentHousehold().single;
       expect(
         deps.repairHistoryForAppliance(dryer.id).single.outcome.closeKind,

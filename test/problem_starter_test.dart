@@ -363,7 +363,7 @@ void main() {
 
     expect(find.byKey(const Key('safety-stop-banner')), findsOneWidget);
     expect(find.byKey(const Key('answer-choice-panel')), findsNothing);
-    expect(find.text('End Session — Needs professional'), findsOneWidget);
+    expect(find.byKey(const Key('end-session-button')), findsOneWidget);
   });
 
   testWidgets('Too hot chip opens excess-heat discriminator, not warmth re-ask', (

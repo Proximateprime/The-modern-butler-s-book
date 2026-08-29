@@ -716,31 +716,35 @@ class _HomeScreenState extends State<HomeScreen> {
                         key: Key(
                           'recent-outcome-${filteredHistory[i].outcome.sessionId}',
                         ),
+                        isThreeLine: true,
                         title: Text(
                           filteredHistory[i].applianceName,
                           style: text.titleMedium,
                         ),
-                        subtitle: Text(
-                          _recentHistorySubtitle(filteredHistory[i]),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               sessionCloseKindLabel(
                                 filteredHistory[i].outcome.closeKind,
                               ),
-                              style: text.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            RepairLogExportButton(
-                              sessionId: filteredHistory[i].outcome.sessionId,
-                              applianceName: filteredHistory[i].applianceName,
-                              date: filteredHistory[i].completedAt,
-                              outcome: filteredHistory[i].outcome,
-                              dependencies: widget.dependencies,
-                              appliance: filteredHistory[i].appliance,
+                            Text(
+                              _recentHistoryMeta(filteredHistory[i]),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
+                        ),
+                        trailing: RepairLogExportButton(
+                          sessionId: filteredHistory[i].outcome.sessionId,
+                          applianceName: filteredHistory[i].applianceName,
+                          date: filteredHistory[i].completedAt,
+                          outcome: filteredHistory[i].outcome,
+                          dependencies: widget.dependencies,
+                          appliance: filteredHistory[i].appliance,
                         ),
                         onTap: () => _openRecentOutcome(filteredHistory[i]),
                       ),
@@ -757,16 +761,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _recentHistorySubtitle(RecentSessionOutcome item) {
+  String _recentHistoryMeta(RecentSessionOutcome item) {
     final by = repairHistoryMemberLine(
       widget.dependencies.displayNameForUserId(item.session.createdByUserId),
     );
-    final base =
-        '${formatRepairHistoryDate(item.completedAt)} · ${item.outcome.summary}';
-    if (by == null) {
-      return base;
+    final kind = sessionCloseKindLabel(item.outcome.closeKind);
+    final summary = item.outcome.summary.trim();
+    var detail = summary;
+    final prefix = '$kind — ';
+    if (summary.startsWith(prefix)) {
+      detail = summary.substring(prefix.length).trim();
+    } else if (summary == kind) {
+      detail = '';
     }
-    return '$base · $by';
+    final parts = <String>[
+      formatRepairHistoryDate(item.completedAt),
+      if (detail.isNotEmpty) detail,
+      if (by != null) by,
+    ];
+    return parts.join(' · ');
   }
 }
 

@@ -12,6 +12,24 @@ enum ApplianceEnergySource {
   unknown,
 }
 
+/// Top-load vs front-load latch wording. Unknown uses “door or lid”.
+enum WasherLoadStyle {
+  topLoad,
+  frontLoad,
+  unknown,
+}
+
+WasherLoadStyle washerLoadStyleFromName(String? raw) {
+  switch (raw) {
+    case 'topLoad':
+      return WasherLoadStyle.topLoad;
+    case 'frontLoad':
+      return WasherLoadStyle.frontLoad;
+    default:
+      return WasherLoadStyle.unknown;
+  }
+}
+
 ApplianceEnergySource applianceEnergySourceFromName(String? raw) {
   switch (raw) {
     case 'electric':
@@ -62,6 +80,7 @@ class Appliance {
     this.estimatedAgeYears,
     this.ratingLabelPhotoPath,
     this.energySource = ApplianceEnergySource.unknown,
+    this.washerLoadStyle = WasherLoadStyle.unknown,
   });
 
   final String id;
@@ -79,6 +98,9 @@ class Appliance {
   final String? ratingLabelPhotoPath;
   /// Dryer fuel. Missing JSON and non-dryers are [ApplianceEnergySource.unknown].
   final ApplianceEnergySource energySource;
+
+  /// Washer lid vs door. Non-washers stay [WasherLoadStyle.unknown].
+  final WasherLoadStyle washerLoadStyle;
   final String schemaVersion;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -99,6 +121,7 @@ class Appliance {
     String? ratingLabelPhotoPath,
     bool clearRatingLabelPhotoPath = false,
     ApplianceEnergySource? energySource,
+    WasherLoadStyle? washerLoadStyle,
   }) {
     return Appliance(
       id: id,
@@ -127,6 +150,7 @@ class Appliance {
               ? null
               : (ratingLabelPhotoPath ?? this.ratingLabelPhotoPath),
       energySource: energySource ?? this.energySource,
+      washerLoadStyle: washerLoadStyle ?? this.washerLoadStyle,
     );
   }
 }

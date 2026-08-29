@@ -19,6 +19,7 @@ import '../helpers/inventory_export.dart';
 import '../helpers/package_resolve.dart';
 import '../helpers/local_backup.dart';
 import '../helpers/maintenance_reminder_copy.dart';
+import '../helpers/safety_stop.dart';
 import '../helpers/stale_session.dart';
 import '../helpers/user_facing_error.dart';
 import '../knowledge_factory/failure_mode_authoring_registry.dart';
@@ -702,6 +703,7 @@ class AppDependencies {
     DateTime? installationDate,
     int? estimatedAgeYears,
     String? ratingLabelPhotoPath,
+    WasherLoadStyle washerLoadStyle = WasherLoadStyle.unknown,
   }) {
     return _addDemoAppliance(
       category: 'washer',
@@ -716,6 +718,7 @@ class AppDependencies {
       installationDate: installationDate,
       estimatedAgeYears: estimatedAgeYears,
       ratingLabelPhotoPath: ratingLabelPhotoPath,
+      washerLoadStyle: washerLoadStyle,
     );
   }
 
@@ -788,6 +791,7 @@ class AppDependencies {
     String? ratingLabelPhotoPath,
     String defaultLocation = 'Laundry Room',
     ApplianceEnergySource energySource = ApplianceEnergySource.unknown,
+    WasherLoadStyle washerLoadStyle = WasherLoadStyle.unknown,
   }) {
     final household = currentHousehold;
     if (household == null) {
@@ -839,6 +843,7 @@ class AppDependencies {
         estimatedAgeYears: estimatedAgeYears,
         ratingLabelPhotoPath: ratingLabelPhotoPath,
         energySource: energySource,
+        washerLoadStyle: washerLoadStyle,
       ),
     );
     _schedulePersist();
@@ -856,6 +861,7 @@ class AppDependencies {
     int? estimatedAgeYears,
     String? ratingLabelPhotoPath,
     ApplianceEnergySource? energySource,
+    WasherLoadStyle? washerLoadStyle,
   }) {
     final household = currentHousehold;
     if (household == null || household.id != appliance.householdId) {
@@ -885,6 +891,7 @@ class AppDependencies {
         estimatedAgeYears: estimatedAgeYears,
         ratingLabelPhotoPath: ratingLabelPhotoPath,
         energySource: energySource ?? appliance.energySource,
+        washerLoadStyle: washerLoadStyle ?? appliance.washerLoadStyle,
       ),
     );
     _schedulePersist();
@@ -1195,7 +1202,12 @@ class AppDependencies {
       availableTools: tools,
     );
     if (appliance == null || context.package == null) {
-      return context;
+      return context.withSafetyLevel(
+        sessionSafetyLevelFor(
+          evidence: context.evidence,
+          primaryFailureModeId: context.primaryFailureModeId,
+        ),
+      );
     }
     final resolution = resolveKnowledgePackage(
       repository: knowledgePackageRepository,
@@ -1204,9 +1216,15 @@ class AppDependencies {
       modelNumber: appliance.modelNumber,
       baseOverride: context.package,
     );
-    return context.withResolvedKnowledge(
+    final resolved = context.withResolvedKnowledge(
       package: resolution.package,
       authoringIndex: context.authoringIndex,
+    );
+    return resolved.withSafetyLevel(
+      sessionSafetyLevelFor(
+        evidence: resolved.evidence,
+        primaryFailureModeId: resolved.primaryFailureModeId,
+      ),
     );
   }
 

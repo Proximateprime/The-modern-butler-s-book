@@ -149,12 +149,13 @@ class _SessionCompletionScreenState extends State<SessionCompletionScreen> {
     }
   }
 
-  void _saveReminder() {
+  Future<void> _saveReminder() async {
     final note = _reminderNote.text.trim();
     if (note.isEmpty) {
       return;
     }
     try {
+      await widget.dependencies.maintenanceNotifier.requestPermission();
       widget.dependencies.addMaintenanceReminder(
         applianceId: widget.appliance.id,
         note: note,
@@ -162,11 +163,17 @@ class _SessionCompletionScreenState extends State<SessionCompletionScreen> {
         sessionId: widget.outcome.sessionId,
         intervalDays: inferMaintenanceIntervalDays(note),
       );
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _reminderSaved = true;
         _showReminder = false;
       });
     } on StateError catch (error) {
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(userFacingErrorMessage(error))),
       );
@@ -319,7 +326,7 @@ class _SessionCompletionScreenState extends State<SessionCompletionScreen> {
                 if (_reminderSaved)
                   Text(
                     'Reminder saved on this device. Next due ${_formatDate(_remindOn)}. '
-                    'No notification will be sent.',
+                    '${widget.dependencies.maintenanceNotifier.notificationsAllowed ? UserFacingCopy.reminderPingScheduled : UserFacingCopy.reminderPingDenied}',
                     key: const Key('completion-reminder-saved'),
                     style: text.bodySmall,
                   )

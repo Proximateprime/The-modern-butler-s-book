@@ -11,6 +11,7 @@ import '../helpers/dryer_close_path.dart';
 import '../helpers/easy_airflow_checks.dart';
 import '../helpers/easy_check_already_checked.dart';
 import '../helpers/washer_easy_checks.dart';
+import '../helpers/washer_latch_copy.dart';
 import '../helpers/dishwasher_easy_checks.dart';
 import '../helpers/fridge_easy_checks.dart';
 import '../helpers/degraded_mode.dart';
@@ -32,6 +33,7 @@ import '../helpers/opportunistic_maintenance.dart';
 import '../helpers/parts_cost.dart';
 import '../helpers/root_cause_memory.dart';
 import '../helpers/session_timeline.dart';
+import '../helpers/safety_stop.dart';
 import '../helpers/user_facing_error.dart';
 import '../helpers/visual_guide.dart';
 import '../helpers/voice_answer.dart';
@@ -1974,25 +1976,6 @@ class _SessionScreenState extends State<SessionScreen>
     String? rankingLeaderFailureModeId,
     SessionCloseKind? initialCloseKind,
   }) async {
-    if (eligibility == CloseResolveEligibility.safetyStop) {
-      try {
-        widget.dependencies.endSession(
-          sessionId: widget.sessionId,
-          closeKind: SessionCloseKind.calledProfessional,
-        );
-        if (mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
-      } on StateError catch (error) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(userFacingErrorMessage(error))),
-          );
-        }
-      }
-      return;
-    }
-
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder:
@@ -2003,7 +1986,11 @@ class _SessionScreenState extends State<SessionScreen>
               eligibility: eligibility,
               rankingLeaderLabel: rankingLeaderLabel,
               rankingLeaderFailureModeId: rankingLeaderFailureModeId,
-              initialCloseKind: initialCloseKind,
+              initialCloseKind:
+                  initialCloseKind ??
+                  (eligibility == CloseResolveEligibility.safetyStop
+                      ? SessionCloseKind.calledProfessional
+                      : null),
             ),
       ),
     );
@@ -2152,7 +2139,13 @@ class _SessionScreenState extends State<SessionScreen>
       }
       return _guideUnavailableScaffold();
     }
-    final prompts = package.evidenceTemplates;
+    final prompts =
+        widget.appliance.category == 'washer'
+            ? washerLatchInterviewTemplates(
+              package.evidenceTemplates,
+              widget.appliance.washerLoadStyle,
+            )
+            : package.evidenceTemplates;
     final sessionObjective = session.sessionObjective;
     final primaryHypothesis = decisionContext.primaryHypothesis;
     final primaryFailureModeId = decisionContext.primaryFailureModeId;
@@ -2327,10 +2320,11 @@ class _SessionScreenState extends State<SessionScreen>
                 : clueCount == 1
                 ? '1 clue'
                 : '$clueCount clues',
-        stateLabel: 'Now: ${_plainStateLabel(session.currentState)}',
-        memberLabel: widget.dependencies.currentMember == null
-            ? null
-            : 'Using as ${widget.dependencies.currentMember!.displayName}',
+        stateLabel: 'Now: ${_chromeNowLabel(
+          session: session,
+          safetyStop: safetyStop,
+          showClosePath: showClosePath,
+        )}',
         onExit: () => Navigator.of(context).maybePop(),
       ),
       body: SingleChildScrollView(
@@ -2340,6 +2334,14 @@ class _SessionScreenState extends State<SessionScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (widget.dependencies.currentMember != null) ...[
+              Text(
+                'Using as ${widget.dependencies.currentMember!.displayName}',
+                key: const Key('session-current-member'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+            ],
             if (_resumeFailed) ...[
               const SizedBox(height: 16),
               DegradedModeBanner(
@@ -2359,14 +2361,20 @@ class _SessionScreenState extends State<SessionScreen>
             ],
             if (_photoCaptureOff) ...[
               const SizedBox(height: 16),
-              const DegradedModeBanner(
+              DegradedModeBanner(
                 kind: DegradedModeKind.cameraDenied,
+                onOk: () {},
+                onContinueManually: () {},
+                onStartFresh: _startFreshFromDeniedSensor,
               ),
             ],
             if (_voiceCaptureOff) ...[
               const SizedBox(height: 16),
-              const DegradedModeBanner(
+              DegradedModeBanner(
                 kind: DegradedModeKind.micDenied,
+                onOk: () {},
+                onContinueManually: () {},
+                onStartFresh: _startFreshFromDeniedSensor,
               ),
             ],
             if (_voiceHazardConfirm) ...[
@@ -2413,7 +2421,9 @@ class _SessionScreenState extends State<SessionScreen>
             ],
             if (safetyStop != null) ...[
               const SizedBox(height: 16),
-              _SafetyStopBanner(reason: safetyStop.reason),
+              _SafetyStopBanner(
+                reason: safetyStopDisplayCopy(safetyStop),
+              ),
             ],
             if (!isTerminal &&
                 effectiveInvestigationStopped &&
@@ -2783,11 +2793,11 @@ class _SessionScreenState extends State<SessionScreen>
                 title: 'Session finished',
                 detail: switch (outcome.resolutionStatus) {
                   SessionResolutionStatus.resolved =>
-                    'Resolved was recorded. Use back to return home.',
+                    'Fixed was recorded. Exit to return home.',
                   SessionResolutionStatus.partiallyResolved =>
-                    'Needs professional was recorded. Use back to return home.',
+                    'Needs a professional was recorded. Exit to return home.',
                   SessionResolutionStatus.unresolved =>
-                    'Unresolved was recorded. Use back to return home.',
+                    'Unresolved was recorded. Exit to return home.',
                 },
               ),
               const SizedBox(height: 16),
@@ -3188,15 +3198,15 @@ class _SessionScreenState extends State<SessionScreen>
     }
     return switch (resolveEligibility) {
       CloseResolveEligibility.allowResolved =>
-        'Next: End Session as Resolved',
+        'Next: Fixed',
       CloseResolveEligibility.needsProfessional =>
-        'Next: End Session as Needs professional',
+        'Next: Needs a professional',
       CloseResolveEligibility.unresolvedOnly =>
-        'Next: End Session as Unresolved',
+        'Next: Unresolved',
       CloseResolveEligibility.pendingVerification =>
         'Next: answer verification',
       CloseResolveEligibility.safetyStop =>
-        'Next: End Session as Needs professional',
+        'Next: Needs a professional',
     };
   }
 
@@ -3211,28 +3221,24 @@ class _SessionScreenState extends State<SessionScreen>
       CloseResolveEligibility.allowResolved =>
         'Verification confirmed — resolve the session when ready.',
       CloseResolveEligibility.needsProfessional =>
-        'Safe checks did not close this — choose Needs professional.',
+        'Safe checks did not close this — choose Needs a professional.',
       CloseResolveEligibility.unresolvedOnly =>
-        'Choose Unresolved or Needs professional.',
+        'Choose Unresolved or Needs a professional.',
       CloseResolveEligibility.pendingVerification =>
         'Complete verification first.',
       CloseResolveEligibility.safetyStop =>
-        'Stop DIY checks and end as Needs professional.',
+        'Stop DIY checks and end as Needs a professional.',
     };
   }
 
   String _endSessionButtonLabel(CloseResolveEligibility eligibility) {
     return switch (eligibility) {
-      CloseResolveEligibility.safetyStop =>
-        'End Session — Needs professional',
-      CloseResolveEligibility.allowResolved =>
-        'End Session — Ready to resolve',
-      CloseResolveEligibility.needsProfessional =>
-        'End Session — Needs professional',
+      CloseResolveEligibility.safetyStop => 'Needs a professional',
+      CloseResolveEligibility.allowResolved => 'Fixed',
+      CloseResolveEligibility.needsProfessional => 'Needs a professional',
       CloseResolveEligibility.pendingVerification =>
         'End Session (complete verification to resolve)',
-      CloseResolveEligibility.unresolvedOnly =>
-        'End Session — Unresolved / professional',
+      CloseResolveEligibility.unresolvedOnly => 'Unresolved',
     };
   }
 
@@ -3247,8 +3253,52 @@ class _SessionScreenState extends State<SessionScreen>
         state == RepairSessionState.error;
   }
 
-  /// Household-facing wording for the session header. The engineering state
-  /// name stays available in Session details.
+  /// Abandon this session and open a new one (camera/mic Start fresh).
+  void _startFreshFromDeniedSensor() {
+    final appliance = widget.appliance;
+    widget.dependencies.abandonOpenSession(appliance);
+    final newId = widget.dependencies.startOrResumeSession(appliance);
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder:
+            (context) => SessionScreen(
+              dependencies: widget.dependencies,
+              appliance: appliance,
+              sessionId: newId,
+            ),
+      ),
+    );
+  }
+
+  /// Visible chrome: close-path / stop take priority over stored
+  /// evidenceCollection.
+  String _chromeNowLabel({
+    required RepairSession session,
+    required SafetyStop? safetyStop,
+    required bool showClosePath,
+  }) {
+    if (safetyStop != null) {
+      return 'Stopped for safety';
+    }
+    if (showClosePath) {
+      return switch (_closePathPhase) {
+        ClosePathPhase.tools => 'Checking tools',
+        ClosePathPhase.inspect => 'Matching what you see',
+        ClosePathPhase.guidance => 'Following safe steps',
+        ClosePathPhase.verification => 'Checking whether it worked',
+        ClosePathPhase.parts => 'Reviewing parts',
+        ClosePathPhase.decision => 'Choosing repair or a professional',
+        ClosePathPhase.opportunistic => 'Optional extras',
+        ClosePathPhase.done => 'Ready to finish',
+        ClosePathPhase.conclusion => 'Reviewing the likely cause',
+      };
+    }
+    return _plainStateLabel(session.currentState);
+  }
+
   String _plainStateLabel(RepairSessionState state) {
     return switch (state) {
       RepairSessionState.newSession => 'Getting started',
@@ -5269,13 +5319,13 @@ class _PrimaryHypothesisBanner extends StatelessWidget {
       CloseResolveEligibility.pendingVerification =>
         'Next: complete Verification, then follow Safe Guidance.',
       CloseResolveEligibility.allowResolved =>
-        'Verification confirmed — you can End Session as Resolved.',
+        'Verification confirmed — you can record Fixed.',
       CloseResolveEligibility.needsProfessional =>
-        'Safe checks did not close this case — End Session as Needs professional.',
+        'Safe checks did not close this case — Needs a professional.',
       CloseResolveEligibility.unresolvedOnly =>
-        'End Session as Unresolved, or choose Needs professional.',
+        'Unresolved, or Needs a professional.',
       CloseResolveEligibility.safetyStop =>
-        'Safety stop — End Session as Needs professional.',
+        'Safety stop — Needs a professional.',
     };
     return Card(
       key: const Key('primary-hypothesis-banner'),
@@ -5345,7 +5395,7 @@ class _VerificationStatusCard extends StatelessWidget {
       CloseResolveEligibility.pendingVerification =>
         'Verification still needed before resolving.',
       CloseResolveEligibility.safetyStop =>
-        'Safety stop — Needs professional only.',
+        'Safety stop — Needs a professional only.',
     };
     return Card(
       key: const Key('verification-status-card'),

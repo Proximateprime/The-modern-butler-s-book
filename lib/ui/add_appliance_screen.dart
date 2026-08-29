@@ -41,6 +41,7 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
   DateTime? _installationDate;
   String? _ratingLabelPhotoPath;
   ApplianceEnergySource _energySource = ApplianceEnergySource.unknown;
+  WasherLoadStyle _washerLoadStyle = WasherLoadStyle.unknown;
   bool _busy = false;
   bool _cameraDenied = false;
 
@@ -87,6 +88,7 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
       _installationDate = existing.installationDate;
       _ratingLabelPhotoPath = existing.ratingLabelPhotoPath;
       _energySource = existing.energySource;
+      _washerLoadStyle = existing.washerLoadStyle;
       return;
     }
     final count =
@@ -265,6 +267,7 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
         estimatedAgeYears: _parsedAgeYears,
         ratingLabelPhotoPath: _ratingLabelPhotoPath,
         energySource: _energySource,
+        washerLoadStyle: _washerLoadStyle,
       );
     } else if (_isFridge) {
       widget.dependencies.addFridge(
@@ -298,6 +301,7 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
         installationDate: _installationDate,
         estimatedAgeYears: _parsedAgeYears,
         ratingLabelPhotoPath: _ratingLabelPhotoPath,
+        washerLoadStyle: _washerLoadStyle,
       );
     } else {
       widget.dependencies.addDryer(
@@ -512,6 +516,40 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
                               : (selected) {
                                 if (selected) {
                                   setState(() => _energySource = source);
+                                }
+                              },
+                    ),
+                ],
+              ),
+            ],
+            if (_isWasher) ...[
+              const SizedBox(height: 16),
+              const BookSectionLabel('Lid or door'),
+              const SizedBox(height: 8),
+              Text(
+                'Top-load washers use a lid. Front-load washers use a door.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final style in WasherLoadStyle.values)
+                    ChoiceChip(
+                      key: Key('add-washer-load-${style.name}'),
+                      label: Text(switch (style) {
+                        WasherLoadStyle.topLoad => 'Top-load (lid)',
+                        WasherLoadStyle.frontLoad => 'Front-load (door)',
+                        WasherLoadStyle.unknown => 'Not sure',
+                      }),
+                      selected: _washerLoadStyle == style,
+                      onSelected:
+                          _busy
+                              ? null
+                              : (selected) {
+                                if (selected) {
+                                  setState(() => _washerLoadStyle = style);
                                 }
                               },
                     ),

@@ -308,6 +308,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: widget.dependencies.expertMode,
                     onChanged: (enabled) {
                       if (enabled && !_expertAdultConfirmed) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            key: Key('settings-expert-need-adult-snackbar'),
+                            content: Text(UserFacingCopy.expertModeNeedAdult),
+                          ),
+                        );
                         return;
                       }
                       setState(() {

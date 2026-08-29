@@ -65,6 +65,9 @@ class _SessionOutcomeScreenState extends State<SessionOutcomeScreen> {
       rankingLeaderLabel: widget.rankingLeaderLabel,
     );
     _kind = widget.initialCloseKind;
+    if (widget.eligibility == CloseResolveEligibility.safetyStop) {
+      _kind = SessionCloseKind.calledProfessional;
+    }
     if (_kind == SessionCloseKind.fixed) {
       _seedFixedFields();
     }
@@ -101,7 +104,11 @@ class _SessionOutcomeScreenState extends State<SessionOutcomeScreen> {
     super.dispose();
   }
 
+  bool get _lockProfessional =>
+      widget.eligibility == CloseResolveEligibility.safetyStop;
+
   bool get _allowFixed =>
+      !_lockProfessional &&
       widget.eligibility == CloseResolveEligibility.allowResolved;
 
   SessionObjective? get _sessionObjective =>
@@ -283,19 +290,21 @@ class _SessionOutcomeScreenState extends State<SessionOutcomeScreen> {
                   _OutcomeChoice(
                     key: const Key('outcome-resolved'),
                     selected: _kind == SessionCloseKind.fixed,
-                    label: 'Fixed — problem resolved',
+                    label: 'Fixed',
                     semanticLabel: PrimaryCtaSemantics.fixed,
                     onTap: () => setState(() {
                       _kind = SessionCloseKind.fixed;
                       _seedFixedFields();
                     }),
                   ),
+                if (!_lockProfessional)
                 _OutcomeChoice(
                   key: const Key('outcome-unresolved'),
                   selected: _kind == SessionCloseKind.notFixed,
                   label: 'Not fixed — still happening',
                   onTap: () => setState(() => _kind = SessionCloseKind.notFixed),
                 ),
+                if (!_lockProfessional)
                 _OutcomeChoice(
                   key: const Key('outcome-stopped'),
                   selected: _kind == SessionCloseKind.stopped,
@@ -305,7 +314,7 @@ class _SessionOutcomeScreenState extends State<SessionOutcomeScreen> {
                 _OutcomeChoice(
                   key: const Key('outcome-needs-professional'),
                   selected: _kind == SessionCloseKind.calledProfessional,
-                  label: 'Calling a professional',
+                  label: 'Needs a professional',
                   onTap: () =>
                       setState(() => _kind = SessionCloseKind.calledProfessional),
                 ),

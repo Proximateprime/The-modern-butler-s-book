@@ -173,9 +173,18 @@ void main() {
     expect(find.byKey(const Key('safety-stop-banner')), findsOneWidget);
     expect(find.text('Stop — Call a professional'), findsOneWidget);
     expect(find.byKey(const Key('answer-choice-panel')), findsNothing);
-    expect(find.text('End Session — Needs professional'), findsOneWidget);
+    expect(find.text('Needs a professional'), findsOneWidget);
 
     await tapVisible(tester, find.byKey(const Key('end-session-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('outcome-needs-professional')), findsOneWidget);
+    expect(find.byKey(const Key('outcome-resolved')), findsNothing);
+    await tester.ensureVisible(find.byKey(const Key('outcome-save-button')));
+    await tester.tap(find.byKey(const Key('outcome-save-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('pro-handoff-screen')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('completion-save-home')));
+    await tester.tap(find.byKey(const Key('completion-save-home')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('session-outcome-summary')), findsNothing);

@@ -9,7 +9,7 @@ import 'app_dependencies.dart';
 import 'primary_cta.dart';
 import 'product_chrome.dart';
 
-/// After “Calling a professional”: preview, share, and copy a technician handoff.
+/// After “Needs a professional”: preview, share, and copy a technician handoff.
 class ProHandoffScreen extends StatelessWidget {
   const ProHandoffScreen({
     required this.dependencies,
