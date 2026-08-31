@@ -108486,7 +108486,7 @@ return B.c.gR(s).c},
 arR(a){var s=this.c.c.jD(a.a)
 if(s.length===0)return a.b
 return B.c.gR(s).a},
-D(a){var s,r,q,p,o,n,m,l,k,j,i=null,h=A.l(a),g=A.f9(i,i,i,!0,!0,i,i,1,i,i,i,!1,i,!1,i,i,i,i,!0,i,i,i,i,i,B.at1,i,i,i,1,i,!0),f=A.dy(!1,i,i,i,!0,i,i,i,!0,i,B.aAv,B.vQ,i,i,i,i,i,!1,i,i,i,i,i,B.J9,i,A.q("App 0.1.4+6",i,i,i,i,i,i,i,i,i),i,i,i)
+D(a){var s,r,q,p,o,n,m,l,k,j,i=null,h=A.l(a),g=A.f9(i,i,i,!0,!0,i,i,1,i,i,i,!1,i,!1,i,i,i,i,!0,i,i,i,i,i,B.at1,i,i,i,1,i,!0),f=A.dy(!1,i,i,i,!0,i,i,i,!0,i,B.aAv,B.vQ,i,i,i,i,i,!1,i,i,i,i,i,B.J9,i,A.q("App 0.1.4+7",i,i,i,i,i,i,i,i,i),i,i,i)
 h=h.ok.z
 s=h==null
 r=t.p
@@ -108502,7 +108502,7 @@ f.push(B.l)
 f.push(new A.cF(A.aE(A.b([A.q("This app uses open-source packages on this device (Flutter, camera, speech, OCR, and local storage). Tap View licenses for the full list.",B.avm,i,i,i,i,s?i:h.hh(1.45),i,i,i),B.x,A.fL(B.asv,B.azw,new A.a9b(a),i)],r),B.J,i,B.k,B.o),B.Q,i,!1,i))
 return A.fj(g,new A.fa(A.kS(f,i,i),B.bP,i),i,B.axT)}}
 A.a9b.prototype={
-$0(){A.brG("The Modern Butler's Book","0.1.4+6",this.a)},
+$0(){A.brG("The Modern Butler's Book","0.1.4+7",this.a)},
 $S:0}
 A.oZ.prototype={
 a6(){return new A.Jo(B.em,B.fi)}}
@@ -114993,7 +114993,7 @@ f.push(A.dy(!1,a1,a1,a1,!0,a1,a1,a1,!0,a1,B.ay3,B.Vg,a1,a1,a1,a1,new A.aOx(a6),!
 f.push(B.F)
 f.push(B.KQ)
 f.push(B.l)
-f.push(A.dy(!1,a1,a1,a1,!0,a1,a1,a1,!0,a1,B.axO,B.vQ,a1,a1,a1,a1,a0.gaux(),!1,a1,a1,a1,a1,a1,B.J9,a1,A.q("App 0.1.4+6",a1,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1))
+f.push(A.dy(!1,a1,a1,a1,!0,a1,a1,a1,!0,a1,B.axO,B.vQ,a1,a1,a1,a1,a0.gaux(),!1,a1,a1,a1,a1,a1,B.J9,a1,A.q("App 0.1.4+7",a1,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1))
 f.push(B.l)
 f.push(A.q("Appearance, guides, and session reset only. Ranking is unchanged.",a1,a1,a1,a1,a1,h,a1,a1,a1))
 return A.fj(s,new A.fa(A.kS(f,a1,a1),B.bP,a1),a1,B.axN)}}
