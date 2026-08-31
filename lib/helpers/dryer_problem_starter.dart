@@ -296,6 +296,12 @@ Set<String> canonicalizeStarterSelection(Set<String> selectedSymptomIds) {
 }
 
 /// Maps selected chip ids + optional free text to starter families (deterministic).
+///
+/// Product rule:
+/// - matchedSymptomIds = tapped chips only
+/// - free-text keywords may set firstTemplateId only
+/// - Other answer text is stored verbatim; never turned into chip labels
+/// - no keyword hit + Other text = existing unmatched path
 DryerStarterResolution resolveDryerStarter({
   required Set<String> selectedSymptomIds,
   String freeText = '',
@@ -305,6 +311,7 @@ DryerStarterResolution resolveDryerStarter({
   };
   final trimmed = freeText.trim();
   var unmatchedFreeText = false;
+  String? keywordTemplateId;
 
   if (trimmed.isNotEmpty) {
     final lowered = trimmed
@@ -315,8 +322,8 @@ DryerStarterResolution resolveDryerStarter({
     for (final family in dryerStarterFamilies) {
       for (final keyword in family.keywords) {
         if (lowered.contains(keyword)) {
-          matched.add(family.id);
           anyKeyword = true;
+          keywordTemplateId ??= family.firstTemplateId;
           break;
         }
       }
@@ -324,7 +331,7 @@ DryerStarterResolution resolveDryerStarter({
     unmatchedFreeText = !anyKeyword;
   }
 
-  if (matched.isEmpty) {
+  if (matched.isEmpty && keywordTemplateId == null) {
     return DryerStarterResolution(
       matchedSymptomIds: const [],
       labels: const [],
@@ -343,7 +350,9 @@ DryerStarterResolution resolveDryerStarter({
   return DryerStarterResolution(
     matchedSymptomIds: families.map((f) => f.id).toList(growable: false),
     labels: families.map((f) => f.label).toList(growable: false),
-    firstTemplateId: families.first.firstTemplateId,
+    firstTemplateId:
+        keywordTemplateId ??
+        (families.isNotEmpty ? families.first.firstTemplateId : dryerStarterDefaultTemplateId),
     unmatchedFreeText: unmatchedFreeText,
   );
 }

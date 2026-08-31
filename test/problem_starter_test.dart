@@ -20,14 +20,14 @@ void main() {
       expect(result.labels, containsAll(['No heat', 'Long dry time']));
     });
 
-    test('maps no-heat free text to no-heat symptom and discriminator first question', () {
+    test('free text alone sets firstTemplateId only, not matchedSymptomIds', () {
       final result = resolveDryerStarter(
         selectedSymptomIds: const {},
         freeText: 'Dryer has no heat',
       );
-      expect(result.matchedSymptomIds, ['no-heat']);
+      expect(result.matchedSymptomIds, isEmpty);
       expect(result.firstTemplateId, 'cycle-heat-setting');
-      expect(result.labels, ['No heat']);
+      expect(result.unmatchedFreeText, isFalse);
     });
 
     test('maps too-hot chip to dryer-very-hot, not no-heat', () {
@@ -72,27 +72,40 @@ void main() {
       expect(dryerStarterEntryChipLabel(dryerStarterOtherDescribeId), 'Other');
     });
 
-    test('maps won’t-start chip and synonyms', () {
+    test('maps won’t-start chip and free-text synonyms split', () {
       final fromChip = resolveDryerStarter(
         selectedSymptomIds: {'will-not-start'},
       );
       expect(fromChip.firstTemplateId, 'dryer-response');
+      expect(fromChip.matchedSymptomIds, ['will-not-start']);
 
       final fromText = resolveDryerStarter(
         selectedSymptomIds: const {},
         freeText: "won't start at all",
       );
-      expect(fromText.matchedSymptomIds, ['will-not-start']);
+      expect(fromText.matchedSymptomIds, isEmpty);
       expect(fromText.firstTemplateId, 'dryer-response');
+      expect(fromText.unmatchedFreeText, isFalse);
     });
 
-    test('hazard keywords outrank other matches', () {
+    test('hazard keyword in free text opens hazard template without adding chip', () {
       final result = resolveDryerStarter(
         selectedSymptomIds: {'no-heat'},
         freeText: 'also smell smoke',
       );
-      expect(result.matchedSymptomIds.first, 'hazard-signs');
-      expect(result.isHazard, isTrue);
+      expect(result.matchedSymptomIds, ['no-heat']);
+      expect(result.firstTemplateId, 'hazard-observation');
+      expect(result.isHazard, isFalse);
+    });
+
+    test('Other + too hot and noisy does not select those family ids', () {
+      final result = resolveDryerStarter(
+        selectedSymptomIds: const {},
+        freeText: 'too hot and noisy',
+      );
+      expect(result.matchedSymptomIds, isEmpty);
+      expect(result.unmatchedFreeText, isFalse);
+      expect(result.firstTemplateId, 'lint-filter-condition');
     });
 
     test('unmatched free text alone does not invent a path', () {
