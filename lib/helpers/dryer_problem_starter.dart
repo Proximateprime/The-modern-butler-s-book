@@ -42,6 +42,7 @@ class DryerStarterResolution {
     required this.labels,
     required this.firstTemplateId,
     this.unmatchedFreeText = false,
+    this.hazardKeywordsMatched = false,
   });
 
   final List<String> matchedSymptomIds;
@@ -49,9 +50,14 @@ class DryerStarterResolution {
   final String firstTemplateId;
   final bool unmatchedFreeText;
 
+  /// True when free-text keywords matched the hazard family.
+  /// Chips stay taps-only; this tracks typed hazard language.
+  final bool hazardKeywordsMatched;
+
   bool get hasMatch => matchedSymptomIds.isNotEmpty;
 
-  bool get isHazard => matchedSymptomIds.contains('hazard-signs');
+  bool get isHazard =>
+      matchedSymptomIds.contains('hazard-signs') || hazardKeywordsMatched;
 }
 
 /// Primary entry choices shown on “What’s going on?” (order = display order).
@@ -302,6 +308,7 @@ Set<String> canonicalizeStarterSelection(Set<String> selectedSymptomIds) {
 /// - free-text keywords may set firstTemplateId only
 /// - Other answer text is stored verbatim; never turned into chip labels
 /// - no keyword hit + Other text = existing unmatched path
+/// - typed hazard language (smoke, burning, gas) sets isHazard = true
 DryerStarterResolution resolveDryerStarter({
   required Set<String> selectedSymptomIds,
   String freeText = '',
@@ -312,6 +319,7 @@ DryerStarterResolution resolveDryerStarter({
   final trimmed = freeText.trim();
   var unmatchedFreeText = false;
   String? keywordTemplateId;
+  var hazardKeywordsMatched = false;
 
   if (trimmed.isNotEmpty) {
     final lowered = trimmed
@@ -324,6 +332,9 @@ DryerStarterResolution resolveDryerStarter({
         if (lowered.contains(keyword)) {
           anyKeyword = true;
           keywordTemplateId ??= family.firstTemplateId;
+          if (family.id == 'hazard-signs') {
+            hazardKeywordsMatched = true;
+          }
           break;
         }
       }
@@ -337,6 +348,7 @@ DryerStarterResolution resolveDryerStarter({
       labels: const [],
       firstTemplateId: dryerStarterDefaultTemplateId,
       unmatchedFreeText: trimmed.isNotEmpty,
+      hazardKeywordsMatched: hazardKeywordsMatched,
     );
   }
 
@@ -354,6 +366,7 @@ DryerStarterResolution resolveDryerStarter({
         keywordTemplateId ??
         (families.isNotEmpty ? families.first.firstTemplateId : dryerStarterDefaultTemplateId),
     unmatchedFreeText: unmatchedFreeText,
+    hazardKeywordsMatched: hazardKeywordsMatched,
   );
 }
 

@@ -88,14 +88,25 @@ void main() {
       expect(fromText.unmatchedFreeText, isFalse);
     });
 
-    test('hazard keyword in free text opens hazard template without adding chip', () {
+    test('typed hazard language sets isHazard without adding chip', () {
       final result = resolveDryerStarter(
         selectedSymptomIds: {'no-heat'},
         freeText: 'also smell smoke',
       );
       expect(result.matchedSymptomIds, ['no-heat']);
       expect(result.firstTemplateId, 'hazard-observation');
-      expect(result.isHazard, isFalse);
+      expect(result.isHazard, isTrue);
+    });
+
+    test('typed hazard alone sets isHazard and opens hazard template', () {
+      final result = resolveDryerStarter(
+        selectedSymptomIds: const {},
+        freeText: 'smoke',
+      );
+      expect(result.matchedSymptomIds, isEmpty);
+      expect(result.firstTemplateId, 'hazard-observation');
+      expect(result.isHazard, isTrue);
+      expect(result.unmatchedFreeText, isFalse);
     });
 
     test('Other + too hot and noisy does not select those family ids', () {
@@ -105,7 +116,7 @@ void main() {
       );
       expect(result.matchedSymptomIds, isEmpty);
       expect(result.unmatchedFreeText, isFalse);
-      expect(result.firstTemplateId, 'lint-filter-condition');
+      expect(result.firstTemplateId, 'running-noise');
     });
 
     test('unmatched free text alone does not invent a path', () {
