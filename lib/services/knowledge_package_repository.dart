@@ -1042,7 +1042,8 @@ class KnowledgePackageRepository {
         ),
         EvidenceTemplate(
           id: 'hazard-observation',
-          promptText: 'Do you observe a burning smell or smoke?',
+          promptText:
+              'Do you observe a burning smell, smoke, or repeated stopping?',
           expectedEvidenceType: EvidenceType.structuredAnswer,
           relatedFailureModeIds: const [
             'restricted-exhaust-airflow',

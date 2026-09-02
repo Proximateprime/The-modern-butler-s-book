@@ -20,7 +20,6 @@ import '../helpers/package_resolve.dart';
 import '../helpers/local_backup.dart';
 import '../helpers/house_book_wipe.dart';
 import '../helpers/maintenance_reminder_copy.dart';
-import '../helpers/pro_handoff.dart';
 import '../helpers/safety_stop.dart';
 import '../helpers/stale_session.dart';
 import '../helpers/user_facing_error.dart';
@@ -1656,12 +1655,8 @@ class AppDependencies {
               : snapshot.orderedFailureModes.first.label;
     }
 
-    final startSymptom = symptomForSession(evidence: context.evidence);
+    final startSymptom = _startSymptomFromEvidence(context.evidence);
     final polarity = inferHeatPathPolarity(recordedEvidence: context.evidence);
-    final stop = evaluateSafetyStop(
-      evidence: context.evidence,
-      primaryFailureModeId: primary?.failureModeId ?? rankingLeaderId,
-    );
 
     final authoring = FailureModeAuthoringRegistry.lookup(
       primary?.failureModeId ?? rankingLeaderId,
@@ -1710,14 +1705,10 @@ class AppDependencies {
       immediateCause:
           (trimmedWhatFixed != null && trimmedWhatFixed.isNotEmpty)
               ? trimmedWhatFixed
-              : stop != null
-                  ? (stop.reason.trim().isEmpty
-                      ? 'Needs a professional'
-                      : stop.reason)
-                  : authoring?.immediateCause ??
-                      primary?.label ??
-                      rankingLeaderLabel ??
-                      'No primary hypothesis was selected.',
+              : authoring?.immediateCause ??
+                  primary?.label ??
+                  rankingLeaderLabel ??
+                  'No primary hypothesis was selected.',
       rootCause: rootCause != null
           ? (userRoot == null || userRoot.isEmpty ? null : userRoot)
           : authoring?.rootCause,
@@ -1735,12 +1726,8 @@ class AppDependencies {
       heatPathPolarity: polarity.name,
       summary: defaultHouseholdMemorySummary(
         closeKind: kind,
-        whatFixedIt: stop != null
-            ? ((trimmedWhatFixed != null && trimmedWhatFixed.isNotEmpty)
-                ? trimmedWhatFixed
-                : stop.reason)
-            : trimmedWhatFixed,
-        rankingLeaderLabel: stop != null ? null : rankingLeaderLabel,
+        whatFixedIt: trimmedWhatFixed,
+        rankingLeaderLabel: rankingLeaderLabel,
         startSymptom: startSymptom,
       ),
       recordedAt: recordedAt,
@@ -1764,6 +1751,32 @@ class AppDependencies {
     _sessionUiResumeBySessionId.remove(sessionId);
     _schedulePersist();
     return recorded;
+  }
+
+  String? _startSymptomFromEvidence(List<Evidence> evidence) {
+    for (final item in evidence) {
+      if (item.templateId == problemStarterComplaintTemplateId ||
+          item.templateId == washerComplaintTemplateId ||
+          item.templateId == dishwasherComplaintTemplateId) {
+        final answer = item.answer?.trim();
+        if (answer != null && answer.isNotEmpty) {
+          return answer;
+        }
+      }
+    }
+    for (final item in evidence) {
+      if (item.templateId != 'heat-observed') {
+        continue;
+      }
+      final answer = item.answer?.trim().toLowerCase();
+      if (answer == 'no warmth') {
+        return 'No heat';
+      }
+      if (answer == 'very hot') {
+        return 'Too hot';
+      }
+    }
+    return null;
   }
 
   /// Repair history for one appliance, newest first.

@@ -17,9 +17,9 @@ import 'package:modern_butlers_book/ui/app_dependencies.dart';
 import 'support/session_test_helpers.dart';
 
 void main() {
-  test('version is 0.1.4+8', () {
+  test('version is 0.1.4+7', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+8');
+    expect(kAppVersionLabel, '0.1.4+7');
   });
 
   test(
@@ -56,10 +56,8 @@ void main() {
       expect(lower, isNot(contains('checks were done')));
       expect(lower, contains('needs a professional'));
       expect(lower, contains('fire or smoke'));
-      expect(text, contains(leftoverLeaderPrefix));
       expect(text, contains('Restricted vent'));
-      expect(text, contains('not why we stopped'));
-      expect(text, isNot(contains('not a confirmed diagnosis')));
+      expect(text, contains('not a confirmed diagnosis'));
 
       final spoken = formatProHandoffSpokenForSession(
         evidence: evidence,
@@ -264,8 +262,7 @@ void main() {
       expect(body, isNot(contains('exhaust restriction')));
       expect(lower, contains('needs a professional'));
       expect(lower, contains('fire or smoke'));
-      expect(body, contains('not why we stopped'));
-      expect(body, isNot(contains('not a confirmed diagnosis')));
+      expect(body, contains('not a confirmed diagnosis'));
 
       final spoken = tester.widget<SelectableText>(
         find.byKey(const Key('pro-handoff-spoken')),

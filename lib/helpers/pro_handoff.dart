@@ -1,7 +1,4 @@
-import '../knowledge_factory/dishwasher_mvp_v01.dart';
 import '../knowledge_factory/failure_mode_authoring_registry.dart';
-import '../knowledge_factory/fridge_mvp_v01.dart';
-import '../knowledge_factory/washer_mvp_v01.dart';
 import '../models/appliance.dart';
 import '../models/evidence.dart';
 import '../models/knowledge_package.dart';
@@ -17,12 +14,6 @@ import 'inspect_steps.dart';
 import 'pro_scope.dart';
 import 'safety_stop.dart';
 import 'session_timeline.dart';
-
-/// Prefix when a hard stop still has a leftover ranking leader.
-const String leftoverLeaderPrefix = 'Leftover (not why we stopped):';
-
-/// Household-facing symptom for a fire / smoke hazard Yes.
-const String hazardSymptomLabel = 'Burning smell / smoke';
 
 /// Default beginner-safe reminder when a mode has no specific notes.
 const String defaultProHandoffSafetyNotes =
@@ -44,7 +35,6 @@ String formatProHandoffSummary({
   SessionObjective? sessionObjective,
   String? whyStopping,
   List<String>? tellTechnician,
-  bool leftoverLeader = false,
 }) {
   final brandModel = _brandModel(manufacturer, modelNumber);
   final noticed = observations
@@ -86,12 +76,8 @@ String formatProHandoffSummary({
     if (noticed.isEmpty) '• None recorded' else ...noticed,
     '',
     'Leader hypothesis',
-    leftoverLeader
-        ? _leftoverLeaderLine(leaderHypothesis)
-        : _orDash(leaderHypothesis),
-    leftoverLeader
-        ? 'This leftover guide match is not why we stopped.'
-        : 'This is the leading household-guide match, not a confirmed diagnosis.',
+    _orDash(leaderHypothesis),
+    'This is the leading household-guide match, not a confirmed diagnosis.',
     '',
     'What was already tried',
     if (tried.isEmpty) '• None recorded' else
@@ -156,8 +142,7 @@ String formatProHandoffSpokenParagraph({
 /// [alreadyTried] is what this session recorded — never the unused close-path
 /// checklist for the ranking leader. On a safety stop, [whyStopping] is the
 /// hazard / Needs a professional reason, not the leader path's verification
-/// why. Symptom is the mid-session fire/smoke observation when that is why
-/// we stopped. A leftover ranking leader is labeled leftover, not headlined.
+/// why.
 String formatProHandoffForSession({
   required List<Evidence> evidence,
   KnowledgePackage? package,
@@ -178,13 +163,9 @@ String formatProHandoffForSession({
     manufacturer: appliance?.manufacturer,
     modelNumber: appliance?.modelNumber,
     date: date ?? outcome.recordedAt,
-    symptom: symptomForSession(
-      evidence: evidence,
-      startSymptom: outcome.startSymptom,
-    ),
+    symptom: outcome.startSymptom ?? _symptomFromEvidence(evidence),
     observations: sessionTimelineObservations(evidence),
     leaderHypothesis: outcome.rankingLeaderLabel,
-    leftoverLeader: stop != null,
     alreadyTried: alreadyTriedFromSession(
       evidence: evidence,
       completedGuidanceStepIds: completedGuidanceStepIds,
@@ -224,20 +205,14 @@ String formatProHandoffSpokenForSession({
   final path = leaderId == null ? null : closePathForFailureMode(leaderId);
   return formatProHandoffSpokenParagraph(
     applianceName: applianceName,
-    symptom: symptomForSession(
-      evidence: evidence,
-      startSymptom: outcome.startSymptom,
-    ),
+    symptom: outcome.startSymptom ?? _symptomFromEvidence(evidence),
     observations: sessionTimelineObservations(evidence),
     alreadyTried: alreadyTriedFromSession(
       evidence: evidence,
       completedGuidanceStepIds: completedGuidanceStepIds,
       leaderFailureModeId: leaderId,
     ),
-    leaderHypothesis: leaderHypothesisForHandoff(
-      safetyStop: stop,
-      rankingLeaderLabel: outcome.rankingLeaderLabel,
-    ),
+    leaderHypothesis: outcome.rankingLeaderLabel,
     whyStopping: whyStoppingForSession(
       safetyStop: stop,
       path: path,
@@ -406,47 +381,9 @@ String? safetyNotesForLeader({
   return null;
 }
 
-/// Symptom for handoff / memory. On a safety stop, the mid-session fire/smoke
-/// observation wins over an empty starter complaint and over a leftover
-/// starter chip that is not why we stopped.
-String? symptomForSession({
-  required List<Evidence> evidence,
-  String? startSymptom,
-}) {
-  final hazard = hazardSymptomFromEvidence(evidence);
-  if (hazard != null &&
-      evaluateSafetyStop(evidence: evidence) != null) {
-    return hazard;
-  }
-  final stored = startSymptom?.trim();
-  if (stored != null && stored.isNotEmpty) {
-    return stored;
-  }
-  return symptomFromEvidence(evidence);
-}
-
-/// Leftover ranking leader on a hard stop, or the live leader otherwise.
-String? leaderHypothesisForHandoff({
-  required SafetyStop? safetyStop,
-  String? rankingLeaderLabel,
-}) {
-  final label = rankingLeaderLabel?.trim();
-  if (label == null || label.isEmpty) {
-    return null;
-  }
-  if (safetyStop != null) {
-    return '$leftoverLeaderPrefix $label';
-  }
-  return label;
-}
-
-/// Starter complaint, then a fire/smoke hazard Yes, then heat-observed.
-String? symptomFromEvidence(List<Evidence> evidence) {
+String? _symptomFromEvidence(List<Evidence> evidence) {
   for (final item in evidence) {
-    if (item.templateId != problemStarterComplaintTemplateId &&
-        item.templateId != washerComplaintTemplateId &&
-        item.templateId != dishwasherComplaintTemplateId &&
-        item.templateId != fridgeComplaintTemplateId) {
+    if (item.templateId != problemStarterComplaintTemplateId) {
       continue;
     }
     final answer = item.answer?.trim();
@@ -454,51 +391,7 @@ String? symptomFromEvidence(List<Evidence> evidence) {
       return answer;
     }
   }
-  final hazard = hazardSymptomFromEvidence(evidence);
-  if (hazard != null) {
-    return hazard;
-  }
-  for (final item in evidence) {
-    if (item.templateId != 'heat-observed') {
-      continue;
-    }
-    final answer = item.answer?.trim().toLowerCase();
-    if (answer == 'no warmth') {
-      return 'No heat';
-    }
-    if (answer == 'very hot') {
-      return 'Too hot';
-    }
-  }
   return null;
-}
-
-/// Mid-session (or starter-mapped) fire/smoke hazard observation.
-String? hazardSymptomFromEvidence(List<Evidence> evidence) {
-  for (final item in evidence) {
-    if (item.templateId != 'hazard-observation') {
-      continue;
-    }
-    final answer = (item.answer ?? '').trim().toLowerCase();
-    if (answer == 'yes' ||
-        answer.contains('burning') ||
-        answer.contains('smoke') ||
-        answer.contains('spark')) {
-      return hazardSymptomLabel;
-    }
-  }
-  return null;
-}
-
-String _leftoverLeaderLine(String? leaderHypothesis) {
-  final label = leaderHypothesis?.trim();
-  if (label == null || label.isEmpty) {
-    return '—';
-  }
-  if (label.toLowerCase().startsWith(leftoverLeaderPrefix.toLowerCase())) {
-    return label;
-  }
-  return '$leftoverLeaderPrefix $label';
 }
 
 String _brandModel(String? manufacturer, String? modelNumber) {
