@@ -60,7 +60,7 @@ void main() {
     final stop = evaluateSafetyStop(
       evidence: [
         evidence(
-          'Do you observe a burning smell, smoke, or repeated stopping?',
+          'Do you observe a burning smell or smoke?',
         ),
       ],
     );
