@@ -180,7 +180,7 @@ void main() {
           evidence(
             templateId: 'hazard-observation',
             observation:
-                'Do you observe a burning smell, smoke, or repeated stopping?',
+                'Do you observe a burning smell or smoke?',
             answer: 'Yes',
           ),
         ],
