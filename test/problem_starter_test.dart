@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:modern_butlers_book/helpers/dryer_problem_starter.dart';
 import 'package:modern_butlers_book/helpers/evidence_prompt_match.dart';
+import 'package:modern_butlers_book/helpers/unmatched_starter.dart';
 import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/main.dart';
 import 'package:modern_butlers_book/models/evidence.dart';
@@ -333,6 +334,7 @@ void main() {
       evidence.any(
         (item) =>
             item.templateId == problemStarterComplaintTemplateId &&
+            item.observation == unmatchedOtherObservation &&
             (item.answer ?? '').contains('something weird xyz'),
       ),
       isTrue,

@@ -279,6 +279,14 @@ abstract final class UserFacingCopy {
       'is in Evidence history — this does not start the interview over.';
   static const unmatchedStarterGuidance =
       'We’ll use what you typed; specific guidance may be limited.';
+  static const unmatchedNoteHeardLead = 'Heard: ';
+  static const unmatchedNoteHeardEmpty = 'Heard what you typed.';
+  static const unmatchedNoMatchTitle = 'No match in this book';
+  static const unmatchedNoMatchBody =
+      'This book does not have a match for what you described. '
+      'A professional should look at this machine.';
+  static const missingMachinePlateNotice =
+      'This book does not have this machine’s plate.';
   static const inspectLookForHeading = 'LOOK FOR';
   static const inspectOkLooksLike = 'OK looks like';
   static const inspectNotOkLooksLike = 'Not OK looks like';

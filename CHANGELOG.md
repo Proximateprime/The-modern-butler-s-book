@@ -1,3 +1,21 @@
+## Unmatched starter honesty (2026-08-29)
+
+App **0.1.4+9**. Presentation/honesty only. Starter Other is Evidence
+(Other / free-text), not the answer to a warmth question that was never
+shown. Unmatched Other does not run the ranked heat/noise interview.
+After the bounded universal set (power, heat, spin, error lights — existing
+templates only) the path is honest no-match → ProHandoff. Why-ask explains
+the observation, not a diagnosis they never gave. No squeal / worn-rollers
+swap without a noise observation. The typed note is echoed. Basement smell
+does not invent an odor FM or trip a fire-stop. A dryer with no brand/model
+says this book does not have this machine’s plate — not “General dryer
+guide … your model may differ.” While they type Other, the keyword matcher
+must not auto-check heat/noise chips; the CTA stays **Confirm with what I
+typed.** Unchecking a chip does not re-fire the matcher. Groq may phrase
+the echo; it may not pick the next question id, mint chips, or write
+how-to. No new engine. Play listing stays out. Details:
+[`docs/qa/GEORGE_UI_AUG29.md`](docs/qa/GEORGE_UI_AUG29.md).
+
 ## Safety handoff follow-up (2026-08-29)
 
 App **0.1.4+8**. Presentation/honesty only. The fire/smoke hazard question no

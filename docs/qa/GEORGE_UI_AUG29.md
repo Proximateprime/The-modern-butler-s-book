@@ -424,6 +424,67 @@ is not an escape hatch: `phrasing_safety_gate` / `visibleHouseholdHowTo`
 still run before paint. Play listing stays out. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## Unmatched starter honesty — 0.1.4+9
+
+Presentation/honesty only. Off #17 HEAD `2faf3df`. Do not fold into #15 / #16
+/ #17. Do not reopen leftover PRs #1–#6. No new engine, chips, question ids,
+or failure modes. Play listing stays out. Groq stays phrasing-only: it may
+phrase the echo; it must not pick the next question id, mint chips, or write
+how-to. GOLDEN **Call a pro** stays.
+
+App **0.1.4+9**. Tests: `test/unmatched_starter_v1_test.dart`.
+
+1. **Other is Evidence.** Typed unmatched Other stores as observation
+   **Other / free-text**, not as the Answer to a warmth question that was
+   never shown.
+2. **No ranked heat/noise interview.** After the bounded universal set
+   (existing templates only: power, heat, spin, error lights) the path is
+   honest no-match → **Call a pro** → ProHandoff. Start-as-universal-power
+   is allowed; no-heat / noise framing is not.
+3. **Why-ask is observation-only.** It must not name belt / heating-element
+   / heat-relay / broken drive belt as a diagnosis they never gave.
+4. **No squeal / worn-rollers swap** without a noise observation.
+5. **Echo the typed note.** Do not invent an odor failure mode. Do not trip
+   a fire-stop on basement smell.
+6. **Missing plate, not general guide.** A dryer with no brand/model (including
+   add-dryer `Demo Manufacturer` / `DEMO-*`) says this book does not have
+   this machine’s plate — not “General dryer guide … your model may differ.”
+7. **Matcher honesty while they type Other.** Keyword matcher must not
+   auto-check heat / noise chips. “the clothes smell like the basement” is
+   Evidence, not Too hot / Unusual noise / No heat. CTA stays **Confirm
+   with what I typed.** Unchecking a chip must not re-fire the matcher.
+   Groq still does not pick chips.
+
+### Phone / Pages (Given / tap / expect)
+
+Phone or hosted Pages. Install **0.1.4+9**.
+
+#### A. Basement smell stays Evidence
+
+- **Given** a dryer session on **What’s going on?**
+- **Tap** **Other**. Type `the clothes smell like the basement`.
+- **Expect** No heat / Too hot or overheating / Unusual noise stay unchecked.
+  CTA is **Confirm with what I typed.**
+- **Tap** Confirm.
+- **Expect** Heard: the typed note. First question is what the dryer is doing
+  (`dryer-response`), not lint-filter / running-noise / cycle-heat-setting.
+  Why ask this? names an observation, not a belt or heater diagnosis.
+
+#### B. Universal set then pro
+
+- **Given** unmatched Other confirmed.
+- **Answer** Starts normally / Not sure (warmth) / Turns normally / Yes, panel
+  responds.
+- **Expect** No match in this book. **Call a pro.** No Skip to the best guess.
+- **Tap** **Call a pro** → Needs a professional → Save.
+- **Expect** ProHandoff. No invented odor FM. No fire-stop.
+
+#### C. Uncheck does not re-fire
+
+- **Given** Other selected and basement-smell text.
+- **Tap** No heat, then tap it again to uncheck. Type more.
+- **Expect** No heat stays unchecked. CTA stays **Confirm with what I typed.**
+
 ## Safety handoff follow-up — 0.1.4+8
 
 Presentation/honesty only. Do not reopen leftover PRs #1–#6 or John’s
