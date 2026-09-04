@@ -215,6 +215,10 @@ class _SessionScreenState extends State<SessionScreen>
         templates: package?.evidenceTemplates ?? const [],
         recordedEvidence: decisionContext.evidence,
       );
+      final holdOpenInterview = unansweredOpenObservationShouldStayOnScreen(
+        onScreenTemplateId: pendingTemplateId,
+        onScreenStillOpen: storedOpenStillOpen,
+      );
       if (pendingTemplateId != null && package != null) {
         pendingPrompt = _templateById(
           package.evidenceTemplates,
@@ -243,7 +247,7 @@ class _SessionScreenState extends State<SessionScreen>
           recordedEvidence: decisionContext.evidence,
           primaryFailureModeId: decisionContext.primaryFailureModeId,
         );
-        if (investigationStopped) {
+        if (investigationStopped && !holdOpenInterview) {
           final reasoning = _evaluateReasoning(decisionContext);
           final boundPath = _closePathBoundToConfirmedPrimary(
             rankingPath: reasoning?.closePath,
@@ -268,7 +272,7 @@ class _SessionScreenState extends State<SessionScreen>
         }
       }
 
-      if (pendingClose != null) {
+      if (pendingClose != null && !holdOpenInterview) {
         pendingPrompt = null;
       }
 
@@ -296,9 +300,11 @@ class _SessionScreenState extends State<SessionScreen>
       _opportunisticSkippedAll = resume?.opportunisticSkippedAll ?? false;
       _skipToBestGuess = resume?.skipToBestGuess ?? false;
       final storedPhase = resume?.closePathPhase ?? ClosePathPhase.conclusion;
-      _choseRepair = resume?.choseRepair == true ||
-          closePathImpliesRepairChosen(storedPhase);
-      _closePathPhase = storedPhase;
+      _choseRepair = !holdOpenInterview &&
+          (resume?.choseRepair == true ||
+              closePathImpliesRepairChosen(storedPhase));
+      _closePathPhase =
+          holdOpenInterview ? ClosePathPhase.conclusion : storedPhase;
       final storedSession = widget.dependencies.repairSessionRepository
           .getSession(widget.sessionId);
       final sessionIds = storedSession?.completedGuidanceStepIds ?? const [];
@@ -341,19 +347,23 @@ class _SessionScreenState extends State<SessionScreen>
           continueWithCaution: _readinessContinueWithCaution,
         );
       }
-      _closePathPhase = resumeClosePathPhase(
-        stored: storedPhase,
-        completedIds: _completedGuidanceStepIds,
-        choseRepair: _choseRepair,
-        toolsChecklistComplete: toolsReady,
-        hasIncompleteInspect: boundForResume != null &&
-            hasIncompleteInspectStep(
-              steps: _inspectStepsFor(boundForResume),
-              recordedEvidence: decisionContext.evidence,
-            ),
-        inspectReviewOnly: _inspectReviewOnly,
+      _closePathPhase = resumeClosePathPhaseHonoringOpenObservation(
+        computed: resumeClosePathPhase(
+          stored: storedPhase,
+          completedIds: _completedGuidanceStepIds,
+          choseRepair: _choseRepair,
+          toolsChecklistComplete: toolsReady,
+          hasIncompleteInspect: boundForResume != null &&
+              hasIncompleteInspectStep(
+                steps: _inspectStepsFor(boundForResume),
+                recordedEvidence: decisionContext.evidence,
+              ),
+          inspectReviewOnly: _inspectReviewOnly,
+        ),
+        unansweredOpenObservation: holdOpenInterview,
       );
-      if (_closePathPhase == ClosePathPhase.guidance &&
+      if (!holdOpenInterview &&
+          _closePathPhase == ClosePathPhase.guidance &&
           boundForResume != null) {
         _snapGuidanceResume(boundForResume);
       }
@@ -396,6 +406,17 @@ class _SessionScreenState extends State<SessionScreen>
             pendingTemplateId,
           );
         }
+      }
+      if (holdOpenInterview && resume != null) {
+        _showResumeKnew = true;
+        _resumeKnewLine = packagedResumeKnewLine(
+          state: resume.copyWith(
+            pendingObservationTemplateId: pendingTemplateId,
+            closePathPhase: ClosePathPhase.conclusion,
+            choseRepair: false,
+          ),
+          evidence: decisionContext.evidence,
+        );
       }
       _persistUiResume();
       unawaited(widget.dependencies.flushPersist());
@@ -474,6 +495,9 @@ class _SessionScreenState extends State<SessionScreen>
 
   void _maybeAdvanceToolsAfterRestore() {
     try {
+      if (_hasUnansweredOpenInterview()) {
+        return;
+      }
       if (_closePathPhase == ClosePathPhase.inspect) {
         return;
       }
@@ -497,11 +521,38 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
+  bool _hasUnansweredOpenInterview() {
+    try {
+      final decisionContext =
+          widget.dependencies.buildDecisionContext(widget.sessionId);
+      final templates =
+          decisionContext.package?.evidenceTemplates ?? const [];
+      final onScreenId =
+          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
+      return unansweredOpenObservationShouldStayOnScreen(
+        onScreenTemplateId: onScreenId,
+        onScreenStillOpen: interviewTemplateIsStillOpen(
+          templateId: onScreenId,
+          templates: templates,
+          recordedEvidence: decisionContext.evidence,
+        ),
+      );
+    } catch (_) {
+      final onScreenId =
+          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
+      return unansweredOpenObservationShouldStayOnScreen(
+        onScreenTemplateId: onScreenId,
+        onScreenStillOpen: onScreenId != null && onScreenId.isNotEmpty,
+      );
+    }
+  }
+
   /// Interview template the household is on, including ranking’s next question
   /// when the answer panel is showing suggested-next without a tapped chip.
   ///
-  /// On-screen open id wins over ranking next so Continue repair cannot swap
-  /// lint-filter (or any tapped chip) for motor-humming after a cold reload.
+  /// On-screen open id wins over ranking next, empty-next, and close-path
+  /// guidance so Continue repair cannot swap lint-filter for motor-humming,
+  /// a blank panel, or safe-steps chrome after a cold reload.
   String? _resumeOpenInterviewTemplateId() {
     try {
       final decisionContext =
@@ -2519,14 +2570,19 @@ class _SessionScreenState extends State<SessionScreen>
           primaryFailureModeId: primaryFailureModeId,
         );
     final isRevisingEvidence = _revisingTemplateId != null;
-    final effectiveInvestigationStopped =
-        investigationStopped && !isRevisingEvidence;
-    final restoringOpenInterview = _pendingAnswerPrompt != null &&
-        interviewTemplateIsStillOpen(
-          templateId: _pendingAnswerPrompt!.id,
-          templates: prompts,
-          recordedEvidence: decisionContext.evidence,
-        );
+    final restoringOpenInterview = unansweredOpenObservationShouldStayOnScreen(
+      onScreenTemplateId:
+          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+      onScreenStillOpen: interviewTemplateIsStillOpen(
+        templateId:
+            _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+        templates: prompts,
+        recordedEvidence: decisionContext.evidence,
+      ),
+    );
+    final effectiveInvestigationStopped = investigationStopped &&
+        !isRevisingEvidence &&
+        !restoringOpenInterview;
     final hideNextQuestion = !rule.askAnotherQuestion &&
         !isRevisingEvidence &&
         !restoringOpenInterview;
@@ -2587,6 +2643,12 @@ class _SessionScreenState extends State<SessionScreen>
         isRankedHeatOrNoiseInterviewTemplate(pendingForInterview.id)) {
       pendingForInterview = null;
     }
+    if (restoringOpenInterview && pendingForInterview == null) {
+      pendingForInterview = _templateById(
+        prompts,
+        _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+      );
+    }
     final showClosePath = effectiveInvestigationStopped &&
         closePath != null &&
         safetyStop == null;
@@ -2608,10 +2670,11 @@ class _SessionScreenState extends State<SessionScreen>
         }
       }
     }
-    final activeObservation =
-        hideNextQuestion || safetyStop != null || unmatchedNoMatch
+    final activeObservation = restoringOpenInterview
+        ? pendingForInterview
+        : (hideNextQuestion || safetyStop != null || unmatchedNoMatch
             ? (isRevisingEvidence ? _pendingAnswerPrompt : null)
-            : (pendingForInterview ?? suggestedNext);
+            : (pendingForInterview ?? suggestedNext));
     if (activeObservation != null) {
       _lastShownOpenInterviewTemplateId = activeObservation.id;
     }
@@ -2795,6 +2858,7 @@ class _SessionScreenState extends State<SessionScreen>
           session: session,
           safetyStop: safetyStop,
           showClosePath: showClosePath,
+          restoringOpenInterview: restoringOpenInterview,
         )}',
         onExit: () => Navigator.of(context).maybePop(),
       ),
@@ -3872,9 +3936,13 @@ class _SessionScreenState extends State<SessionScreen>
     required RepairSession session,
     required SafetyStop? safetyStop,
     required bool showClosePath,
+    required bool restoringOpenInterview,
   }) {
     if (safetyStop != null) {
       return 'Stopped for safety';
+    }
+    if (restoringOpenInterview) {
+      return _plainStateLabel(RepairSessionState.evidenceCollection);
     }
     if (showClosePath) {
       return switch (_closePathPhase) {
