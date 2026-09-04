@@ -1,3 +1,16 @@
+## Tool honesty (2026-09-04)
+
+App **0.1.4+13**. After the session records **no tools**, or **I don’t** on a
+panel-class tool (screwdriver / nut driver / pliers) or a meter, the next
+Safe Guidance step is not panel-off or other tool-backed invasive work.
+Easy checks, unplug, and **do not / never** limits stay. When the only
+remaining path needs that capability, the existing stop / Pro recommended
+handoff is used — the app does not pretend the declined step is available.
+Users who marked **I have** (and Expert Mode, when that extra is authored)
+still see those steps. Safety hard-stops are unchanged. Groq stays
+phrasing-only and does not decide honesty. GOLDEN **Call a pro** stays.
+Play listing stays out. Tests: `test/tool_honesty_v1_test.dart`.
+
 ## Session resume (2026-09-04)
 
 App **0.1.4+12**. After lock, background, or a cold start, an in-progress

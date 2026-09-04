@@ -1,7 +1,7 @@
 name: modern_butlers_book
 description: The Modern Butler's Book — AI-assisted home appliance troubleshooting.
 publish_to: none
-version: 0.1.4+12
+version: 0.1.4+13
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
