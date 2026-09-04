@@ -32155,7 +32155,7 @@ if(s==null)s=new A.c_(A.ky(0,0,!0),0,!0)
 r=A.aL(a.h(0,"userNote"))
 if(r==null)r=""
 q=A.aL(a.h(0,"appVersionLabel"))
-if(q==null)q="0.1.4+24"
+if(q==null)q="0.1.4+25"
 p=A.aL(a.h(0,"applianceCategory"))
 o=A.aL(a.h(0,"packageId"))
 n=A.aL(a.h(0,"packageVersion"))
@@ -109171,7 +109171,7 @@ return B.c.gR(s).c},
 asn(a){var s=this.c.c.jJ(a.a)
 if(s.length===0)return a.b
 return B.c.gR(s).a},
-D(a){var s,r,q,p,o,n,m,l,k,j,i=null,h=A.l(a),g=A.eP(i,i,i,!0,!0,i,i,1,i,i,i,!1,i,!1,i,i,i,i,!0,i,i,i,i,i,B.atK,i,i,i,1,i,!0),f=A.dm(!1,i,i,i,!0,i,i,i,!0,i,B.aBD,B.vZ,i,i,i,i,i,!1,i,i,i,i,i,B.aui,i,A.p("App 0.1.4+24",i,i,i,i,i,i,i,i,i),i,i,i)
+D(a){var s,r,q,p,o,n,m,l,k,j,i=null,h=A.l(a),g=A.eP(i,i,i,!0,!0,i,i,1,i,i,i,!1,i,!1,i,i,i,i,!0,i,i,i,i,i,B.atK,i,i,i,1,i,!0),f=A.dm(!1,i,i,i,!0,i,i,i,!0,i,B.aBD,B.vZ,i,i,i,i,i,!1,i,i,i,i,i,B.aui,i,A.p("App 0.1.4+25",i,i,i,i,i,i,i,i,i),i,i,i)
 h=h.ok.z
 s=h==null
 r=t.p
@@ -109187,7 +109187,7 @@ f.push(B.l)
 f.push(new A.cz(A.aA(A.b([A.p("This app uses open-source packages on this device (Flutter, camera, speech, OCR, and local storage). Tap View licenses for the full list.",B.aw6,i,i,i,i,s?i:h.fk(1.45),i,i,i),B.w,A.fN(B.atd,B.aAz,new A.a9v(a),i)],r),B.I,i,B.k,B.o),B.N,i,!1,i))
 return A.f4(g,new A.eQ(A.kS(f,i,i),B.bJ,i),i,B.ayN)}}
 A.a9v.prototype={
-$0(){A.btj("The Modern Butler's Book","0.1.4+24",this.a)},
+$0(){A.btj("The Modern Butler's Book","0.1.4+25",this.a)},
 $S:0}
 A.p6.prototype={
 a6(){return new A.Jy(B.ep,B.fj)}}
@@ -109684,7 +109684,7 @@ if(h===0){q=null
 s=1
 break}if(h>500)i=B.b.a7(i,0,500)
 o=p.a99(a)
-n=new A.o3(p.dL("wrong"),p.el(),i,"0.1.4+24",o.a,o.b,o.c,o.d,o.e,o.f)
+n=new A.o3(p.dL("wrong"),p.el(),i,"0.1.4+25",o.a,o.b,o.c,o.d,o.e,o.f)
 h=p.dy
 B.c.kF(h,0,n)
 m=h.length
@@ -114746,7 +114746,7 @@ a8=A.oX(s,l)
 h=l.length
 a9=h===0||a8>=h
 b0=a7&&!b4.fx&&!b4.id&&s.length===0
-b1=a7&&!b0&&a9
+b1=a7&&!b4.fx&&!b0&&a9
 h=t.p
 g=A.b([],h)
 if(b4.db&&m.length!==0&&b4.VQ(b7,!1)==null)B.c.u(g,A.b([new A.a3p(m,b5),B.w],h))
@@ -116092,7 +116092,7 @@ s.C0()},
 C0(){var s=0,r=A.u(t.H),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f,e
 var $async$C0=A.v(function(a,b){if(a===1){o.push(b)
 s=p}for(;;)switch(s){case 0:p=4
-m=A.e5("version.json?v=0.1.4+24",0,null)
+m=A.e5("version.json?v=0.1.4+25",0,null)
 s=7
 return A.m(A.b7J(m,B.aee),$async$C0)
 case 7:l=b
@@ -116104,7 +116104,7 @@ g=A.aJ('"build_number"\\s*:\\s*"([^"]*)"',!0,!1).kB(i)
 i=h==null?null:h.b[1]
 k=new A.a3x(g==null?null:g.b[1],i)
 i=k.b
-j=A.bsQ("24","0.1.4",k.a,i)
+j=A.bsQ("25","0.1.4",k.a,i)
 if(j==null){s=1
 break}n.K(new A.aOF(n,j))
 p=2
@@ -116324,7 +116324,7 @@ f.push(A.dm(!1,a1,a1,a1,!0,a1,a1,a1,!0,a1,B.ayZ,B.VF,a1,a1,a1,a1,new A.aPf(a6),!
 f.push(B.C)
 f.push(B.L8)
 f.push(B.l)
-a3=A.p("App 0.1.4+24",a1,a1,a1,a1,a1,a1,a1,a1,a1)
+a3=A.p("App 0.1.4+25",a1,a1,a1,a1,a1,a1,a1,a1,a1)
 q=a0.e
 f.push(A.dm(!1,a1,a1,a1,!0,a1,a1,a1,!0,a1,B.ayI,B.vZ,a1,a1,a1,a1,a0.gav5(),!1,a1,a1,a1,a1,a1,A.p(q==null?u.gd:q,a1,a1,a1,a1,a1,a1,a1,a1,a1),a1,a3,a1,a1,a1))
 a3=a0.e
