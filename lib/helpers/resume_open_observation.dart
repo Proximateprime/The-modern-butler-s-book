@@ -171,6 +171,32 @@ bool resumeHasRealClosePathProgress({
       inspectReviewOnly;
 }
 
+/// I'll repair is not chosen while an unanswered open interview is held.
+bool choseRepairHonoringOpenInterviewHold({
+  required bool holdOpenInterview,
+  required bool storedChoseRepair,
+  required ClosePathPhase storedPhase,
+}) {
+  return !holdOpenInterview &&
+      (storedChoseRepair || closePathImpliesRepairChosen(storedPhase));
+}
+
+/// Recover-after-error cannot prove a pending id is answered when the
+/// template is missing. Treat it as still open so invent cannot reopen.
+bool recoverTreatsPendingObservationAsStillOpen({
+  required String? pendingTemplateId,
+  required bool templateFound,
+  required bool interviewStillOpen,
+}) {
+  if (pendingTemplateId == null || pendingTemplateId.isEmpty) {
+    return false;
+  }
+  if (!templateFound) {
+    return true;
+  }
+  return interviewStillOpen;
+}
+
 bool interviewTemplateIsStillOpen({
   required String? templateId,
   required List<EvidenceTemplate> templates,

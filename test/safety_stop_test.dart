@@ -56,6 +56,47 @@ void main() {
     expect(stop?.reason, 'Possible gas hazard');
   });
 
+  test('hazard-observation Other runs the gas matcher and does not skip', () {
+    Evidence hazardOther(String answer) {
+      return Evidence(
+        id: 'e-h',
+        sessionId: 'session-1',
+        applianceId: 'appliance-1',
+        type: EvidenceType.structuredAnswer,
+        observation: 'Do you observe a burning smell or smoke?',
+        answer: answer,
+        templateId: 'hazard-observation',
+        collectedAt: DateTime.utc(2026, 9, 4),
+        collectedInState: RepairSessionState.evidenceCollection,
+        source: EvidenceSource.user,
+        schemaVersion: '1.0',
+      );
+    }
+
+    expect(
+      evaluateSafetyStop(
+        evidence: [hazardOther('Other / describe: I smell gas')],
+      )?.reason,
+      'Possible gas hazard',
+    );
+    expect(
+      evaluateSafetyStop(
+        evidence: [hazardOther('Other / describe: gas leak by the valve')],
+      )?.reason,
+      'Possible gas hazard',
+    );
+    expect(
+      evaluateSafetyStop(
+        evidence: [hazardOther('Other / describe: propane odor')],
+      )?.reason,
+      'Possible gas hazard',
+    );
+    expect(
+      evaluateSafetyStop(evidence: [hazardOther('No')]),
+      isNull,
+    );
+  });
+
   test('stops on burning or smoke language in evidence', () {
     final stop = evaluateSafetyStop(
       evidence: [

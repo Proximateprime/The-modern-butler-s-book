@@ -346,7 +346,9 @@ abstract final class UserFacingCopy {
       'The note stays on this device. Opening email is optional. '
       'There is no support inbox yet — a mail app only makes a local draft. '
       'Nothing is uploaded.';
-  static const reportWrongNoteLabel = 'What was wrong (optional)';
+  static const reportWrongNoteLabel = 'What was wrong';
+  static const reportWrongEmptyNote =
+      'Write a short note about what was wrong before saving.';
   static const reportWrongSaveEmail = 'Save note and open a draft';
   static const reportWrongEmailOpened =
       'Note saved on this device. A mail draft opened if your device has a '

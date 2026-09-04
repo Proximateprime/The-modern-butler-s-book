@@ -17,9 +17,9 @@ import 'package:modern_butlers_book/ui/app_dependencies.dart';
 import 'support/session_test_helpers.dart';
 
 void main() {
-  test('version is 0.1.4+23', () {
+  test('version is 0.1.4+24', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+23');
+    expect(kAppVersionLabel, '0.1.4+24');
   });
 
   test(

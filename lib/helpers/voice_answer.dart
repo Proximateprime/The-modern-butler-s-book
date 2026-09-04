@@ -1,3 +1,5 @@
+import 'hazard_language.dart';
+
 /// Maps spoken text onto answer chips. Display only — not a diagnosis engine.
 String normalizeVoiceTranscript(String raw) {
   return raw
@@ -72,35 +74,10 @@ String? matchVoiceToAnswerChoice(String transcript, List<String> choices) {
 }
 
 bool transcriptSuggestsHazard(String transcript) {
-  final spoken = normalizeVoiceTranscript(transcript);
-  if (spoken.isEmpty) {
-    return false;
-  }
-  const markers = [
-    'smoke',
-    'burning',
-    'spark',
-    'sparks',
-    'gas smell',
-    'smell of gas',
-    'natural gas',
-    'propane',
-    'on fire',
-    'melting',
-    'melted',
-  ];
-  for (final marker in markers) {
-    if (spoken.contains(marker)) {
-      return true;
-    }
-  }
-  return false;
+  return textSuggestsHazard(transcript);
 }
 
 bool isAffirmativeHazardChoice(String choice) {
   final normalized = normalizeVoiceTranscript(choice);
-  return normalized == 'yes' ||
-      normalized.contains('burning') ||
-      normalized.contains('smoke') ||
-      normalized.contains('spark');
+  return normalized == 'yes' || textSuggestsHazard(choice);
 }

@@ -1,3 +1,15 @@
+## Typed hazard v1 (2026-09-04)
+
+App **0.1.4+24**. Typed Other / free notes with hazard language (including
+**I smell gas**) take the same write+lock path as voice: record
+`hazard-observation` Yes and lock chips. Hazard-observation Other runs the
+shared gas matcher — it does not skip. Smell-gas, gas-leak, propane, and
+bare-burning keywords live in one list. Recover-after-error mirrors the
+happy-resume hold / I’ll-repair gate so invent cannot reopen. Empty
+report-wrong notes are rejected and not saved. Groq stays phrasing-only.
+GOLDEN **Call a pro** stays. Play listing stays out. Tests:
+`test/red_typed_hazard_v1_test.dart` (prior suites stay green).
+
 ## Audit hardening v1 (2026-09-04)
 
 App **0.1.4+23**. Voice hazard always records and locks even under

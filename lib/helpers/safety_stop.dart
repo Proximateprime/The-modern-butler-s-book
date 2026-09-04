@@ -1,6 +1,7 @@
 import '../models/evidence.dart';
 import 'dryer_close_path.dart';
 import 'groq_phrasing.dart';
+import 'hazard_language.dart';
 import 'user_facing_error.dart';
 
 /// Deterministic hard-stop result for the Session screen safety gate.
@@ -16,12 +17,11 @@ class SafetyStop {
 
 /// Dryer MVP hard-stop checklist (documented in-code until package flags exist).
 ///
-/// Evidence observation substrings (case-insensitive):
-/// - Gas: `gas smell`, `smell of gas`, `natural gas`, `propane`
-/// - Live electrical language: `live voltage`, `live electrical`,
-///   `live testing`, `test while live`, `energized`
-/// - Immediate hazard: `burning smell`, `smoke`, `melting`, `melted`,
-///   `on fire`, `sparking`, `sparks`
+/// Evidence observation / answer language uses the shared list in
+/// `hazard_language.dart` (smell-gas, gas-leak, propane, bare-burning,
+/// fire/smoke/spark). Live electrical language stays here:
+/// `live voltage`, `live electrical`, `live testing`, `test while live`,
+/// `energized`.
 ///
 /// Primary hypothesis failure mode ids that still hard-stop:
 /// - `electrical-burning-smell-hazard` → fire/smoke hazard path
@@ -115,12 +115,18 @@ SafetyStop? evaluateSafetyStop({
     // A clear "No" must not hard-stop just because the prompt text mentions
     // burning/smoke (needed to separate non-hazard dusty-lint smell).
     if (item.templateId == 'hazard-observation') {
-      final answer = (item.answer ?? '').trim().toLowerCase();
-      if (answer == 'yes' ||
-          answer.contains('burning') ||
-          answer.contains('smoke') ||
-          answer.contains('spark')) {
-        return const SafetyStop(reason: 'Possible fire or smoke hazard');
+      final answer = (item.answer ?? '').trim();
+      final lowered = answer.toLowerCase();
+      if (answer.isEmpty || lowered == 'no' || lowered == 'not sure') {
+        continue;
+      }
+      if (lowered == 'yes') {
+        return const SafetyStop(reason: kHazardLanguageFireSmokeReason);
+      }
+      // Other / describe must run the shared gas matcher — do not skip.
+      final fromAnswer = _matchHazardLanguage(answer);
+      if (fromAnswer != null) {
+        return fromAnswer;
       }
       continue;
     }
@@ -161,18 +167,7 @@ const Set<String> _gatedProfessionalFailureModeIds = {
   'internal-duct-lint-collapse',
   'blower-wheel-obstruction',
 };
-const List<_EvidenceSafetyRule> _evidenceRules = [
-  _EvidenceSafetyRule(
-    reason: 'Possible gas hazard',
-    patterns: [
-      'gas smell',
-      'smell of gas',
-      'gas-like',
-      'gas odor',
-      'natural gas',
-      'propane',
-    ],
-  ),
+const List<_EvidenceSafetyRule> _liveElectricalRules = [
   _EvidenceSafetyRule(
     reason: 'Requires professional electrical work',
     patterns: [
@@ -183,23 +178,23 @@ const List<_EvidenceSafetyRule> _evidenceRules = [
       'energized',
     ],
   ),
-  _EvidenceSafetyRule(
-    reason: 'Possible fire or smoke hazard',
-    patterns: [
-      'burning smell',
-      'smoke',
-      'melting',
-      'melted',
-      'on fire',
-      'sparking',
-      'sparks',
-    ],
-  ),
 ];
 
+SafetyStop? _matchHazardLanguage(String text) {
+  final reason = hazardLanguageStopReason(text);
+  if (reason == null) {
+    return null;
+  }
+  return SafetyStop(reason: reason);
+}
+
 SafetyStop? _matchEvidenceObservation(String observation) {
+  final fromHazard = _matchHazardLanguage(observation);
+  if (fromHazard != null) {
+    return fromHazard;
+  }
   final lowered = observation.toLowerCase();
-  for (final rule in _evidenceRules) {
+  for (final rule in _liveElectricalRules) {
     for (final pattern in rule.patterns) {
       if (lowered.contains(pattern)) {
         return SafetyStop(reason: rule.reason);

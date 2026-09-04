@@ -325,10 +325,13 @@ class AppDependencies {
       ..addAll(loaded.map(ReportWrongNote.fromJson));
   }
 
-  Future<ReportWrongNote> saveWrongReport({
+  Future<ReportWrongNote?> saveWrongReport({
     required String userNote,
     String? sessionId,
   }) async {
+    if (shouldRejectEmptyReportWrongNote(userNote)) {
+      return null;
+    }
     final trimmed = userNote.trim();
     final clipped = trimmed.length > kReportWrongNoteMaxChars
         ? trimmed.substring(0, kReportWrongNoteMaxChars)
