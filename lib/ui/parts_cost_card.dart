@@ -10,6 +10,7 @@ class PartsCostCard extends StatelessWidget {
     this.onIllRepair,
     this.onCallPro,
     this.diyOutOfScope = false,
+    this.choseRepair = false,
     super.key,
   });
 
@@ -17,8 +18,10 @@ class PartsCostCard extends StatelessWidget {
   final VoidCallback? onIllRepair;
   final VoidCallback? onCallPro;
 
-  /// Pro-only path: show the pro estimate only, and no "I'll repair".
   final bool diyOutOfScope;
+
+  /// After I'll repair, do not contradict DIY intent with technician-fits copy.
+  final bool choseRepair;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +45,7 @@ class PartsCostCard extends StatelessWidget {
               key: const Key('parts-cost-estimates-only'),
               style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
-            if (diyOutOfScope) ...[
+            if (diyOutOfScope && !choseRepair) ...[
               const SizedBox(height: 8),
               Text(
                 partsCostProOnlyNote,

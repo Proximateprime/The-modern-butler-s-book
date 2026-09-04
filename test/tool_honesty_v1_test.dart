@@ -49,10 +49,10 @@ const _fuseSteps = [
 ];
 
 void main() {
-  test('version is 0.1.4+22', () {
+  test('version is 0.1.4+23', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+22');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+22'));
+    expect(kAppVersionLabel, '0.1.4+23');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+23'));
   });
 
   test('no tools / I don’t screwdriver does not offer panel-off as next step', () {
@@ -77,6 +77,70 @@ void main() {
     );
     expect(noTools.join(' '), contains('Unplug the dryer'));
     expect(noTools.join(' '), contains('Do not measure live voltage'));
+
+    final taggedPanel = RepairReadinessItem(
+      id: 'hex-key',
+      label: 'Hex key requiresPanelOff',
+      optional: true,
+      liveElectrical: false,
+      requiresPanelOff: true,
+    );
+    expect(toolItemRequiresPanelOff(taggedPanel), isTrue);
+    expect(
+      toolItemRequiresPanelOff(
+        const RepairReadinessItem(
+          id: 'flashlight',
+          label: 'Flashlight',
+          optional: true,
+          liveElectrical: false,
+          requiresPanelOff: false,
+        ),
+      ),
+      isFalse,
+    );
+    expect(
+      toolItemRequiresMeter(
+        const RepairReadinessItem(
+          id: 'custom-probe',
+          label: 'Custom probe requiresMeter',
+          optional: false,
+          liveElectrical: false,
+          requiresMeter: true,
+        ),
+      ),
+      isTrue,
+    );
+
+    final parsed = readinessItemsFromToolsRequired(const [
+      'Hex key requiresPanelOff (optional)',
+      'Clamp meter requiresMeter',
+    ]);
+    expect(parsed, hasLength(2));
+    expect(parsed[0].requiresPanelOff, isTrue);
+    expect(parsed[1].requiresMeter, isTrue);
+
+    expect(
+      guidanceEmptyBecauseHonesty(
+        authoredSteps: const [
+          'With the dryer unplugged, you may open an accessible heater service panel.',
+        ],
+        items: const [_screwdriver],
+        haveByToolId: const {'screwdriver': false},
+        continueWithCaution: false,
+      ),
+      isTrue,
+    );
+    expect(
+      guidanceEmptyBecauseHonesty(
+        authoredSteps: const [
+          'Check airflow before opening the cabinet. Pull the lint filter.',
+        ],
+        items: const [_screwdriver],
+        haveByToolId: const {'screwdriver': false},
+        continueWithCaution: false,
+      ),
+      isFalse,
+    );
 
     final declinedDriver = guidanceStepsForToolHonesty(
       steps: _fuseSteps,

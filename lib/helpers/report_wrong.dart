@@ -17,7 +17,8 @@ import 'safety_stop.dart';
 /// household chats or photos.
 /// Groq is not used here and must not decide what was wrong.
 
-/// Stub inbox only. RFC 2606 `.invalid` — not a telemetry product.
+/// Stub inbox only. RFC 2606 `.invalid` — not a live support mailbox.
+/// Opening mail creates a local draft. Nothing is delivered.
 const String kReportWrongSupportEmail = 'reports@themodernbutlersbook.invalid';
 
 const int kReportWrongNoteMaxChars = 500;
@@ -118,29 +119,106 @@ ReportWrongContext buildReportWrongContext({
     evidence: evidence,
     primaryFailureModeId: outcome?.rankingLeaderFailureModeId,
   );
-  String? lastQuestionId = uiResume?.pendingObservationTemplateId;
-  lastQuestionId ??= uiResume?.revisingObservationTemplateId;
-  if (lastQuestionId == null && clues.isNotEmpty) {
-    lastQuestionId = clues.last.templateId;
-  }
+  String? lastQuestion = householdLastQuestionLabel(
+    package: package,
+    uiResume: uiResume,
+    evidence: evidence,
+  );
 
   String? stopReason = stop?.reason;
   if (stopReason == null || stopReason.trim().isEmpty) {
     if (outcome != null) {
       stopReason = sessionCloseKindLabel(outcome.closeKind);
     } else if (session != null) {
-      stopReason = session.currentState.name;
+      stopReason = householdRepairSessionStateLabel(session.currentState);
     }
   }
 
   return ReportWrongContext(
     applianceCategory: appliance?.category,
-    packageId: package?.id ?? outcome?.basePackageId,
-    packageVersion: package?.version ?? outcome?.basePackageVersion,
+    packageId: householdKnowledgeGuideLabel(
+      package: package,
+      category: appliance?.category ?? package?.category,
+    ),
+    packageVersion: null,
     stopReason: stopReason,
-    lastQuestionId: lastQuestionId,
+    lastQuestionId: lastQuestion,
     clueCount: clues.length,
   );
+}
+
+/// Household guide name. Never a package id or version like `dryer-core 1.4.2`.
+String householdKnowledgeGuideLabel({
+  KnowledgePackage? package,
+  String? category,
+}) {
+  final cat = (package?.category ?? category ?? '').trim();
+  if (cat.isEmpty) {
+    final name = package?.displayName.trim() ?? '';
+    if (name.isNotEmpty && name != package?.id) {
+      return name;
+    }
+    return 'This guide';
+  }
+  return '${cat[0].toUpperCase()}${cat.substring(1)} guide';
+}
+
+/// Household question text. Never a raw template slug like `odor-type`.
+String? householdLastQuestionLabel({
+  KnowledgePackage? package,
+  SessionUiResumeState? uiResume,
+  List<Evidence> evidence = const [],
+}) {
+  String? id = uiResume?.pendingObservationTemplateId;
+  id ??= uiResume?.revisingObservationTemplateId;
+  final templates = package?.evidenceTemplates ?? const [];
+  if (id != null && id.isNotEmpty) {
+    for (final template in templates) {
+      if (template.id == id) {
+        return observationPromptTitle(template);
+      }
+    }
+  }
+  final clues = interviewObservationsInOrder(evidence);
+  if (clues.isNotEmpty) {
+    final observation = clues.last.observation.trim();
+    if (observation.isNotEmpty && observation != clues.last.templateId) {
+      return observation;
+    }
+    final templateId = clues.last.templateId;
+    if (templateId != null && templateId.isNotEmpty) {
+      for (final template in templates) {
+        if (template.id == templateId) {
+          return observationPromptTitle(template);
+        }
+      }
+      return humanizeObservationId(templateId);
+    }
+  }
+  if (id != null && id.isNotEmpty) {
+    return humanizeObservationId(id);
+  }
+  return null;
+}
+
+String householdRepairSessionStateLabel(RepairSessionState state) {
+  return switch (state) {
+    RepairSessionState.newSession => 'Getting started',
+    RepairSessionState.selectAppliance => 'Choosing the appliance',
+    RepairSessionState.problemReported => 'Describing the problem',
+    RepairSessionState.basicConditionVerification => 'First checks',
+    RepairSessionState.evidenceCollection => 'Answering questions',
+    RepairSessionState.hypothesisBuilding => 'Narrowing it down',
+    RepairSessionState.riskCheck => 'Checking for hazards',
+    RepairSessionState.safeGuidance => 'Following safe steps',
+    RepairSessionState.verification => 'Checking whether it worked',
+    RepairSessionState.rootCauseAnalysis => 'Looking at why it failed',
+    RepairSessionState.preventiveRecommendation => 'Preventing a repeat',
+    RepairSessionState.sessionClosed => 'Finished',
+    RepairSessionState.escalated => 'Handed to a professional',
+    RepairSessionState.abandoned => 'Stopped',
+    RepairSessionState.error => 'This step couldn’t continue',
+  };
 }
 
 String formatReportWrongEmailSubject(ReportWrongNote note) {
@@ -148,22 +226,19 @@ String formatReportWrongEmailSubject(ReportWrongNote note) {
   return 'This was wrong — $category — ${note.appVersionLabel}';
 }
 
-/// Prefill body. Field names stay stable for the mailto stub tests.
+/// Prefill body. Household labels only — no package ids or template slugs.
 String formatReportWrongEmailBody(ReportWrongNote note) {
-  final packageLine = [
-    note.packageId,
-    note.packageVersion,
-  ].where((part) => part != null && part.trim().isNotEmpty).join(' ');
   return [
     'App: ${note.appVersionLabel}',
     'Appliance category: ${note.applianceCategory ?? '—'}',
-    'Package: ${packageLine.isEmpty ? '—' : packageLine}',
+    'Guide: ${note.packageId ?? '—'}',
     'Stop reason: ${note.stopReason ?? '—'}',
-    'Last question id: ${note.lastQuestionId ?? '—'}',
+    'Last question: ${note.lastQuestionId ?? '—'}',
     'Clue count: ${note.clueCount}',
     'Note: ${note.userNote.trim().isEmpty ? '—' : note.userNote.trim()}',
     '',
-    'This note is saved on the device. It was not uploaded automatically.',
+    'This note is saved on the device. There is no support inbox yet. '
+    'Opening email only makes a local draft — it is not delivered.',
   ].join('\n');
 }
 

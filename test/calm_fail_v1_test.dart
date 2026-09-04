@@ -101,10 +101,10 @@ GroqPhrasingRequest _questionRequest() {
 }
 
 void main() {
-  test('version is 0.1.4+22', () {
+  test('version is 0.1.4+23', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+22');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+22'));
+    expect(kAppVersionLabel, '0.1.4+23');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+23'));
   });
 
   test('GOLDEN Call a pro stays frozen', () {
@@ -262,6 +262,10 @@ void main() {
     final restored = DomainSnapshot.fromJson(raw);
     expect(restored.households.single.name, 'Keep this house');
     expect(restored.sessionUiResumeBySessionId.containsKey('session-bad'), isFalse);
+    expect(
+      restored.droppedCorruptResumeSessionIds,
+      contains('session-bad'),
+    );
     final kept = restored.sessionUiResumeBySessionId['session-nulls'];
     expect(kept, isNotNull);
     expect(kept!.pendingObservationTemplateId, isNull);

@@ -195,6 +195,7 @@ class AppDependencies {
 
   final Map<String, String> _sessionIdByApplianceId = {};
   final Map<String, SessionUiResumeState> _sessionUiResumeBySessionId = {};
+  final Set<String> _droppedCorruptResumeSessionIds = {};
   String? _foregroundSessionId;
   VoidCallback? _beforeBackgroundFlush;
   final List<MaintenanceReminder> _maintenanceReminders = [];
@@ -1229,6 +1230,11 @@ class AppDependencies {
     return _sessionUiResumeBySessionId[sessionId];
   }
 
+  /// True when Continue repair had a resume row that could not be read.
+  bool resumeRowWasCorrupt(String sessionId) {
+    return _droppedCorruptResumeSessionIds.contains(sessionId);
+  }
+
   /// SessionScreen registers this so lock/background flushes the open question
   /// even if the app observer runs before the session observer.
   void setBeforeBackgroundFlush(VoidCallback? callback) {
@@ -2021,6 +2027,7 @@ class AppDependencies {
       await store.clearOwnedToolsOverlay();
     }
     snapshotCorrupt = false;
+    _droppedCorruptResumeSessionIds.clear();
   }
 
   /// Replaces in-memory household data. Does not rank.
@@ -2033,6 +2040,9 @@ class AppDependencies {
     _sessionUiResumeBySessionId
       ..clear()
       ..addAll(snapshot.sessionUiResumeBySessionId);
+    _droppedCorruptResumeSessionIds
+      ..clear()
+      ..addAll(snapshot.droppedCorruptResumeSessionIds);
     _foregroundSessionId = snapshot.foregroundSessionId;
     householdRepository.replaceAll(snapshot.households);
     applianceRepository.replaceAll(snapshot.appliances);

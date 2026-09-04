@@ -87,12 +87,7 @@ class _ReportWrongScreenState extends State<ReportWrongScreen> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final packageId = _contextSnapshot.packageId?.trim() ?? '';
-    final packageVersion = _contextSnapshot.packageVersion?.trim() ?? '';
-    final packageLine = [
-      if (packageId.isNotEmpty) packageId,
-      if (packageVersion.isNotEmpty) packageVersion,
-    ].join(' ');
+    final packageLine = _contextSnapshot.packageId?.trim() ?? '';
 
     return Scaffold(
       key: const Key('report-wrong-screen'),
@@ -131,7 +126,7 @@ class _ReportWrongScreenState extends State<ReportWrongScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Package: ${packageLine.isEmpty ? '—' : packageLine}',
+                    'Guide: ${packageLine.isEmpty ? '—' : packageLine}',
                     key: const Key('report-wrong-package'),
                   ),
                   const SizedBox(height: 6),
@@ -141,7 +136,7 @@ class _ReportWrongScreenState extends State<ReportWrongScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Last question id: ${_contextSnapshot.lastQuestionId ?? '—'}',
+                    'Last question: ${_contextSnapshot.lastQuestionId ?? '—'}',
                     key: const Key('report-wrong-last-question'),
                   ),
                   const SizedBox(height: 6),

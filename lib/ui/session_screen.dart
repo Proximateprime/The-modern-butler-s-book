@@ -449,6 +449,9 @@ class _SessionScreenState extends State<SessionScreen>
       _resumeFailed = true;
       _recoverResumeAfterError();
     }
+    if (widget.dependencies.resumeRowWasCorrupt(widget.sessionId)) {
+      _resumeFailed = true;
+    }
   }
 
   /// Keeps Continue repair on a real screen if restore throws. Does not rank.
@@ -501,7 +504,52 @@ class _SessionScreenState extends State<SessionScreen>
       _starterConfirmed = widget.appliance.category != 'dryer' ||
           resume?.starterConfirmed == true ||
           evidence.isNotEmpty;
+      _restoreHeldObservationAfterRecover(
+        resume: resume,
+        evidence: evidence,
+      );
     } catch (_) {}
+  }
+
+  /// Recover must keep an unanswered open observation, not skip to ranking.
+  void _restoreHeldObservationAfterRecover({
+    required SessionUiResumeState? resume,
+    required List<Evidence> evidence,
+  }) {
+    final pendingId = resume?.pendingObservationTemplateId;
+    if (pendingId == null || pendingId.isEmpty) {
+      return;
+    }
+    _lastShownOpenInterviewTemplateId = pendingId;
+    final hasProgress = resumeHasRealClosePathProgress(
+      choseRepair: resume?.choseRepair == true,
+      completedGuidanceStepIds: resume?.completedGuidanceStepIds ?? const [],
+      guidanceStepIndex: resume?.guidanceStepIndex ?? 0,
+      readinessHaveByToolId: resume?.readinessHaveByToolId ?? const {},
+      pendingCloseVerificationFailureModeId:
+          resume?.pendingCloseVerificationFailureModeId,
+      inspectReviewOnly: resume?.inspectReviewOnly == true,
+    );
+    EvidenceTemplate? template;
+    var stillOpen = pendingId.isNotEmpty;
+    try {
+      final package = widget.dependencies.packageForSession(widget.sessionId);
+      final templates = package?.evidenceTemplates ?? const [];
+      template = _templateById(templates, pendingId);
+      stillOpen = interviewTemplateIsStillOpen(
+        templateId: pendingId,
+        templates: templates,
+        recordedEvidence: evidence,
+      );
+    } catch (_) {
+      stillOpen = pendingId.isNotEmpty;
+    }
+    if (!stillOpen || hasProgress) {
+      return;
+    }
+    _pendingAnswerPrompt = template;
+    _choseRepair = false;
+    _closePathPhase = ClosePathPhase.conclusion;
   }
 
   FailureModeClosePath? _boundClosePathForCurrentSession() {
@@ -609,10 +657,14 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   bool _shouldBlockUserObservationWrite({required String? promptId}) {
-    if (_blockResumeObservationWrites) {
-      return true;
+    if (promptId == 'hazard-observation') {
+      return false;
     }
     final heldId = _heldUnansweredOpenObservationId();
+    final heldTap = heldId != null && promptId == heldId && !_choseRepair;
+    if (_blockResumeObservationWrites && !heldTap) {
+      return true;
+    }
     if (heldId == null || _choseRepair) {
       return false;
     }
@@ -733,7 +785,8 @@ class _SessionScreenState extends State<SessionScreen>
       _closePathPhase = ClosePathPhase.guidance;
       return;
     }
-    if (closePathDiyCannotComplete(closePath)) {
+    if (closePathDiyCannotComplete(closePath) ||
+        _guidanceEmptyBecauseHonesty(closePath)) {
       _closePathPhase = ClosePathPhase.guidance;
       return;
     }
@@ -1269,13 +1322,23 @@ class _SessionScreenState extends State<SessionScreen>
     if (_hasIncompleteInspect(closePath)) {
       return ClosePathPhase.inspect;
     }
-    if (closePathDiyCannotComplete(closePath)) {
+    if (closePathDiyCannotComplete(closePath) ||
+        _guidanceEmptyBecauseHonesty(closePath)) {
       return ClosePathPhase.guidance;
     }
     final steps = _gatedGuidanceSteps(closePath);
     return steps.isEmpty
         ? ClosePathPhase.verification
         : ClosePathPhase.guidance;
+  }
+
+  bool _guidanceEmptyBecauseHonesty(FailureModeClosePath closePath) {
+    return guidanceEmptyBecauseHonesty(
+      authoredSteps: _orderedGuidanceSteps(closePath),
+      items: _readinessItemsFor(closePath.failureModeId),
+      haveByToolId: _haveByToolId(_readinessItemsFor(closePath.failureModeId)),
+      continueWithCaution: _readinessContinueWithCaution,
+    );
   }
 
   void _maybeAdvanceFromTools(FailureModeClosePath closePath) {
@@ -1323,6 +1386,14 @@ class _SessionScreenState extends State<SessionScreen>
       completedIds: _completedGuidanceStepIds,
     );
     if (steps.isEmpty || index >= steps.length) {
+      if (_guidanceEmptyBecauseHonesty(closePath)) {
+        setState(() {
+          _closePathPhase = ClosePathPhase.guidance;
+          _guidanceCouldNot = true;
+        });
+        _persistUiResume();
+        return;
+      }
       _enterVerification(closePath);
       return;
     }
@@ -1343,6 +1414,10 @@ class _SessionScreenState extends State<SessionScreen>
       if (closePathDiyCannotComplete(closePath) &&
           (steps.isEmpty || next >= steps.length)) {
         _closePathPhase = ClosePathPhase.guidance;
+      } else if (_guidanceEmptyBecauseHonesty(closePath) &&
+          (steps.isEmpty || next >= steps.length)) {
+        _closePathPhase = ClosePathPhase.guidance;
+        _guidanceCouldNot = true;
       } else if (steps.isEmpty || next >= steps.length) {
         _closePathPhase = ClosePathPhase.verification;
         _pendingCloseVerification = closePath;
@@ -1355,6 +1430,17 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _enterVerification(FailureModeClosePath closePath) {
+    if (_hasUnansweredHeldObservationId()) {
+      return;
+    }
+    if (_guidanceEmptyBecauseHonesty(closePath)) {
+      setState(() {
+        _closePathPhase = ClosePathPhase.guidance;
+        _guidanceCouldNot = true;
+      });
+      _persistUiResume();
+      return;
+    }
     if (closePathDiyCannotComplete(closePath)) {
       setState(() {
         _closePathPhase = ClosePathPhase.guidance;
@@ -1932,8 +2018,12 @@ class _SessionScreenState extends State<SessionScreen>
             }
           }
         }
+        var wroteHazard = false;
         if (hazard != null) {
-          _recordEvidence(prompt: hazard, answer: 'Yes');
+          wroteHazard = _recordEvidence(prompt: hazard, answer: 'Yes');
+        }
+        if (!wroteHazard) {
+          return;
         }
         setState(() {
           _voiceHazardConfirm = true;
@@ -2136,24 +2226,24 @@ class _SessionScreenState extends State<SessionScreen>
     );
   }
 
-  void _recordEvidence({
+  bool _recordEvidence({
     required EvidenceTemplate prompt,
     required String answer,
     bool keepCurrentQuestion = false,
   }) {
     if (_shouldBlockUserObservationWrite(promptId: prompt.id)) {
-      return;
+      return false;
     }
     final session = widget.dependencies.repairSessionRepository
         .getSession(widget.sessionId);
     if (session == null) {
-      return;
+      return false;
     }
     if (_isTerminal(session.currentState)) {
-      return;
+      return false;
     }
-    if (_currentSafetyStop() != null) {
-      return;
+    if (prompt.id != 'hazard-observation' && _currentSafetyStop() != null) {
+      return false;
     }
 
     final recorded =
@@ -2177,7 +2267,7 @@ class _SessionScreenState extends State<SessionScreen>
         }
       });
       _persistUiResume();
-      return;
+      return true;
     }
 
     String? existingPhoto;
@@ -2234,7 +2324,7 @@ class _SessionScreenState extends State<SessionScreen>
       });
       _persistUiResume();
       unawaited(widget.dependencies.flushPersist());
-      if (!keepCurrentQuestion) {
+      if (!keepCurrentQuestion && prompt.id != 'hazard-observation') {
         final nextContext =
             widget.dependencies.buildDecisionContext(session.id);
         final nextReasoning = _evaluateReasoning(nextContext);
@@ -2250,10 +2340,12 @@ class _SessionScreenState extends State<SessionScreen>
           );
         }
       }
+      return true;
     } on StateError catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(userFacingErrorMessage(error))),
       );
+      return false;
     }
   }
 
@@ -2746,7 +2838,8 @@ class _SessionScreenState extends State<SessionScreen>
               )
             : (reasoning?.resolveEligibility ??
                 CloseResolveEligibility.unresolvedOnly);
-    final interactionsLocked = isTerminal || safetyStop != null;
+    final interactionsLocked =
+        isTerminal || safetyStop != null || _voiceHazardConfirm;
     var suggestedNext = _templateById(
       prompts,
       reasoning?.suggestedNextTemplateId,
@@ -3266,6 +3359,7 @@ class _SessionScreenState extends State<SessionScreen>
                             PartsCostCard(
                               parts: _partsEstimatesFor(primary.id),
                               diyOutOfScope: partsCostDiyOutOfScope(primary.id),
+                              choseRepair: _choseRepair,
                               onIllRepair:
                                   showIllRepairOnPartsCard(sessionObjective)
                                       ? () {}
@@ -3943,7 +4037,9 @@ class _SessionScreenState extends State<SessionScreen>
 
   String _guidanceCueTitle() {
     final path = _boundClosePathForCurrentSession();
-    if (path != null && closePathDiyCannotComplete(path)) {
+    if (path != null &&
+        closePathDiyCannotComplete(path) &&
+        !_choseRepair) {
       if (!_proScopeAcknowledged && _completedGuidanceStepIds.isEmpty) {
         return 'Next: a full fix likely needs a pro';
       }
@@ -3961,7 +4057,9 @@ class _SessionScreenState extends State<SessionScreen>
 
   String _guidanceCueDetail() {
     final path = _boundClosePathForCurrentSession();
-    if (path != null && closePathDiyCannotComplete(path)) {
+    if (path != null &&
+        closePathDiyCannotComplete(path) &&
+        !_choseRepair) {
       if (!_proScopeAcknowledged && _completedGuidanceStepIds.isEmpty) {
         return 'Safe checks help a technician. They are not a full home repair.';
       }
@@ -4300,8 +4398,13 @@ class _SessionScreenState extends State<SessionScreen>
         'Choose I’ll repair to see parts and tools. Call a pro uses the existing handoff.',
       ClosePathPhase.parts =>
         'Estimates only — no payment. Continue when you are ready for the tools list.',
-      ClosePathPhase.tools =>
-        'Mark I have / I don’t. A missing required tool locks panel and parts steps.',
+      ClosePathPhase.tools => () {
+          final path = _boundClosePathForCurrentSession();
+          final toolItems = path == null
+              ? const <RepairReadinessItem>[]
+              : _readinessItemsFor(path.failureModeId);
+          return toolsChecklistHelperLine(toolItems);
+        }(),
       ClosePathPhase.inspect =>
         'Look at the part. Choose whether it matches, does not match, or you cannot see it.',
       ClosePathPhase.guidance => _guidanceCueDetail(),
@@ -4470,7 +4573,8 @@ class _SessionScreenState extends State<SessionScreen>
                 _CurrentConclusionCard(
                   primaryLabel: primaryHypothesis?.label,
                 ),
-                if (closePathDiyCannotComplete(closePath)) ...[
+                if (closePathDiyCannotComplete(closePath) &&
+                    !_choseRepair) ...[
                   const SizedBox(height: 12),
                   _ProScopeNoticeLine(),
                 ],
@@ -4615,6 +4719,7 @@ class _SessionScreenState extends State<SessionScreen>
                 PartsCostCard(
                   parts: _partsEstimatesFor(primaryFailureModeId),
                   diyOutOfScope: partsCostDiyOutOfScope(primaryFailureModeId),
+                  choseRepair: _choseRepair,
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
@@ -4815,6 +4920,7 @@ class _SessionScreenState extends State<SessionScreen>
         );
         final safeChecksDone = steps.isEmpty || incompleteIndex >= steps.length;
         final showProWarning = diyPro &&
+            !_choseRepair &&
             !_proScopeAcknowledged &&
             _completedGuidanceStepIds.isEmpty;
         final showProHandoff = diyPro && !showProWarning && safeChecksDone;
@@ -4870,6 +4976,44 @@ class _SessionScreenState extends State<SessionScreen>
                     onCouldNot: () {
                       setState(() => _guidanceCouldNot = true);
                     },
+                  )
+                else if (steps.isEmpty &&
+                    _guidanceEmptyBecauseHonesty(closePath))
+                  Card(
+                    key: const Key('honesty-empty-stop-panel'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'No safe steps we can show with the tools you have',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Stop here, or call a professional. This book '
+                            'does not invent a different how-to.',
+                          ),
+                          const SizedBox(height: 14),
+                          FilledButton(
+                            key: const Key('guidance-could-not-stop'),
+                            onPressed: () => _closeFromReadiness(
+                              SessionCloseKind.stopped,
+                            ),
+                            child: const Text('Stop'),
+                          ),
+                          const SizedBox(height: 8),
+                          FilledButton.tonal(
+                            key: const Key('guidance-could-not-call-pro'),
+                            onPressed: () => _closeFromReadiness(
+                              SessionCloseKind.calledProfessional,
+                            ),
+                            child: const Text('Call a professional'),
+                          ),
+                        ],
+                      ),
+                    ),
                   )
                 else if (steps.isEmpty)
                   Card(
@@ -6643,7 +6787,8 @@ class _RepairReadinessCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Required tools must be marked I have before panel steps unlock.',
+              toolsChecklistHelperLine(items),
+              key: const Key('repair-readiness-helper'),
               style: text.bodySmall,
             ),
             const SizedBox(height: 14),
