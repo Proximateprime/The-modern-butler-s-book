@@ -180,12 +180,7 @@ void main() {
         ),
       );
       await openDryerSession(tester, deps, 'Hazard Under Hold');
-      if (find
-          .byKey(const Key('observation-prompt-lint-filter-condition'))
-          .evaluate()
-          .isEmpty) {
-        await selectObservation(tester, 'lint-filter-condition');
-      }
+      expect(find.byKey(const Key('answer-choice-panel')), findsOneWidget);
       await selectFailureMode(tester, 'thermal-fuse-open');
       expect(find.byKey(const Key('answer-choice-panel')), findsOneWidget);
 
@@ -218,7 +213,7 @@ void main() {
       first.saveSessionUiResume(
         sessionId,
         const SessionUiResumeState(
-          pendingObservationTemplateId: 'lint-filter-condition',
+          pendingObservationTemplateId: 'gas-dryer-type',
           starterConfirmed: true,
           starterSymptomIds: ['no-heat'],
           closePathPhase: ClosePathPhase.conclusion,
@@ -236,12 +231,11 @@ void main() {
       await restored.restore();
       await prepareTallSurface(tester);
       await tester.pumpWidget(ModernButlerApp(dependencies: restored));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(Key('continue-repair-${dryer.id}')));
       await tester.pump();
       await tester.pump();
-
-      final mic = find.byKey(const Key('voice-answer-mic'));
-      if (mic.evaluate().isEmpty) {
+      if (find.byKey(const Key('voice-answer-mic')).evaluate().isEmpty) {
         await tester.pumpAndSettle();
       }
       expect(find.byKey(const Key('voice-answer-mic')), findsOneWidget);

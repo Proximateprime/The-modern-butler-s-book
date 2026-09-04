@@ -814,13 +814,20 @@ class _SessionScreenState extends State<SessionScreen>
     ClosePathPhase phase, {
     FailureModeClosePath? closePath,
     bool inspectReviewOnly = false,
+    bool fromUser = false,
   }) {
-    if (shouldBlockResumeAdvancePastUnansweredOpenInterview(
+    if (!fromUser &&
+        shouldBlockResumeAdvancePastUnansweredOpenInterview(
           unansweredOpenInterview: _hasUnansweredHeldObservationId(),
         ) &&
         phase != ClosePathPhase.conclusion &&
         phase != ClosePathPhase.decision) {
       return;
+    }
+    if (fromUser &&
+        !inspectReviewOnly &&
+        closePathImpliesRepairChosen(phase)) {
+      _choseRepair = true;
     }
     if (phase == ClosePathPhase.inspect && inspectReviewOnly) {
       setState(() {
@@ -857,8 +864,15 @@ class _SessionScreenState extends State<SessionScreen>
       setState(() {
         _guidanceStepIndex = index;
         if (steps.isEmpty) {
-          _closePathPhase = ClosePathPhase.verification;
-          _pendingCloseVerification = closePath;
+          if (_guidanceEmptyBecauseHonesty(closePath) ||
+              closePathDiyCannotComplete(closePath) ||
+              _hasUnansweredHeldObservationId()) {
+            _closePathPhase = ClosePathPhase.guidance;
+            _guidanceCouldNot = _guidanceEmptyBecauseHonesty(closePath);
+          } else {
+            _closePathPhase = ClosePathPhase.verification;
+            _pendingCloseVerification = closePath;
+          }
         }
       });
       _persistUiResume();
@@ -2474,11 +2488,12 @@ class _SessionScreenState extends State<SessionScreen>
       }
 
       setState(() {
+        final heldId = _heldUnansweredOpenObservationId() ??
+            _pendingAnswerPrompt?.id ??
+            _lastShownOpenInterviewTemplateId;
         if (!shouldKeepUnansweredOpenInterviewWhenPrimaryNamed(
-          onScreenTemplateId: _heldUnansweredOpenObservationId() ??
-              _pendingAnswerPrompt?.id ??
-              _lastShownOpenInterviewTemplateId,
-          onScreenStillOpen: _hasUnansweredHeldObservationId(),
+          onScreenTemplateId: heldId,
+          onScreenStillOpen: heldId != null && heldId.isNotEmpty,
         )) {
           _pendingAnswerPrompt = null;
           _lastShownOpenInterviewTemplateId = null;
@@ -2883,12 +2898,16 @@ class _SessionScreenState extends State<SessionScreen>
         _heldUnansweredOpenObservationId(),
       );
     }
-    final showClosePath = effectiveInvestigationStopped &&
+    // Named primary opens close-path chrome even while an unanswered
+    // interview id is still held. Chips stay in the interview branch below;
+    // invent writes and auto-advance stay blocked until I'll repair / Continue.
+    final showClosePath = investigationStopped &&
         closePath != null &&
-        safetyStop == null;
+        safetyStop == null &&
+        !isRevisingEvidence;
     FailureMode? recommendedPrimary;
     if (!_starterLimitedGuidance &&
-        !effectiveInvestigationStopped &&
+        !investigationStopped &&
         safetyStop == null &&
         rule.showDiagnosis) {
       final diagnosisId = recommendPrimaryId ??
@@ -3231,7 +3250,7 @@ class _SessionScreenState extends State<SessionScreen>
                     ],
                     if (safetyStop != null) const SizedBox(height: 8),
                     if (!isTerminal &&
-                        effectiveInvestigationStopped &&
+                        showClosePath &&
                         safetyStop == null) ...[
                       const SizedBox(height: 16),
                       if (_blockingReasonLineFor(
@@ -3269,25 +3288,28 @@ class _SessionScreenState extends State<SessionScreen>
                         rankingLeaderLabel: outcome?.rankingLeaderLabel,
                         phrasingOverlay: phrasingOverlay,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          showClosePath
-                              ? 'No more questions for now — we have a most likely '
-                                  'cause. Finish this step, then End Session.'
-                              : 'No more questions for now — we have a most likely '
-                                  'cause. Use End Session below to record what happened.',
-                          key: const Key('observation-paused-message'),
-                          style: Theme.of(context).textTheme.bodySmall,
+                      if (!restoringOpenInterview)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            'No more questions for now — we have a most likely '
+                            'cause. Finish this step, then End Session.',
+                            key: const Key('observation-paused-message'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ),
-                      ),
-                    ] else if (!isTerminal && safetyStop == null) ...[
+                    ],
+                    if (!isTerminal &&
+                        safetyStop == null &&
+                        (!showClosePath || restoringOpenInterview)) ...[
+                      if (!showClosePath) ...[
                       const SizedBox(height: 16),
                       _SessionObjectiveChips(
                         selected: sessionObjective,
                         enabled: !interactionsLocked,
                         onSelected: _setSessionObjective,
                       ),
+                      ],
                       if (!_starterConfirmed &&
                           decisionContext.evidence.isEmpty) ...[
                         const SizedBox(height: 16),
@@ -3377,7 +3399,7 @@ class _SessionScreenState extends State<SessionScreen>
                             ),
                           ],
                           const SizedBox(height: 28),
-                        ] else ...[
+                        ] else if (!showClosePath) ...[
                           const SizedBox(height: 16),
                           _NextActionCue(
                             key: const Key('next-action-cue'),
@@ -3459,7 +3481,8 @@ class _SessionScreenState extends State<SessionScreen>
                           ),
                           const SizedBox(height: 12),
                         ],
-                        if (rule.askAnotherQuestion &&
+                        if (!showClosePath &&
+                            rule.askAnotherQuestion &&
                             !interactionsLocked &&
                             !_starterLimitedGuidance &&
                             clueCount > 0 &&
@@ -4491,7 +4514,11 @@ class _SessionScreenState extends State<SessionScreen>
     Widget backButton(ClosePathPhase to) {
       return TextButton(
         key: const Key('close-path-back'),
-        onPressed: () => _goClosePathPhase(to, closePath: closePath),
+        onPressed: () => _goClosePathPhase(
+          to,
+          closePath: closePath,
+          fromUser: true,
+        ),
         child: const Text('Back'),
       );
     }
@@ -4628,6 +4655,7 @@ class _SessionScreenState extends State<SessionScreen>
                       ClosePathPhase.inspect,
                       closePath: closePath,
                       inspectReviewOnly: true,
+                      fromUser: true,
                     ),
                     child: const Text(UserFacingCopy.inspectShowMeWhatToCheck),
                   ),
@@ -4643,6 +4671,7 @@ class _SessionScreenState extends State<SessionScreen>
                       hasIncompleteInspect: _hasIncompleteInspect(closePath),
                     ),
                     closePath: closePath,
+                    fromUser: true,
                   ),
                   child: const Text('Continue'),
                 ),
@@ -4730,6 +4759,7 @@ class _SessionScreenState extends State<SessionScreen>
                       hasIncompleteInspect: _hasIncompleteInspect(closePath),
                     ),
                     closePath: closePath,
+                    fromUser: true,
                   ),
                   child: const Text('Continue'),
                 ),
@@ -4837,6 +4867,7 @@ class _SessionScreenState extends State<SessionScreen>
                     onPressed: () => _goClosePathPhase(
                       ClosePathPhase.conclusion,
                       closePath: closePath,
+                      fromUser: true,
                     ),
                     child: const Text('Back to most likely'),
                   ),
@@ -4899,6 +4930,7 @@ class _SessionScreenState extends State<SessionScreen>
                     onPressed: () => _goClosePathPhase(
                       _phaseAfterInspectComplete(closePath),
                       closePath: closePath,
+                      fromUser: true,
                     ),
                     child: const Text('Continue'),
                   ),
@@ -5180,8 +5212,10 @@ class _SessionScreenState extends State<SessionScreen>
                     const SizedBox(height: 8),
                     FilledButton.tonal(
                       key: const Key('close-path-continue'),
-                      onPressed: () =>
-                          _goClosePathPhase(ClosePathPhase.opportunistic),
+                      onPressed: () => _goClosePathPhase(
+                        ClosePathPhase.opportunistic,
+                        fromUser: true,
+                      ),
                       child: const Text('While you\'re there'),
                     ),
                   ],
@@ -5221,7 +5255,10 @@ class _SessionScreenState extends State<SessionScreen>
                 const SizedBox(height: 8),
                 FilledButton.tonal(
                   key: const Key('close-path-continue'),
-                  onPressed: () => _goClosePathPhase(ClosePathPhase.done),
+                  onPressed: () => _goClosePathPhase(
+                    ClosePathPhase.done,
+                    fromUser: true,
+                  ),
                   child: const Text('Done'),
                 ),
                 backButton(ClosePathPhase.verification),
