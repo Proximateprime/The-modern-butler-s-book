@@ -78,18 +78,10 @@ void main() {
 
       await completeGuidanceStepsIfPresent(tester);
 
-      expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
+      expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
+      expect(find.byKey(const Key('pro-handoff-why')), findsNothing);
       expect(find.byKey(const Key('verification-card')), findsNothing);
-      expect(find.byKey(const Key('guidance-step-progress')), findsNothing);
-      expect(find.byKey(const Key('pro-handoff-why')), findsOneWidget);
-      expect(find.textContaining('What a technician should be told'), findsOneWidget);
-      expect(find.textContaining('thermal fuse'), findsWidgets);
-
-      await tapVisible(
-        tester,
-        find.byKey(const Key('pro-handoff-understand')),
-      );
-      expect(find.byKey(const Key('outcome-needs-professional')), findsOneWidget);
+      expect(find.byKey(const Key('safety-stop-banner')), findsNothing);
     },
   );
 

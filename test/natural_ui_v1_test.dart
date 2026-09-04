@@ -196,8 +196,7 @@ void main() {
         find.byKey(const Key('answer-choice-no-warmth')),
       );
       await selectFailureMode(tester, 'heating-element-failed');
-      await reachClosePathVerificationIfPresent(tester);
-      await tapVisible(tester, find.byKey(const Key('pro-handoff-understand')));
+      await chooseCallAProFromDecision(tester);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('outcome-needs-professional')));

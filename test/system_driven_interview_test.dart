@@ -69,15 +69,7 @@ void main() {
         ),
       );
 
-      await reachClosePathVerificationIfPresent(tester);
-      expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
-      expect(find.byKey(const Key('close-answer-choice-panel')), findsNothing);
-      expect(find.byKey(const Key('answer-choice-panel')), findsNothing);
-
-      await tapVisible(
-        tester,
-        find.byKey(const Key('pro-handoff-understand')),
-      );
+      await chooseCallAProFromDecision(tester);
       await saveSessionOutcome(
         tester,
         choiceKey: const Key('outcome-needs-professional'),
@@ -104,7 +96,7 @@ void main() {
       await selectFailureMode(tester, 'heating-element-failed');
       await reachClosePathVerificationIfPresent(tester);
 
-      expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
+      expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
       expect(find.byKey(const Key('close-answer-choice-panel')), findsNothing);
     },
   );

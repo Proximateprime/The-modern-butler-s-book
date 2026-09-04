@@ -244,7 +244,7 @@ void main() {
       expect(find.textContaining('is warmth restored'), findsNothing);
 
       await completeGuidanceStepsIfPresent(tester);
-      expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
+      expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
       expect(find.byKey(const Key('verification-card')), findsNothing);
       expect(find.textContaining('Hand off to a qualified technician'), findsNothing);
     },

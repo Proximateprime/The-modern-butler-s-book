@@ -291,8 +291,7 @@ void main() {
           findsNothing,
         );
         expect(find.byKey(const Key('close-path-continue')), findsNothing);
-        if (find.byKey(const Key('pro-recommended-card')).evaluate().isNotEmpty ||
-            find.byKey(const Key('honesty-empty-stop-panel')).evaluate().isNotEmpty ||
+        if (find.byKey(const Key('honesty-empty-stop-panel')).evaluate().isNotEmpty ||
             find.byKey(const Key('guidance-could-not-panel')).evaluate().isNotEmpty) {
           break;
         }
@@ -305,10 +304,11 @@ void main() {
 
       expect(find.byKey(const Key('close-path-phase-verification')), findsNothing);
       expect(find.byKey(const Key('close-path-continue')), findsNothing);
+      expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
       expect(
-        find.byKey(const Key('pro-recommended-card')).evaluate().isNotEmpty ||
-            find.byKey(const Key('honesty-empty-stop-panel')).evaluate().isNotEmpty ||
-            find.byKey(const Key('guidance-could-not-panel')).evaluate().isNotEmpty,
+        find.byKey(const Key('honesty-empty-stop-panel')).evaluate().isNotEmpty ||
+            find.byKey(const Key('guidance-could-not-panel')).evaluate().isNotEmpty ||
+            find.byKey(const Key('safe-guidance-card')).evaluate().isNotEmpty,
         isTrue,
       );
     },
