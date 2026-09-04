@@ -6,6 +6,16 @@ abstract final class UserFacingCopy {
   static const packageUnavailable =
       'This appliance guide isn’t on this device. Install it from the guides '
       'stored here, then try again.';
+  static const cantHelpYet =
+      'I don’t have enough local knowledge for this part yet. We can continue '
+      'with basic checks, or try again when the package is available.';
+  static const packageCorrupt =
+      'This appliance guide on the device couldn’t be read. It will not guess '
+      'a cause. Install the guide from this device, or continue with basic '
+      'checks only.';
+  static const onDeviceModelUnavailable =
+      'That reader isn’t available here. Type what you see, or continue '
+      'without it. It is never used to decide what’s wrong.';
   static const packageInstallButton = 'Install from this device';
   static const installGuide = 'Install guide';
   static const missingGuideStartFreshHint =
@@ -380,8 +390,15 @@ String userFacingErrorMessage(Object error) {
   if (lower.contains('knowledge package') ||
       lower.contains('package is attached') ||
       lower.contains('package was not found') ||
-      lower.contains('could not be loaded')) {
+      lower.contains('could not be loaded') ||
+      lower.contains('no knowledge package is installed')) {
     return UserFacingCopy.packageUnavailable;
+  }
+  if (lower.contains('model_not_found') ||
+      lower.contains('model not found') ||
+      lower.contains('mlkit') ||
+      lower.contains('ml kit')) {
+    return UserFacingCopy.onDeviceModelUnavailable;
   }
   if (lower.contains('permission') && lower.contains('denied')) {
     return UserFacingCopy.photoPermissionDenied;

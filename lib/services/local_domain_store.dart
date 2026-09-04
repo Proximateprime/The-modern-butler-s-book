@@ -358,14 +358,7 @@ class DomainSnapshot {
                 _outcomeFromJson(Map<String, dynamic>.from(item as Map)),
           )
           .toList(),
-      sessionUiResumeBySessionId: resumeRaw.map(
-        (key, value) => MapEntry(
-          key as String,
-          SessionUiResumeState.fromJson(
-            Map<String, dynamic>.from(value as Map),
-          ),
-        ),
-      ),
+      sessionUiResumeBySessionId: _resumeMapFromJson(resumeRaw),
       foregroundSessionId: json['foregroundSessionId'] as String?,
       maintenanceReminders: List<dynamic>.from(
         json['maintenanceReminders'] as List? ?? const [],
@@ -415,6 +408,24 @@ KnowledgePackageRef _packageRefFromJson(Map<String, dynamic> json) {
     version: json['version'] as String,
     displayName: json['displayName'] as String,
   );
+}
+
+Map<String, SessionUiResumeState> _resumeMapFromJson(Map raw) {
+  final restored = <String, SessionUiResumeState>{};
+  for (final entry in raw.entries) {
+    try {
+      final value = entry.value;
+      if (value is! Map) {
+        continue;
+      }
+      restored[entry.key.toString()] = SessionUiResumeState.fromJson(
+        Map<String, dynamic>.from(value),
+      );
+    } catch (_) {
+      // Drop one bad resume row. Do not wipe the household book.
+    }
+  }
+  return restored;
 }
 
 Map<String, dynamic> _householdToJson(Household value) {
