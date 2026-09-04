@@ -459,6 +459,9 @@ void main() {
         first.repairSessionRepository.evidenceForSession(sessionId),
       );
 
+      await tapVisible(tester, find.byKey(const Key('session-exit-button')));
+      expect(find.byType(SessionScreen), findsNothing);
+
       await _continueAfterColdReload(
         tester: tester,
         store: store,
