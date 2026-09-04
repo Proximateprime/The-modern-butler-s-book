@@ -1,3 +1,17 @@
+## Resume open question v4 (2026-09-04)
+
+App **0.1.4+20**. Continue repair after a cold reload must **not invent an
+answer** for an unanswered on-screen open observation (no “Heavily clogged”
+fill or auto-select) and must **not advance past** that question (no jump
+to outside-vent). Naming a primary (Most likely / Reviewing chrome) may
+stay; it must not steal, blank, invent, or skip the open id. Clues stay
+honest — no fabricated interview answers in the store. V3/V2 gates stay:
+restore vs ranking-next, never blank to **No more questions for now**,
+never jump into **Following safe steps**, named primary must not block
+hold/restore. Groq stays phrasing-only. GOLDEN **Call a pro** stays.
+Play listing stays out. Tests: `test/resume_open_q_v4_test.dart`
+(V1–V3 suites stay green).
+
 ## Resume open question v3 (2026-09-04)
 
 App **0.1.4+19**. Continue repair after a cold reload restores the

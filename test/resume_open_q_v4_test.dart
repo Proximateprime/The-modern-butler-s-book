@@ -14,6 +14,7 @@ import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/main.dart';
 import 'package:modern_butlers_book/models/appliance.dart';
 import 'package:modern_butlers_book/models/evidence.dart';
+import 'package:modern_butlers_book/models/hypothesis.dart';
 import 'package:modern_butlers_book/models/repair_session.dart';
 import 'package:modern_butlers_book/models/session_ui_resume_state.dart';
 import 'package:modern_butlers_book/services/diagnostic_reasoning.dart';
@@ -45,10 +46,19 @@ bool _motorHummingQuestionIsOpen() {
   return _openQuestion('motor-audible').evaluate().isNotEmpty;
 }
 
+bool _outsideVentQuestionIsOpen() {
+  return _openQuestion('exterior-airflow').evaluate().isNotEmpty ||
+      find
+          .byKey(const Key('inspect-step-card-inspect-vent-hood'))
+          .evaluate()
+          .isNotEmpty;
+}
+
 void _expectLintFilterRestored({required int clueCount}) {
   expect(find.byType(SessionScreen), findsOneWidget);
   expect(_lintFilterQuestionIsOpen(), isTrue);
   expect(_motorHummingQuestionIsOpen(), isFalse);
+  expect(_outsideVentQuestionIsOpen(), isFalse);
   expect(find.textContaining('motor humming'), findsNothing);
   expect(find.text(UserFacingCopy.emptyFurtherQuestionsTitle), findsNothing);
   expect(find.textContaining('No more questions for now'), findsNothing);
@@ -57,6 +67,22 @@ void _expectLintFilterRestored({required int clueCount}) {
   expect(find.textContaining('Following safe steps'), findsNothing);
   expect(find.textContaining('we were on the safe steps'), findsNothing);
   expect(find.text(householdClueSummary(clueCount)), findsWidgets);
+}
+
+void _expectNoInventedLintFilterAnswer(List<Evidence> evidence) {
+  final lintAnswers = [
+    for (final item in evidence)
+      if (item.templateId == 'lint-filter-condition') item.answer,
+  ];
+  expect(lintAnswers, isEmpty);
+  expect(
+    evidence.any(
+      (item) =>
+          (item.answer ?? '').toLowerCase().contains('heavily clogged') ||
+          (item.answer ?? '').toLowerCase().contains("doesn't match"),
+    ),
+    isFalse,
+  );
 }
 
 void _addInterviewClue({
@@ -200,6 +226,44 @@ void _seedTwoCluesNoHeatPath({
   );
 }
 
+/// Three no-heat clues with lint-filter still unanswered (Rex +18 Path A).
+void _seedThreeCluesNoHeatPath({
+  required AppDependencies deps,
+  required String sessionId,
+  required String applianceId,
+}) {
+  _seedTwoCluesNoHeatPath(
+    deps: deps,
+    sessionId: sessionId,
+    applianceId: applianceId,
+  );
+  _addInterviewClue(
+    deps: deps,
+    sessionId: sessionId,
+    applianceId: applianceId,
+    templateId: 'vent-hose-condition',
+    observation: 'vent hose',
+    answer: 'Looks clear',
+  );
+}
+
+void _confirmThermalFusePrimary({
+  required AppDependencies deps,
+  required String sessionId,
+}) {
+  deps.sessionCoordinator.attachHypothesis(
+    Hypothesis(
+      id: deps.nextId('hypothesis'),
+      sessionId: sessionId,
+      failureModeId: 'thermal-fuse-open',
+      label: 'Thermal fuse open',
+      currentConfidence: 0.8,
+      status: HypothesisStatus.confirmed,
+      schemaVersion: '1.0',
+    ),
+  );
+}
+
 Future<void> _continueAfterColdReload({
   required WidgetTester tester,
   required LocalDomainStore store,
@@ -244,7 +308,91 @@ void main() {
     }
   });
 
-  test('unanswered open observation wins over empty ranking next', () {
+  test('named primary does not invent or drop unanswered open observation', () {
+    expect(
+      shouldKeepUnansweredOpenInterviewWhenPrimaryNamed(
+        onScreenTemplateId: 'lint-filter-condition',
+        onScreenStillOpen: true,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldKeepUnansweredOpenInterviewWhenPrimaryNamed(
+        onScreenTemplateId: 'lint-filter-condition',
+        onScreenStillOpen: false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldBlockResumeInventedObservationWrite(
+        resumeNotSettled: true,
+        unansweredOpenInterview: true,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldBlockResumeInventedObservationWrite(
+        resumeNotSettled: false,
+        unansweredOpenInterview: true,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldBlockResumeAdvancePastUnansweredOpenInterview(
+        unansweredOpenInterview: true,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldHoldUnansweredOpenInterviewOnResume(
+        onScreenTemplateId: 'lint-filter-condition',
+        onScreenStillOpen: true,
+        hasRealClosePathProgress: false,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldHoldUnansweredOpenInterviewOnResume(
+        onScreenTemplateId: 'lint-filter-condition',
+        onScreenStillOpen: true,
+        hasRealClosePathProgress: true,
+      ),
+      isFalse,
+    );
+    final restoreSource = _read('lib/ui/session_screen.dart');
+    expect(
+      restoreSource,
+      contains('shouldKeepUnansweredOpenInterviewWhenPrimaryNamed'),
+    );
+    expect(
+      restoreSource,
+      contains('shouldBlockResumeInventedObservationWrite'),
+    );
+    expect(
+      restoreSource,
+      contains('shouldHoldUnansweredOpenInterviewOnResume'),
+    );
+    expect(
+      restoreSource.contains(
+        'unansweredOpenObservationShouldStayOnScreen(\n'
+        '            onScreenTemplateId: pendingTemplateId,\n'
+        '            onScreenStillOpen: storedOpenStillOpen,\n'
+        '          ) &&\n'
+        '          decisionContext.primaryFailureModeId == null',
+      ),
+      isFalse,
+    );
+  });
+
+  test('V2 A/B/C helper gates still hold', () {
+    expect(
+      preferOnScreenOpenObservationId(
+        onScreenTemplateId: 'lint-filter-condition',
+        rankingSuggestedNextTemplateId: 'motor-audible',
+        onScreenStillOpen: true,
+      ),
+      'lint-filter-condition',
+    );
     expect(
       preferOnScreenOpenObservationId(
         onScreenTemplateId: 'lint-filter-condition',
@@ -254,45 +402,156 @@ void main() {
       'lint-filter-condition',
     );
     expect(
-      unansweredOpenObservationShouldStayOnScreen(
-        onScreenTemplateId: 'lint-filter-condition',
-        onScreenStillOpen: true,
-      ),
-      isTrue,
-    );
-  });
-
-  test('unanswered open observation pins resume off stolen guidance', () {
-    expect(
       resumeClosePathPhaseHonoringOpenObservation(
         computed: ClosePathPhase.guidance,
         unansweredOpenObservation: true,
       ),
       ClosePathPhase.conclusion,
     );
-    expect(
-      resumeHasRealClosePathProgress(
-        choseRepair: true,
-        completedGuidanceStepIds: const [],
-        guidanceStepIndex: 0,
-        readinessHaveByToolId: const {},
-        pendingCloseVerificationFailureModeId: null,
-        inspectReviewOnly: false,
-      ),
-      isTrue,
-    );
-    expect(
-      resumeHasRealClosePathProgress(
-        choseRepair: false,
-        completedGuidanceStepIds: const [],
-        guidanceStepIndex: 0,
-        readinessHaveByToolId: const {},
-        pendingCloseVerificationFailureModeId: null,
-        inspectReviewOnly: false,
-      ),
-      isFalse,
-    );
   });
+
+  testWidgets(
+    'Rex A-primary: named thermal fuse + unanswered lint-filter — Continue does not invent clogged or skip to outside-vent',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 4, 18);
+      final first = AppDependencies(clock: () => clock, store: store);
+      first.createHousehold('V4 Rex Primary House');
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
+      final sessionId = first.startOrResumeSession(dryer);
+      _seedTwoCluesNoHeatPath(
+        deps: first,
+        sessionId: sessionId,
+        applianceId: dryer.id,
+      );
+      first.saveSessionUiResume(
+        sessionId,
+        const SessionUiResumeState(
+          pendingObservationTemplateId: 'lint-filter-condition',
+          starterConfirmed: true,
+          starterSymptomIds: ['no-heat'],
+          closePathPhase: ClosePathPhase.conclusion,
+        ),
+      );
+      await first.flushPersist();
+
+      await prepareTallSurface(tester);
+      await tester.pumpWidget(ModernButlerApp(dependencies: first));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key('continue-repair-${dryer.id}')));
+      await tester.pumpAndSettle();
+      await dismissProblemStarterIfPresent(tester);
+
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      await selectFailureMode(tester, 'thermal-fuse-open');
+
+      expect(
+        first.buildDecisionContext(sessionId).primaryFailureModeId,
+        'thermal-fuse-open',
+      );
+      expect(
+        first.uiResumeForSession(sessionId)?.pendingObservationTemplateId,
+        'lint-filter-condition',
+      );
+      _expectNoInventedLintFilterAnswer(
+        first.repairSessionRepository.evidenceForSession(sessionId),
+      );
+
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
+
+      final restored = AppDependencies(clock: () => clock, store: store);
+      await restored.restore();
+      final evidence = restored.repairSessionRepository.evidenceForSession(
+        sessionId,
+      );
+      expect(
+        restored.buildDecisionContext(sessionId).primaryFailureModeId,
+        'thermal-fuse-open',
+      );
+      _expectNoInventedLintFilterAnswer(evidence);
+      expect(
+        restored
+            .uiResumeForSession(sessionId)
+            ?.pendingObservationTemplateId,
+        'lint-filter-condition',
+      );
+      _expectLintFilterRestored(clueCount: 2);
+      expect(find.textContaining('Heavily clogged'), findsNothing);
+      final onlyMostLikelyChrome = !_lintFilterQuestionIsOpen() &&
+          (find.textContaining('Most likely').evaluate().isNotEmpty ||
+              find
+                  .textContaining('Reviewing the likely cause')
+                  .evaluate()
+                  .isNotEmpty);
+      expect(onlyMostLikelyChrome, isFalse);
+    },
+  );
+
+  testWidgets(
+    'primary named + unanswered lint-filter: Continue restores the question',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 4, 20);
+      final first = AppDependencies(clock: () => clock, store: store);
+      first.createHousehold('V3 Primary Named House');
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
+      final sessionId = first.startOrResumeSession(dryer);
+      _seedThreeCluesNoHeatPath(
+        deps: first,
+        sessionId: sessionId,
+        applianceId: dryer.id,
+      );
+      _confirmThermalFusePrimary(deps: first, sessionId: sessionId);
+      first.saveSessionUiResume(
+        sessionId,
+        const SessionUiResumeState(
+          pendingObservationTemplateId: 'lint-filter-condition',
+          starterConfirmed: true,
+          starterSymptomIds: ['no-heat'],
+          closePathPhase: ClosePathPhase.conclusion,
+        ),
+      );
+      await first.flushPersist();
+
+      expect(
+        first.buildDecisionContext(sessionId).primaryFailureModeId,
+        'thermal-fuse-open',
+      );
+
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
+
+      final restored = AppDependencies(clock: () => clock, store: store);
+      await restored.restore();
+      expect(
+        restored.buildDecisionContext(sessionId).primaryFailureModeId,
+        'thermal-fuse-open',
+      );
+      _expectLintFilterRestored(clueCount: 3);
+      _expectNoInventedLintFilterAnswer(
+        restored.repairSessionRepository.evidenceForSession(sessionId),
+      );
+      expect(_outsideVentQuestionIsOpen(), isFalse);
+      final onlyMostLikelyChrome = !_lintFilterQuestionIsOpen() &&
+          (find.textContaining('Most likely').evaluate().isNotEmpty ||
+              find
+                  .textContaining('Reviewing the likely cause')
+                  .evaluate()
+                  .isNotEmpty);
+      expect(onlyMostLikelyChrome, isFalse);
+    },
+  );
 
   testWidgets(
     'A: Continue restores lint-filter under conclusion, not motor humming',
@@ -302,7 +561,7 @@ void main() {
       final store = LocalDomainStore(preferences: prefs);
       final clock = DateTime.utc(2026, 9, 4, 21);
       final first = AppDependencies(clock: () => clock, store: store);
-      first.createHousehold('V2 Conclusion House');
+      first.createHousehold('V3 Conclusion House');
       final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = first.startOrResumeSession(dryer);
       _seedSixCluesWontStartPath(
@@ -350,7 +609,7 @@ void main() {
       final store = LocalDomainStore(preferences: prefs);
       final clock = DateTime.utc(2026, 9, 4, 22);
       final first = AppDependencies(clock: () => clock, store: store);
-      first.createHousehold('V2 Blank Panel House');
+      first.createHousehold('V3 Blank Panel House');
       final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = first.startOrResumeSession(dryer);
       _seedTwoCluesNoHeatPath(
@@ -396,7 +655,7 @@ void main() {
       final store = LocalDomainStore(preferences: prefs);
       final clock = DateTime.utc(2026, 9, 4, 23);
       final first = AppDependencies(clock: () => clock, store: store);
-      first.createHousehold('V2 Guidance Steal House');
+      first.createHousehold('V3 Guidance Steal House');
       final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = first.startOrResumeSession(dryer);
       _seedStarter(

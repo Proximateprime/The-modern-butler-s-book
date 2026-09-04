@@ -49,10 +49,10 @@ const _fuseSteps = [
 ];
 
 void main() {
-  test('version is 0.1.4+19', () {
+  test('version is 0.1.4+20', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+19');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+19'));
+    expect(kAppVersionLabel, '0.1.4+20');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+20'));
   });
 
   test('no tools / I don’t screwdriver does not offer panel-off as next step', () {

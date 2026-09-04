@@ -142,6 +142,10 @@ class _SessionScreenState extends State<SessionScreen>
   /// Last interview template painted on the answer panel. Persist this id so
   /// Continue repair does not recompute ranking’s next question on restore.
   String? _lastShownOpenInterviewTemplateId;
+  /// True until the first frame after Continue repair restore. Blocks
+  /// suggested/default/inspect chips from writing an unanswered open
+  /// observation (lint-filter must not become “Heavily clogged”).
+  bool _blockResumeObservationWrites = false;
   List<FreeObservationSuggestion> _freeObservationSuggestions = const [];
   final TextEditingController _starterFreeTextController =
       TextEditingController();
@@ -167,6 +171,7 @@ class _SessionScreenState extends State<SessionScreen>
       }
       _maybeAdvanceToolsAfterRestore();
       _persistUiResume();
+      _blockResumeObservationWrites = false;
     });
   }
 
@@ -195,6 +200,7 @@ class _SessionScreenState extends State<SessionScreen>
   /// Restores Continue repair landing. Cases: docs/qa/RESUME_CASES.md.
   /// Unanswered on-screen interview is held even when a primary is named.
   void _restoreUiResume() {
+    _blockResumeObservationWrites = true;
     try {
       final decisionContext =
           widget.dependencies.buildDecisionContext(widget.sessionId);
@@ -562,6 +568,13 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
+  bool _shouldBlockResumeInventedObservationWrite() {
+    return shouldBlockResumeInventedObservationWrite(
+      resumeNotSettled: _blockResumeObservationWrites,
+      unansweredOpenInterview: _hasUnansweredOpenInterview(),
+    );
+  }
+
   /// Interview template the household is on, including ranking’s next question
   /// when the answer panel is showing suggested-next without a tapped chip.
   ///
@@ -682,6 +695,11 @@ class _SessionScreenState extends State<SessionScreen>
     FailureModeClosePath? closePath,
     bool inspectReviewOnly = false,
   }) {
+    if (_shouldBlockResumeInventedObservationWrite() &&
+        phase != ClosePathPhase.conclusion &&
+        phase != ClosePathPhase.inspect) {
+      return;
+    }
     if (phase == ClosePathPhase.inspect && inspectReviewOnly) {
       setState(() {
         _inspectReviewOnly = true;
@@ -1665,6 +1683,9 @@ class _SessionScreenState extends State<SessionScreen>
     EvidenceTemplate? forPrompt,
     String? describeNote,
   }) async {
+    if (_shouldBlockResumeInventedObservationWrite()) {
+      return;
+    }
     final closePath = _pendingCloseVerification;
     if (closePath != null) {
       _recordCloseVerification(closePath: closePath, answer: choice);
@@ -1765,6 +1786,9 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _markFreeObservationSuggestion(FreeObservationSuggestion suggestion) {
+    if (_shouldBlockResumeInventedObservationWrite()) {
+      return;
+    }
     final package = widget.dependencies.packageForSession(widget.sessionId);
     if (package == null) {
       return;
@@ -1976,6 +2000,9 @@ class _SessionScreenState extends State<SessionScreen>
     required String chip,
     required FailureModeClosePath closePath,
   }) {
+    if (_shouldBlockResumeInventedObservationWrite()) {
+      return;
+    }
     final package = widget.dependencies.packageForSession(widget.sessionId);
     if (package == null) {
       return;
@@ -2002,6 +2029,9 @@ class _SessionScreenState extends State<SessionScreen>
     required EvidenceTemplate prompt,
     required String chip,
   }) {
+    if (_shouldBlockResumeInventedObservationWrite()) {
+      return;
+    }
     final answer = step.answerForChip(chip);
     if (answer == null) {
       return;
@@ -2026,6 +2056,9 @@ class _SessionScreenState extends State<SessionScreen>
     required String answer,
     bool keepCurrentQuestion = false,
   }) {
+    if (_shouldBlockResumeInventedObservationWrite()) {
+      return;
+    }
     final session = widget.dependencies.repairSessionRepository
         .getSession(widget.sessionId);
     if (session == null) {
@@ -2264,9 +2297,15 @@ class _SessionScreenState extends State<SessionScreen>
       }
 
       setState(() {
-        _pendingAnswerPrompt = null;
+        if (!shouldKeepUnansweredOpenInterviewWhenPrimaryNamed(
+          onScreenTemplateId:
+              _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+          onScreenStillOpen: _hasUnansweredOpenInterview(),
+        )) {
+          _pendingAnswerPrompt = null;
+          _lastShownOpenInterviewTemplateId = null;
+        }
         _pendingCloseVerification = null;
-        _lastShownOpenInterviewTemplateId = null;
         _closePathPhase = ClosePathPhase.conclusion;
         _choseRepair = false;
         _guidanceStepIndex = 0;
