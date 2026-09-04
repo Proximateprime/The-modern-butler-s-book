@@ -140,6 +140,8 @@ void main() {
     expect(transcriptSuggestsHazard('burning plastic maybe'), isTrue);
     expect(transcriptSuggestsHazard('a spark at the plug'), isTrue);
     expect(transcriptSuggestsHazard('gas smell near the dryer'), isTrue);
+    expect(transcriptSuggestsHazard('I smell gas'), isTrue);
+    expect(transcriptSuggestsHazard('gas leak at the valve'), isTrue);
     expect(transcriptSuggestsHazard('nothing happens'), isFalse);
     expect(
       matchVoiceToAnswerChoice('yes', ['Yes', 'No', 'Not sure']),

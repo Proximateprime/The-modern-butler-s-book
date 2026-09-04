@@ -101,10 +101,10 @@ GroqPhrasingRequest _questionRequest() {
 }
 
 void main() {
-  test('version is 0.1.4+23', () {
+  test('version is 0.1.4+24', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+23');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+23'));
+    expect(kAppVersionLabel, '0.1.4+24');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+24'));
   });
 
   test('GOLDEN Call a pro stays frozen', () {

@@ -24,6 +24,11 @@ const String kReportWrongSupportEmail = 'reports@themodernbutlersbook.invalid';
 const int kReportWrongNoteMaxChars = 500;
 const int kReportWrongStoredCap = 20;
 
+/// Blank / whitespace-only notes are not persistable reports.
+bool shouldRejectEmptyReportWrongNote(String userNote) {
+  return userNote.trim().isEmpty;
+}
+
 /// Override in tests. Production opens a mailto draft when the OS can.
 Future<bool> Function(Uri mailto) reportWrongMailtoOpener =
     openReportWrongMailto;

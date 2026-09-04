@@ -65,10 +65,27 @@ class _ReportWrongScreenState extends State<ReportWrongScreen> {
       _busy = true;
       _status = null;
     });
+    if (shouldRejectEmptyReportWrongNote(_note.text)) {
+      setState(() {
+        _busy = false;
+        _status = UserFacingCopy.reportWrongEmptyNote;
+      });
+      return;
+    }
     final note = await widget.dependencies.saveWrongReport(
       userNote: _note.text,
       sessionId: widget.sessionId,
     );
+    if (!mounted) {
+      return;
+    }
+    if (note == null) {
+      setState(() {
+        _busy = false;
+        _status = UserFacingCopy.reportWrongEmptyNote;
+      });
+      return;
+    }
     if (!mounted) {
       return;
     }

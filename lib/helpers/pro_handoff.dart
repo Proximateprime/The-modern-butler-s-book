@@ -13,6 +13,7 @@ import 'dryer_problem_starter.dart';
 import 'evidence_prompt_match.dart';
 import 'groq_phrasing.dart';
 import 'guidance_display.dart';
+import 'hazard_language.dart';
 import 'inspect_steps.dart';
 import 'pro_scope.dart';
 import 'safety_stop.dart';
@@ -480,10 +481,7 @@ String? hazardSymptomFromEvidence(List<Evidence> evidence) {
       continue;
     }
     final answer = (item.answer ?? '').trim().toLowerCase();
-    if (answer == 'yes' ||
-        answer.contains('burning') ||
-        answer.contains('smoke') ||
-        answer.contains('spark')) {
+    if (answer == 'yes' || textSuggestsHazard(item.answer ?? '')) {
       return hazardSymptomLabel;
     }
   }

@@ -325,9 +325,11 @@ class _SessionScreenState extends State<SessionScreen>
       _opportunisticSkippedAll = resume?.opportunisticSkippedAll ?? false;
       _skipToBestGuess = resume?.skipToBestGuess ?? false;
       final storedPhase = resume?.closePathPhase ?? ClosePathPhase.conclusion;
-      _choseRepair = !holdOpenInterview &&
-          (resume?.choseRepair == true ||
-              closePathImpliesRepairChosen(storedPhase));
+      _choseRepair = choseRepairHonoringOpenInterviewHold(
+        holdOpenInterview: holdOpenInterview,
+        storedChoseRepair: resume?.choseRepair == true,
+        storedPhase: storedPhase,
+      );
       _closePathPhase =
           holdOpenInterview ? ClosePathPhase.conclusion : storedPhase;
       final storedSession = widget.dependencies.repairSessionRepository
@@ -455,6 +457,7 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   /// Keeps Continue repair on a real screen if restore throws. Does not rank.
+  /// Hold / [_choseRepair] matches the happy-resume gate so invent cannot reopen.
   void _recoverResumeAfterError() {
     try {
       final session = widget.dependencies.repairSessionRepository.getSession(
@@ -473,19 +476,66 @@ class _SessionScreenState extends State<SessionScreen>
       final resumeIndex = resume?.guidanceStepIndex ?? 0;
       _guidanceStepIndex =
           sessionIndex > resumeIndex ? sessionIndex : resumeIndex;
+      final evidence = widget.dependencies.repairSessionRepository
+          .evidenceForSession(widget.sessionId);
+      var holdOpenInterview = false;
       if (resume != null) {
         _readinessHaveByToolId = Map<String, bool>.from(
           resume.readinessHaveByToolId,
         );
         _readinessContinueWithCaution = resume.readinessContinueWithCaution;
-        _choseRepair = resume.choseRepair ||
-            closePathImpliesRepairChosen(resume.closePathPhase);
-        _closePathPhase = resumeClosePathPhase(
-          stored: resume.closePathPhase,
-          completedIds: _completedGuidanceStepIds,
-          choseRepair: _choseRepair,
-          toolsChecklistComplete: resume.readinessHaveByToolId.isNotEmpty,
-          inspectReviewOnly: resume.inspectReviewOnly,
+        final pendingId = resume.pendingObservationTemplateId;
+        var templateFound = false;
+        var stillOpen = pendingId != null && pendingId.isNotEmpty;
+        try {
+          final package =
+              widget.dependencies.packageForSession(widget.sessionId);
+          final templates = package?.evidenceTemplates ?? const [];
+          templateFound = pendingId != null &&
+              _templateById(templates, pendingId) != null;
+          if (templateFound) {
+            stillOpen = interviewTemplateIsStillOpen(
+              templateId: pendingId,
+              templates: templates,
+              recordedEvidence: evidence,
+            );
+          }
+        } catch (_) {
+          templateFound = false;
+          stillOpen = pendingId != null && pendingId.isNotEmpty;
+        }
+        stillOpen = recoverTreatsPendingObservationAsStillOpen(
+          pendingTemplateId: pendingId,
+          templateFound: templateFound,
+          interviewStillOpen: stillOpen,
+        );
+        holdOpenInterview = shouldHoldUnansweredOpenInterviewOnResume(
+          onScreenTemplateId: pendingId,
+          onScreenStillOpen: stillOpen,
+          hasRealClosePathProgress: resumeHasRealClosePathProgress(
+            choseRepair: resume.choseRepair,
+            completedGuidanceStepIds: resume.completedGuidanceStepIds,
+            guidanceStepIndex: resume.guidanceStepIndex,
+            readinessHaveByToolId: resume.readinessHaveByToolId,
+            pendingCloseVerificationFailureModeId:
+                resume.pendingCloseVerificationFailureModeId,
+            inspectReviewOnly: resume.inspectReviewOnly,
+          ),
+        );
+        _choseRepair = choseRepairHonoringOpenInterviewHold(
+          holdOpenInterview: holdOpenInterview,
+          storedChoseRepair: resume.choseRepair,
+          storedPhase: resume.closePathPhase,
+        );
+        _closePathPhase = resumeClosePathPhaseHonoringOpenObservation(
+          computed: resumeClosePathPhase(
+            stored: resume.closePathPhase,
+            completedIds: _completedGuidanceStepIds,
+            choseRepair: _choseRepair,
+            toolsChecklistComplete: resume.readinessHaveByToolId.isNotEmpty,
+            inspectReviewOnly: resume.inspectReviewOnly,
+          ),
+          unansweredOpenObservation: holdOpenInterview,
         );
         _skipToBestGuess = resume.skipToBestGuess;
         _opportunisticSkippedAll = resume.opportunisticSkippedAll;
@@ -499,8 +549,6 @@ class _SessionScreenState extends State<SessionScreen>
       } else if (_completedGuidanceStepIds.isNotEmpty) {
         _closePathPhase = ClosePathPhase.guidance;
       }
-      final evidence = widget.dependencies.repairSessionRepository
-          .evidenceForSession(widget.sessionId);
       _starterConfirmed = widget.appliance.category != 'dryer' ||
           resume?.starterConfirmed == true ||
           evidence.isNotEmpty;
@@ -532,18 +580,26 @@ class _SessionScreenState extends State<SessionScreen>
     );
     EvidenceTemplate? template;
     var stillOpen = pendingId.isNotEmpty;
+    var templateFound = false;
     try {
       final package = widget.dependencies.packageForSession(widget.sessionId);
       final templates = package?.evidenceTemplates ?? const [];
       template = _templateById(templates, pendingId);
+      templateFound = template != null;
       stillOpen = interviewTemplateIsStillOpen(
         templateId: pendingId,
         templates: templates,
         recordedEvidence: evidence,
       );
     } catch (_) {
+      templateFound = false;
       stillOpen = pendingId.isNotEmpty;
     }
+    stillOpen = recoverTreatsPendingObservationAsStillOpen(
+      pendingTemplateId: pendingId,
+      templateFound: templateFound,
+      interviewStillOpen: stillOpen,
+    );
     if (!stillOpen || hasProgress) {
       return;
     }
@@ -1888,6 +1944,9 @@ class _SessionScreenState extends State<SessionScreen>
         return;
       }
       final trimmed = note.trim();
+      if (trimmed.isNotEmpty && _tryRecordHazardFromTranscript(trimmed)) {
+        return;
+      }
       answer = recordedOtherDescribeAnswer(note);
       if (trimmed.isNotEmpty) {
         final liveSession =
@@ -1915,6 +1974,9 @@ class _SessionScreenState extends State<SessionScreen>
   void _saveFreeObservationNote() {
     final note = _freeObservationController.text.trim();
     if (note.isEmpty) {
+      return;
+    }
+    if (_tryRecordHazardFromTranscript(note)) {
       return;
     }
     final session = widget.dependencies.repairSessionRepository
@@ -1997,6 +2059,38 @@ class _SessionScreenState extends State<SessionScreen>
     });
   }
 
+  /// Voice, typed Other, and free notes share this write+lock. Hazard
+  /// language never stays as a clue-only Other / free note.
+  bool _tryRecordHazardFromTranscript(String transcript) {
+    if (!transcriptSuggestsHazard(transcript)) {
+      return false;
+    }
+    final package = widget.dependencies.packageForSession(widget.sessionId);
+    EvidenceTemplate? hazard;
+    if (package != null) {
+      for (final template in package.evidenceTemplates) {
+        if (template.id == 'hazard-observation') {
+          hazard = template;
+          break;
+        }
+      }
+    }
+    var wroteHazard = false;
+    if (hazard != null) {
+      wroteHazard = _recordEvidence(prompt: hazard, answer: 'Yes');
+    }
+    if (wroteHazard) {
+      setState(() {
+        _voiceHazardConfirm = true;
+        _pendingAnswerPrompt = null;
+        _freeObservationSuggestions = const [];
+        _freeObservationController.clear();
+      });
+      _persistUiResume();
+    }
+    return true;
+  }
+
   Future<void> _captureVoiceAnswer({
     required List<String> choices,
     required void Function(String choice) onChip,
@@ -2021,29 +2115,7 @@ class _SessionScreenState extends State<SessionScreen>
       if (!capture.hasTranscript) {
         return;
       }
-      if (transcriptSuggestsHazard(capture.transcript)) {
-        final package = widget.dependencies.packageForSession(widget.sessionId);
-        EvidenceTemplate? hazard;
-        if (package != null) {
-          for (final template in package.evidenceTemplates) {
-            if (template.id == 'hazard-observation') {
-              hazard = template;
-              break;
-            }
-          }
-        }
-        var wroteHazard = false;
-        if (hazard != null) {
-          wroteHazard = _recordEvidence(prompt: hazard, answer: 'Yes');
-        }
-        if (!wroteHazard) {
-          return;
-        }
-        setState(() {
-          _voiceHazardConfirm = true;
-          _pendingAnswerPrompt = null;
-        });
-        _persistUiResume();
+      if (_tryRecordHazardFromTranscript(capture.transcript)) {
         return;
       }
       final match = matchVoiceToAnswerChoice(capture.transcript, choices);

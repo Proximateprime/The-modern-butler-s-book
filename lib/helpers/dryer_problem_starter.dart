@@ -1,4 +1,5 @@
 import '../models/knowledge_package.dart';
+import 'hazard_language.dart';
 
 /// Template id for the seeded starting-complaint evidence row.
 const String problemStarterComplaintTemplateId = 'problem-starter-complaint';
@@ -84,18 +85,7 @@ const List<DryerStarterFamily> dryerStarterFamilies = [
     label: 'Burning smell, smoke, or sparks',
     chipLabel: 'Burning smell / smoke',
     firstTemplateId: 'hazard-observation',
-    keywords: [
-      'burning smell',
-      'burn smell',
-      'smoke',
-      'sparking',
-      'sparks',
-      'on fire',
-      'melting',
-      'melted',
-      'gas smell',
-      'smell of gas',
-    ],
+    keywords: kSharedHazardLanguageMarkers,
     priority: 0,
   ),
   DryerStarterFamily(
@@ -361,9 +351,7 @@ String buildStarterComplaintAnswer({
   var answer = parts.join(' — ');
   if (resolution.isHazard) {
     final lowered = answer.toLowerCase();
-    if (!lowered.contains('smoke') &&
-        !lowered.contains('burning') &&
-        !lowered.contains('spark')) {
+    if (!textSuggestsHazard(lowered)) {
       answer = answer.isEmpty
           ? 'Burning smell / smoke'
           : '$answer — burning smell / smoke';
