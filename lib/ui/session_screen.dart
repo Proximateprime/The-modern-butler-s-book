@@ -171,7 +171,15 @@ class _SessionScreenState extends State<SessionScreen>
       }
       _maybeAdvanceToolsAfterRestore();
       _persistUiResume();
-      _blockResumeObservationWrites = false;
+      // Second frame: 2nd/3rd Continue can still race inspect chips after
+      // the first persist. Keep invent-write blocked until that frame ends.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _persistUiResume();
+        _blockResumeObservationWrites = false;
+      });
     });
   }
 
@@ -538,48 +546,81 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
-  /// Unanswered pending/last-shown id, ignoring close-path phase.
+  /// Unanswered pending / stored / last-shown id, ignoring close-path phase.
   ///
   /// Inspect chrome must not treat a named primary as license to invent
   /// Heavily clogged or skip to outside-vent. I'll repair ([_choseRepair])
   /// still releases this hold.
   bool _hasUnansweredHeldObservationId() {
+    return _heldUnansweredOpenObservationId() != null && !_choseRepair;
+  }
+
+  String? _storedPendingObservationTemplateId() {
+    return widget.dependencies
+        .uiResumeForSession(widget.sessionId)
+        ?.pendingObservationTemplateId;
+  }
+
+  String? _heldUnansweredOpenObservationId() {
     try {
       final decisionContext =
           widget.dependencies.buildDecisionContext(widget.sessionId);
       final templates =
           decisionContext.package?.evidenceTemplates ?? const [];
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
-      return unansweredOpenObservationShouldStayOnScreen(
-            onScreenTemplateId: onScreenId,
-            onScreenStillOpen: interviewTemplateIsStillOpen(
-              templateId: onScreenId,
-              templates: templates,
-              recordedEvidence: decisionContext.evidence,
-            ),
-          ) &&
-          !_choseRepair;
+      final recorded = decisionContext.evidence;
+      bool stillOpen(String? id) => interviewTemplateIsStillOpen(
+            templateId: id,
+            templates: templates,
+            recordedEvidence: recorded,
+          );
+      return heldUnansweredOpenObservationId(
+        pendingTemplateId: _pendingAnswerPrompt?.id,
+        pendingStillOpen: stillOpen(_pendingAnswerPrompt?.id),
+        storedPendingTemplateId: _storedPendingObservationTemplateId(),
+        storedPendingStillOpen:
+            stillOpen(_storedPendingObservationTemplateId()),
+        paintedTemplateId: _lastShownOpenInterviewTemplateId,
+        paintedStillOpen: stillOpen(_lastShownOpenInterviewTemplateId),
+      );
     } catch (_) {
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
-      return unansweredOpenObservationShouldStayOnScreen(
-            onScreenTemplateId: onScreenId,
-            onScreenStillOpen: onScreenId != null && onScreenId.isNotEmpty,
-          ) &&
-          !_choseRepair;
+      final stored = _storedPendingObservationTemplateId();
+      return heldUnansweredOpenObservationId(
+        pendingTemplateId: _pendingAnswerPrompt?.id,
+        pendingStillOpen: _pendingAnswerPrompt?.id != null &&
+            _pendingAnswerPrompt!.id.isNotEmpty,
+        storedPendingTemplateId: stored,
+        storedPendingStillOpen: stored != null && stored.isNotEmpty,
+        paintedTemplateId: _lastShownOpenInterviewTemplateId,
+        paintedStillOpen: _lastShownOpenInterviewTemplateId != null &&
+            _lastShownOpenInterviewTemplateId!.isNotEmpty,
+      );
     }
   }
 
-  bool _hasUnansweredOpenInterview() {
-    return _hasUnansweredHeldObservationId() &&
-        !closePathImpliesRepairChosen(_closePathPhase);
+  bool _shouldBlockResumeInventedObservationWrite() {
+    final unanswered = _hasUnansweredHeldObservationId();
+    return shouldBlockResumeInventedObservationWrite(
+          resumeNotSettled: _blockResumeObservationWrites,
+          unansweredOpenInterview: unanswered,
+        ) ||
+        shouldBlockUnansweredOpenInterviewInventWrite(
+          unansweredOpenInterview: unanswered,
+        );
   }
 
-  bool _shouldBlockResumeInventedObservationWrite() {
-    return shouldBlockResumeInventedObservationWrite(
-      resumeNotSettled: _blockResumeObservationWrites,
-      unansweredOpenInterview: _hasUnansweredHeldObservationId(),
+  bool _shouldBlockUserObservationWrite({required String? promptId}) {
+    if (_blockResumeObservationWrites) {
+      return true;
+    }
+    final heldId = _heldUnansweredOpenObservationId();
+    if (heldId == null || _choseRepair) {
+      return false;
+    }
+    if (promptId == heldId) {
+      return false;
+    }
+    return shouldBlockUnansweredOpenInterviewInventWrite(
+      unansweredOpenInterview: true,
     );
   }
 
@@ -598,12 +639,7 @@ class _SessionScreenState extends State<SessionScreen>
       final recorded = decisionContext.evidence;
       final paintedId = _lastShownOpenInterviewTemplateId;
       final pendingId = _pendingAnswerPrompt?.id;
-      final onScreenId = pendingId ?? paintedId;
-      final storedPendingId = _blockResumeObservationWrites
-          ? widget.dependencies
-              .uiResumeForSession(widget.sessionId)
-              ?.pendingObservationTemplateId
-          : null;
+      final storedPendingId = _storedPendingObservationTemplateId();
       bool stillOpen(String? id) => interviewTemplateIsStillOpen(
             templateId: id,
             templates: templates,
@@ -631,29 +667,30 @@ class _SessionScreenState extends State<SessionScreen>
         }
       }
       return preferOnScreenOpenObservationId(
-        onScreenTemplateId: onScreenId,
+        onScreenTemplateId: pendingId,
         rankingSuggestedNextTemplateId: rankingNextId,
-        onScreenStillOpen: stillOpen(onScreenId),
+        onScreenStillOpen: stillOpen(pendingId),
         paintedTemplateId: paintedId,
         paintedStillOpen: stillOpen(paintedId),
         storedPendingTemplateId: storedPendingId,
         storedPendingStillOpen: stillOpen(storedPendingId),
       );
     } catch (_) {
-      final pendingId = _pendingAnswerPrompt?.id;
-      if (pendingId != null && pendingId.isNotEmpty) {
-        return pendingId;
-      }
-      final paintedId = _lastShownOpenInterviewTemplateId;
-      if (paintedId != null && paintedId.isNotEmpty) {
-        return paintedId;
-      }
-      if (_blockResumeObservationWrites) {
-        return widget.dependencies
-            .uiResumeForSession(widget.sessionId)
-            ?.pendingObservationTemplateId;
-      }
-      return null;
+      return heldUnansweredOpenObservationId(
+            pendingTemplateId: _pendingAnswerPrompt?.id,
+            pendingStillOpen: _pendingAnswerPrompt?.id != null &&
+                _pendingAnswerPrompt!.id.isNotEmpty,
+            storedPendingTemplateId: _storedPendingObservationTemplateId(),
+            storedPendingStillOpen:
+                _storedPendingObservationTemplateId() != null &&
+                    _storedPendingObservationTemplateId()!.isNotEmpty,
+            paintedTemplateId: _lastShownOpenInterviewTemplateId,
+            paintedStillOpen: _lastShownOpenInterviewTemplateId != null &&
+                _lastShownOpenInterviewTemplateId!.isNotEmpty,
+          ) ??
+          (_blockResumeObservationWrites
+              ? _storedPendingObservationTemplateId()
+              : null);
     }
   }
 
@@ -715,7 +752,9 @@ class _SessionScreenState extends State<SessionScreen>
     }
     _closePathPhase = ClosePathPhase.verification;
     _pendingCloseVerification = closePath;
-    _pendingAnswerPrompt = null;
+    if (!_hasUnansweredHeldObservationId()) {
+      _pendingAnswerPrompt = null;
+    }
   }
 
   void _goClosePathPhase(
@@ -1240,6 +1279,9 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _maybeAdvanceFromTools(FailureModeClosePath closePath) {
+    if (_hasUnansweredHeldObservationId()) {
+      return;
+    }
     if (_closePathPhase != ClosePathPhase.tools) {
       return;
     }
@@ -1304,7 +1346,9 @@ class _SessionScreenState extends State<SessionScreen>
       } else if (steps.isEmpty || next >= steps.length) {
         _closePathPhase = ClosePathPhase.verification;
         _pendingCloseVerification = closePath;
-        _pendingAnswerPrompt = null;
+        if (!_hasUnansweredHeldObservationId()) {
+          _pendingAnswerPrompt = null;
+        }
       }
     });
     _persistUiResume();
@@ -1322,7 +1366,9 @@ class _SessionScreenState extends State<SessionScreen>
     setState(() {
       _closePathPhase = ClosePathPhase.verification;
       _pendingCloseVerification = closePath;
-      _pendingAnswerPrompt = null;
+      if (!_hasUnansweredHeldObservationId()) {
+        _pendingAnswerPrompt = null;
+      }
       _guidanceCouldNot = false;
     });
     _persistUiResume();
@@ -1701,6 +1747,11 @@ class _SessionScreenState extends State<SessionScreen>
     if (_currentSafetyStop() != null) {
       return;
     }
+    if (shouldBlockResumeAdvancePastUnansweredOpenInterview(
+      unansweredOpenInterview: _hasUnansweredHeldObservationId(),
+    )) {
+      return;
+    }
     setState(() {
       _pendingAnswerPrompt = null;
       _pendingCloseVerification = closePath;
@@ -1713,17 +1764,20 @@ class _SessionScreenState extends State<SessionScreen>
     EvidenceTemplate? forPrompt,
     String? describeNote,
   }) async {
-    if (_shouldBlockResumeInventedObservationWrite()) {
-      return;
-    }
     final closePath = _pendingCloseVerification;
     if (closePath != null) {
+      if (_shouldBlockResumeInventedObservationWrite()) {
+        return;
+      }
       _recordCloseVerification(closePath: closePath, answer: choice);
       return;
     }
 
     final prompt = forPrompt ?? _pendingAnswerPrompt;
     if (prompt == null) {
+      return;
+    }
+    if (_shouldBlockUserObservationWrite(promptId: prompt.id)) {
       return;
     }
 
@@ -2060,7 +2114,7 @@ class _SessionScreenState extends State<SessionScreen>
     required EvidenceTemplate prompt,
     required String chip,
   }) {
-    if (_shouldBlockResumeInventedObservationWrite()) {
+    if (_shouldBlockUserObservationWrite(promptId: prompt.id)) {
       return;
     }
     final answer = step.answerForChip(chip);
@@ -2087,7 +2141,7 @@ class _SessionScreenState extends State<SessionScreen>
     required String answer,
     bool keepCurrentQuestion = false,
   }) {
-    if (_shouldBlockResumeInventedObservationWrite()) {
+    if (_shouldBlockUserObservationWrite(promptId: prompt.id)) {
       return;
     }
     final session = widget.dependencies.repairSessionRepository
@@ -2329,9 +2383,10 @@ class _SessionScreenState extends State<SessionScreen>
 
       setState(() {
         if (!shouldKeepUnansweredOpenInterviewWhenPrimaryNamed(
-          onScreenTemplateId:
-              _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
-          onScreenStillOpen: _hasUnansweredOpenInterview(),
+          onScreenTemplateId: _heldUnansweredOpenObservationId() ??
+              _pendingAnswerPrompt?.id ??
+              _lastShownOpenInterviewTemplateId,
+          onScreenStillOpen: _hasUnansweredHeldObservationId(),
         )) {
           _pendingAnswerPrompt = null;
           _lastShownOpenInterviewTemplateId = null;
@@ -2390,6 +2445,15 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _continueReadinessWithCaution() {
+    if (shouldBlockResumeAdvancePastUnansweredOpenInterview(
+      unansweredOpenInterview: _hasUnansweredHeldObservationId(),
+    )) {
+      setState(() {
+        _readinessContinueWithCaution = true;
+      });
+      _persistUiResume();
+      return;
+    }
     final closePath = _boundClosePathForCurrentSession();
     setState(() {
       _readinessContinueWithCaution = true;
@@ -2656,19 +2720,7 @@ class _SessionScreenState extends State<SessionScreen>
           primaryFailureModeId: primaryFailureModeId,
         );
     final isRevisingEvidence = _revisingTemplateId != null;
-    final restoringOpenInterview =
-        unansweredOpenObservationShouldStayOnScreen(
-          onScreenTemplateId:
-              _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
-          onScreenStillOpen: interviewTemplateIsStillOpen(
-            templateId:
-                _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
-            templates: prompts,
-            recordedEvidence: decisionContext.evidence,
-          ),
-        ) &&
-        !_choseRepair &&
-        !closePathImpliesRepairChosen(_closePathPhase);
+    final restoringOpenInterview = _hasUnansweredHeldObservationId();
     final effectiveInvestigationStopped = investigationStopped &&
         !isRevisingEvidence &&
         !restoringOpenInterview;
@@ -2735,7 +2787,7 @@ class _SessionScreenState extends State<SessionScreen>
     if (restoringOpenInterview && pendingForInterview == null) {
       pendingForInterview = _templateById(
         prompts,
-        _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+        _heldUnansweredOpenObservationId(),
       );
     }
     final showClosePath = effectiveInvestigationStopped &&

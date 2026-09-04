@@ -290,6 +290,20 @@ Future<void> _continueAfterColdReload({
   await dismissProblemStarterIfPresent(tester);
 }
 
+Future<void> _exitAndContinueAgain({
+  required WidgetTester tester,
+  required LocalDomainStore store,
+  required DateTime clock,
+}) async {
+  await tapVisible(tester, find.byKey(const Key('session-exit-button')));
+  expect(find.byType(SessionScreen), findsNothing);
+  await _continueAfterColdReload(
+    tester: tester,
+    store: store,
+    clock: clock,
+  );
+}
+
 void main() {
   test('version is 0.1.4+22', () {
     expect(kAppVersion, '0.1.4');
@@ -311,6 +325,52 @@ void main() {
       expect(source, isNot(contains('Transform(')));
       expect(source, isNot(contains('Transform.')));
     }
+  });
+
+  test('stored unanswered id wins over painted ranking-next steal', () {
+    expect(
+      heldUnansweredOpenObservationId(
+        pendingTemplateId: null,
+        pendingStillOpen: false,
+        storedPendingTemplateId: 'lint-filter-condition',
+        storedPendingStillOpen: true,
+        paintedTemplateId: 'exterior-airflow',
+        paintedStillOpen: true,
+      ),
+      'lint-filter-condition',
+    );
+    expect(
+      preferOnScreenOpenObservationId(
+        onScreenTemplateId: null,
+        rankingSuggestedNextTemplateId: 'drum-turns',
+        onScreenStillOpen: false,
+        paintedTemplateId: 'exterior-airflow',
+        paintedStillOpen: true,
+        storedPendingTemplateId: 'lint-filter-condition',
+        storedPendingStillOpen: true,
+      ),
+      'lint-filter-condition',
+    );
+    expect(
+      shouldBlockUnansweredOpenInterviewInventWrite(
+        unansweredOpenInterview: true,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldBlockUnansweredOpenInterviewInventWrite(
+        unansweredOpenInterview: false,
+      ),
+      isFalse,
+    );
+    final restoreSource = _read('lib/ui/session_screen.dart');
+    expect(restoreSource, contains('heldUnansweredOpenObservationId'));
+    expect(
+      restoreSource,
+      contains('shouldBlockUnansweredOpenInterviewInventWrite'),
+    );
+    expect(restoreSource, contains('_shouldBlockUserObservationWrite'));
+    expect(restoreSource, contains('_storedPendingObservationTemplateId'));
   });
 
   test('unanswered open id wins over ranking next and earlier drum-turns', () {
@@ -451,6 +511,132 @@ void main() {
   });
 
   testWidgets(
+    'multi-reload: primary named + unanswered lint-filter stays unanswered every Continue',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 6, 8);
+      final first = AppDependencies(clock: () => clock, store: store);
+      first.createHousehold('V6 Multi Reload House');
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
+      final sessionId = first.startOrResumeSession(dryer);
+      _seedThreeCluesNoHeatPath(
+        deps: first,
+        sessionId: sessionId,
+        applianceId: dryer.id,
+      );
+      _confirmThermalFusePrimary(deps: first, sessionId: sessionId);
+      first.saveSessionUiResume(
+        sessionId,
+        const SessionUiResumeState(
+          pendingObservationTemplateId: 'lint-filter-condition',
+          starterConfirmed: true,
+          starterSymptomIds: ['no-heat'],
+          closePathPhase: ClosePathPhase.conclusion,
+        ),
+      );
+      await first.flushPersist();
+
+      expect(
+        first.buildDecisionContext(sessionId).primaryFailureModeId,
+        'thermal-fuse-open',
+      );
+
+      const reloadCount = 5;
+      for (var i = 0; i < reloadCount; i++) {
+        await _continueAfterColdReload(
+          tester: tester,
+          store: store,
+          clock: clock,
+        );
+        final restored = AppDependencies(clock: () => clock, store: store);
+        await restored.restore();
+        expect(
+          restored.buildDecisionContext(sessionId).primaryFailureModeId,
+          'thermal-fuse-open',
+        );
+        _expectNoInventedLintFilterAnswer(
+          restored.repairSessionRepository.evidenceForSession(sessionId),
+        );
+        expect(
+          restored
+              .uiResumeForSession(sessionId)
+              ?.pendingObservationTemplateId,
+          'lint-filter-condition',
+        );
+        _expectLintFilterRestored(clueCount: 3);
+        expect(find.textContaining('Heavily clogged'), findsNothing);
+        expect(_outsideVentQuestionIsOpen(), isFalse);
+        final onlyMostLikelyChrome = !_lintFilterQuestionIsOpen() &&
+            (find.textContaining('Most likely').evaluate().isNotEmpty ||
+                find
+                    .textContaining('Reviewing the likely cause')
+                    .evaluate()
+                    .isNotEmpty);
+        expect(onlyMostLikelyChrome, isFalse);
+        await tapVisible(tester, find.byKey(const Key('session-exit-button')));
+        expect(find.byType(SessionScreen), findsNothing);
+      }
+    },
+  );
+
+  testWidgets(
+    'live invent-A multi-reload: Thermal fuse named — Continue never invents clogged or jumps to outside-vent',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 6, 9);
+      final first = AppDependencies(clock: () => clock, store: store);
+
+      await openDryerSession(
+        tester,
+        first,
+        'V6 Invent A Multi House',
+        skipProblemStarter: false,
+      );
+      await confirmNoHeatStarter(tester);
+      if (!_lintFilterQuestionIsOpen()) {
+        await selectObservation(tester, 'lint-filter-condition');
+      }
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      await selectFailureMode(tester, 'thermal-fuse-open');
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      expect(_outsideVentQuestionIsOpen(), isFalse);
+      final sessionId =
+          first.repairSessionRepository.listAllSessions().single.id;
+      _expectNoInventedLintFilterAnswer(
+        first.repairSessionRepository.evidenceForSession(sessionId),
+      );
+
+      const reloadCount = 5;
+      for (var i = 0; i < reloadCount; i++) {
+        await _exitAndContinueAgain(
+          tester: tester,
+          store: store,
+          clock: clock,
+        );
+        final restored = AppDependencies(clock: () => clock, store: store);
+        await restored.restore();
+        expect(
+          restored.buildDecisionContext(sessionId).primaryFailureModeId,
+          'thermal-fuse-open',
+        );
+        _expectNoInventedLintFilterAnswer(
+          restored.repairSessionRepository.evidenceForSession(sessionId),
+        );
+        expect(_lintFilterQuestionIsOpen(), isTrue);
+        expect(_drumTurnsQuestionIsOpen(), isFalse);
+        expect(_outsideVentQuestionIsOpen(), isFalse);
+        expect(find.textContaining('Heavily clogged'), findsNothing);
+        expect(find.textContaining('Following safe steps'), findsNothing);
+        expect(find.textContaining('No more questions for now'), findsNothing);
+      }
+    },
+  );
+
+  testWidgets(
     'Rex: unanswered lint-filter Continue restores lint-filter, not drum-turns',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
@@ -458,7 +644,7 @@ void main() {
       final store = LocalDomainStore(preferences: prefs);
       final clock = DateTime.utc(2026, 9, 5, 9);
       final first = AppDependencies(clock: () => clock, store: store);
-      first.createHousehold('V5 Rex Drum Reset House');
+      first.createHousehold('V6 Rex Drum Reset House');
       final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = first.startOrResumeSession(dryer);
       first.saveSessionUiResume(
@@ -511,7 +697,7 @@ void main() {
       await openDryerSession(
         tester,
         first,
-        'V5 Live Lint House',
+        'V6 Live Lint House',
         skipProblemStarter: false,
       );
       await confirmNoHeatStarter(tester);
@@ -549,7 +735,7 @@ void main() {
       await openDryerSession(
         tester,
         first,
-        'V5 Invent A Live House',
+        'V6 Invent A Live House',
         skipProblemStarter: false,
       );
       await confirmNoHeatStarter(tester);

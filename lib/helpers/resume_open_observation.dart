@@ -19,17 +19,33 @@ String? preferOnScreenOpenObservationId({
   String? storedPendingTemplateId,
   bool storedPendingStillOpen = false,
 }) {
+  return heldUnansweredOpenObservationId(
+        pendingTemplateId: onScreenTemplateId,
+        pendingStillOpen: onScreenStillOpen,
+        storedPendingTemplateId: storedPendingTemplateId,
+        storedPendingStillOpen: storedPendingStillOpen,
+        paintedTemplateId: paintedTemplateId,
+        paintedStillOpen: paintedStillOpen,
+      ) ??
+      rankingSuggestedNextTemplateId;
+}
+
+/// Unanswered held id: in-memory pending, then the stored Continue-repair
+/// row, then last painted. Stored wins over a painted ranking-next steal
+/// (drum-turns / outside-vent) so the 2nd/3rd cold reload cannot invent.
+String? heldUnansweredOpenObservationId({
+  required String? pendingTemplateId,
+  required bool pendingStillOpen,
+  String? storedPendingTemplateId,
+  bool storedPendingStillOpen = false,
+  String? paintedTemplateId,
+  bool paintedStillOpen = false,
+}) {
   if (unansweredOpenObservationShouldStayOnScreen(
-    onScreenTemplateId: onScreenTemplateId,
-    onScreenStillOpen: onScreenStillOpen,
+    onScreenTemplateId: pendingTemplateId,
+    onScreenStillOpen: pendingStillOpen,
   )) {
-    return onScreenTemplateId;
-  }
-  if (unansweredOpenObservationShouldStayOnScreen(
-    onScreenTemplateId: paintedTemplateId,
-    onScreenStillOpen: paintedStillOpen,
-  )) {
-    return paintedTemplateId;
+    return pendingTemplateId;
   }
   if (unansweredOpenObservationShouldStayOnScreen(
     onScreenTemplateId: storedPendingTemplateId,
@@ -37,7 +53,13 @@ String? preferOnScreenOpenObservationId({
   )) {
     return storedPendingTemplateId;
   }
-  return rankingSuggestedNextTemplateId;
+  if (unansweredOpenObservationShouldStayOnScreen(
+    onScreenTemplateId: paintedTemplateId,
+    onScreenStillOpen: paintedStillOpen,
+  )) {
+    return paintedTemplateId;
+  }
+  return null;
 }
 
 /// Unanswered on-screen interview wins over ranking next *and* over a null
@@ -89,11 +111,24 @@ bool shouldKeepUnansweredOpenInterviewWhenPrimaryNamed({
 /// Continue repair must not write a suggested, default, or inspect chip for
 /// an unanswered open observation (for example lint-filter → “Heavily
 /// clogged”) while restore is still settling.
+///
+/// V4/V5 kept this settle-only. Auto inspect / close-path writes after the
+/// first frame still invented on later Continues — use
+/// [shouldBlockUnansweredOpenInterviewInventWrite] for the durable hold.
 bool shouldBlockResumeInventedObservationWrite({
   required bool resumeNotSettled,
   required bool unansweredOpenInterview,
 }) {
   return resumeNotSettled && unansweredOpenInterview;
+}
+
+/// Invent-write (inspect Doesn't match / Not OK, suggestions, defaults) is
+/// impossible while an unanswered open observation is held — every reload,
+/// not only the settling frame.
+bool shouldBlockUnansweredOpenInterviewInventWrite({
+  required bool unansweredOpenInterview,
+}) {
+  return unansweredOpenInterview;
 }
 
 /// Close-path Continue / inspect auto-advance must not skip an unanswered
