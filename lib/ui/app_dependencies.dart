@@ -205,6 +205,7 @@ class AppDependencies {
   int _idCounter = 0;
   Future<void>? _persistChain;
   Future<void>? _toolsPersistChain;
+  bool _persistDirty = false;
 
   Household? currentHousehold;
   String? currentMemberId;
@@ -2312,7 +2313,18 @@ class AppDependencies {
       return;
     }
 
+    _persistDirty = true;
     _persistChain = (_persistChain ?? Future<void>.value()).then((_) async {
+      await _drainQueuedPersist(store);
+    }).catchError((_) {});
+  }
+
+  /// Writes the latest in-memory snapshot, then recaptures if more mutations
+  /// landed while that write was in flight. One in-flight save must not leave
+  /// later clues / the open question stuck behind a stale queued snapshot.
+  Future<void> _drainQueuedPersist(LocalDomainStore store) async {
+    while (_persistDirty) {
+      _persistDirty = false;
       final snapshot = _captureSnapshot();
       await store.save(snapshot);
       for (final household in snapshot.households) {
@@ -2322,12 +2334,15 @@ class AppDependencies {
           generation: household.ownedToolsGeneration,
         );
       }
-    }).catchError((_) {});
+    }
   }
 
   /// Waits for any queued local snapshot write to finish.
   Future<void> flushPersist() async {
     while (true) {
+      if (_persistDirty) {
+        _schedulePersist();
+      }
       final persist = _persistChain;
       final tools = _toolsPersistChain;
       await Future.wait([
@@ -2335,7 +2350,8 @@ class AppDependencies {
         tools ?? Future<void>.value(),
       ]);
       if (identical(_persistChain, persist) &&
-          identical(_toolsPersistChain, tools)) {
+          identical(_toolsPersistChain, tools) &&
+          !_persistDirty) {
         return;
       }
     }

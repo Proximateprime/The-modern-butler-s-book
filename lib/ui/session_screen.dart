@@ -363,7 +363,22 @@ class _SessionScreenState extends State<SessionScreen>
           _resumeFailed = true;
         }
       }
+      if (package != null &&
+          _pendingCloseVerification == null &&
+          _pendingAnswerPrompt == null &&
+          !_starterLimitedGuidance &&
+          _closePathPhase == ClosePathPhase.conclusion &&
+          !_choseRepair) {
+        final nextId = _resumeOpenInterviewTemplateId();
+        if (nextId != null) {
+          _pendingAnswerPrompt = _templateById(
+            package.evidenceTemplates,
+            nextId,
+          );
+        }
+      }
       _persistUiResume();
+      unawaited(widget.dependencies.flushPersist());
     } catch (_) {
       _resumeFailed = true;
       _recoverResumeAfterError();
@@ -462,11 +477,55 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
+  /// Interview template the household is on, including ranking’s next question
+  /// when the answer panel is showing suggested-next without a tapped chip.
+  String? _resumeOpenInterviewTemplateId() {
+    if (_pendingAnswerPrompt != null) {
+      return _pendingAnswerPrompt!.id;
+    }
+    if (_pendingCloseVerification != null ||
+        _choseRepair ||
+        _closePathPhase != ClosePathPhase.conclusion) {
+      return null;
+    }
+    try {
+      final decisionContext =
+          widget.dependencies.buildDecisionContext(widget.sessionId);
+      final package = decisionContext.package;
+      if (package == null) {
+        return null;
+      }
+      if (shouldStopInvestigation(
+        templates: package.evidenceTemplates,
+        recordedEvidence: decisionContext.evidence,
+        primaryFailureModeId: decisionContext.primaryFailureModeId,
+      )) {
+        return null;
+      }
+      final nextId =
+          _evaluateReasoning(decisionContext)?.suggestedNextTemplateId;
+      if (nextId == null) {
+        return null;
+      }
+      final template = _templateById(package.evidenceTemplates, nextId);
+      if (template == null ||
+          isTemplateRecorded(
+            template: template,
+            recordedEvidence: decisionContext.evidence,
+          )) {
+        return null;
+      }
+      return nextId;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _persistUiResume() {
     widget.dependencies.saveSessionUiResume(
       widget.sessionId,
       SessionUiResumeState(
-        pendingObservationTemplateId: _pendingAnswerPrompt?.id,
+        pendingObservationTemplateId: _resumeOpenInterviewTemplateId(),
         pendingCloseVerificationFailureModeId:
             _pendingCloseVerification?.failureModeId,
         revisingObservationTemplateId: _revisingTemplateId,
@@ -1257,6 +1316,7 @@ class _SessionScreenState extends State<SessionScreen>
             );
       });
       _persistUiResume();
+      unawaited(widget.dependencies.flushPersist());
       widget.dependencies.queueEnrichmentRequest(
         EnrichmentRequest(
           key: enrichmentCacheKey(
@@ -1308,6 +1368,7 @@ class _SessionScreenState extends State<SessionScreen>
       _pendingAnswerPrompt = template;
     });
     _persistUiResume();
+    unawaited(widget.dependencies.flushPersist());
   }
 
   void _recordStarterEvidence({
@@ -1398,6 +1459,7 @@ class _SessionScreenState extends State<SessionScreen>
       _pendingAnswerPrompt = template;
     });
     _persistUiResume();
+    unawaited(widget.dependencies.flushPersist());
   }
 
   void _beginAnswerPrompt(EvidenceTemplate prompt) {
@@ -1411,6 +1473,7 @@ class _SessionScreenState extends State<SessionScreen>
       _clearRevisionState();
     });
     _persistUiResume();
+    unawaited(widget.dependencies.flushPersist());
   }
 
   void _beginReviseEvidence({
@@ -1956,6 +2019,7 @@ class _SessionScreenState extends State<SessionScreen>
         }
       });
       _persistUiResume();
+      unawaited(widget.dependencies.flushPersist());
       if (!keepCurrentQuestion) {
         final nextContext =
             widget.dependencies.buildDecisionContext(session.id);
@@ -2727,10 +2791,10 @@ class _SessionScreenState extends State<SessionScreen>
                     if (_showResumeKnew && _resumeKnewLine != null) ...[
                       const SizedBox(height: 12),
                       Text(
-                        (phrasingOverlay != null &&
-                                phrasingOverlay.screenKey.startsWith('resume|'))
-                            ? phrasingOverlay.whyOneLine
-                            : _resumeKnewLine!,
+                        resumeBannerSpokenLine(
+                          packaged: _resumeKnewLine!,
+                          overlay: phrasingOverlay,
+                        ),
                         key: const Key('resume-knew-banner'),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),

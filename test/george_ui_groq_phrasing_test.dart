@@ -66,9 +66,9 @@ GroqPhrasingRequest _stopRequest({String comfort = 'normal'}) {
 }
 
 void main() {
-  test('version is 0.1.4+15', () {
+  test('version is 0.1.4+16', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+15');
+    expect(kAppVersionLabel, '0.1.4+16');
   });
 
   test('QuestionSelectionService still does not call Groq', () {
