@@ -158,10 +158,10 @@ const _lintFilterResume = SessionUiResumeState(
 );
 
 void main() {
-  test('version is 0.1.4+22', () {
+  test('version is 0.1.4+23', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+22');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+22'));
+    expect(kAppVersionLabel, '0.1.4+23');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+23'));
   });
 
   test('resume pack does not introduce Transform', () {

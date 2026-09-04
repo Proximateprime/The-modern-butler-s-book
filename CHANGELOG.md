@@ -1,3 +1,18 @@
+## Audit hardening v1 (2026-09-04)
+
+App **0.1.4+23**. Voice hazard always records and locks even under
+invent/settle/hold. Tool-honesty empty guidance stays on stop / Call a
+pro — it never advances to verification. After **I'll repair**, DIY
+chrome does not say a full fix needs a pro, that you cannot finish at
+home, or that a technician fits this part. Optional tools copy allows
+**I don’t** continue. Report-wrong fields are household labels only.
+Resume recover keeps a held open observation. Held taps survive settle.
+Corrupt resume rows surface calm resume-failed copy. Tool honesty prefers
+package `requiresPanelOff` / `requiresMeter` tags. Settings can warn when
+hosted `version.json` lags the running build. Groq stays phrasing-only.
+GOLDEN **Call a pro** stays. Play listing stays out. Tests:
+`test/audit_hardening_v1_test.dart` (prior suites stay green).
+
 ## Resume open question v6 (2026-09-04)
 
 App **0.1.4+22**. Continue repair after a **cold reload, every time**

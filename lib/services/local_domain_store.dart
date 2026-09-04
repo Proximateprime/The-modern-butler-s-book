@@ -215,6 +215,7 @@ class DomainSnapshot {
     required this.hypothesisIdsBySession,
     required this.outcomes,
     this.sessionUiResumeBySessionId = const {},
+    this.droppedCorruptResumeSessionIds = const {},
     this.foregroundSessionId,
     this.maintenanceReminders = const [],
     this.repairComfort = const RepairComfortProfile(),
@@ -239,6 +240,10 @@ class DomainSnapshot {
   final Map<String, List<String>> hypothesisIdsBySession;
   final List<SessionOutcome> outcomes;
   final Map<String, SessionUiResumeState> sessionUiResumeBySessionId;
+
+  /// Resume JSON that could not be read. Not invented. Session screen shows
+  /// calm resume-failed copy instead of silently skipping the last question.
+  final Set<String> droppedCorruptResumeSessionIds;
 
   /// Session the user was looking at when the app last backgrounded.
   ///
@@ -292,6 +297,7 @@ class DomainSnapshot {
   factory DomainSnapshot.fromJson(Map<String, dynamic> json) {
     final resumeRaw =
         json['sessionUiResumeBySessionId'] as Map? ?? const {};
+    final resumeRestore = _resumeMapFromJson(resumeRaw);
     return DomainSnapshot(
       idCounter: json['idCounter'] as int? ?? 0,
       lastTimestamp: DateTime.parse(json['lastTimestamp'] as String),
@@ -358,7 +364,8 @@ class DomainSnapshot {
                 _outcomeFromJson(Map<String, dynamic>.from(item as Map)),
           )
           .toList(),
-      sessionUiResumeBySessionId: _resumeMapFromJson(resumeRaw),
+      sessionUiResumeBySessionId: resumeRestore.byId,
+      droppedCorruptResumeSessionIds: resumeRestore.droppedSessionIds,
       foregroundSessionId: json['foregroundSessionId'] as String?,
       maintenanceReminders: List<dynamic>.from(
         json['maintenanceReminders'] as List? ?? const [],
@@ -410,22 +417,27 @@ KnowledgePackageRef _packageRefFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, SessionUiResumeState> _resumeMapFromJson(Map raw) {
+({
+  Map<String, SessionUiResumeState> byId,
+  Set<String> droppedSessionIds,
+}) _resumeMapFromJson(Map raw) {
   final restored = <String, SessionUiResumeState>{};
+  final dropped = <String>{};
   for (final entry in raw.entries) {
     try {
       final value = entry.value;
       if (value is! Map) {
+        dropped.add(entry.key.toString());
         continue;
       }
       restored[entry.key.toString()] = SessionUiResumeState.fromJson(
         Map<String, dynamic>.from(value),
       );
     } catch (_) {
-      // Drop one bad resume row. Do not wipe the household book.
+      dropped.add(entry.key.toString());
     }
   }
-  return restored;
+  return (byId: restored, droppedSessionIds: dropped);
 }
 
 Map<String, dynamic> _householdToJson(Household value) {

@@ -34,10 +34,10 @@ void main() {
     reportWrongMailtoOpener = openReportWrongMailto;
   });
 
-  test('version is 0.1.4+22', () {
+  test('version is 0.1.4+23', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+22');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+22'));
+    expect(kAppVersionLabel, '0.1.4+23');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+23'));
   });
 
   test('GOLDEN Call a pro stays frozen', () {
@@ -51,21 +51,24 @@ void main() {
       userNote: 'Heat path asked the wrong thing',
       appVersionLabel: kAppVersionLabel,
       applianceCategory: 'dryer',
-      packageId: 'dryer-core',
-      packageVersion: '1.4.2',
+      packageId: 'Dryer guide',
       stopReason: 'Needs a professional',
-      lastQuestionId: 'heat-observed',
+      lastQuestionId: 'Is there any warmth after the dryer has run briefly?',
       clueCount: 2,
     );
     final body = formatReportWrongEmailBody(note);
     expect(body, contains('App: $kAppVersionLabel'));
     expect(body, contains('Appliance category: dryer'));
-    expect(body, contains('Package: dryer-core 1.4.2'));
+    expect(body, contains('Guide: Dryer guide'));
+    expect(body, isNot(contains('dryer-core')));
+    expect(body, isNot(contains('1.4.2')));
     expect(body, contains('Stop reason: Needs a professional'));
-    expect(body, contains('Last question id: heat-observed'));
+    expect(body, contains('Last question: Is there any warmth'));
+    expect(body, isNot(contains('Last question id:')));
+    expect(body, isNot(contains('heat-observed')));
     expect(body, contains('Clue count: 2'));
     expect(body, contains('Note: Heat path asked the wrong thing'));
-    expect(body, contains('not uploaded automatically'));
+    expect(body, contains('no support inbox yet'));
     expect(body.toLowerCase(), isNot(contains('datadog')));
     expect(body.toLowerCase(), isNot(contains('sentry')));
     expect(body.toLowerCase(), isNot(contains('firebase')));
@@ -114,7 +117,10 @@ void main() {
       ],
     );
     expect(ctx.applianceCategory, 'dryer');
-    expect(ctx.lastQuestionId, 'heat-observed');
+    expect(ctx.lastQuestionId, isNot(contains('heat-observed')));
+    expect(ctx.lastQuestionId, contains('warmth'));
+    expect(ctx.packageId, 'Dryer guide');
+    expect(ctx.packageVersion, isNull);
     expect(ctx.clueCount, 1);
     final note = ReportWrongNote(
       id: 'wrong-2',
@@ -154,7 +160,10 @@ void main() {
       sessionId: sessionId,
     );
     expect(saved.applianceCategory, 'dryer');
-    expect(saved.lastQuestionId, 'heat-observed');
+    expect(saved.lastQuestionId, isNot('heat-observed'));
+    expect(saved.lastQuestionId, isNotNull);
+    expect(saved.packageId, 'Dryer guide');
+    expect(saved.packageVersion, isNull);
     expect(saved.userNote, 'Wrong question after no warmth');
     expect(saved.appVersionLabel, kAppVersionLabel);
 
@@ -166,7 +175,8 @@ void main() {
     expect(second.wrongReports, isNotEmpty);
     expect(second.wrongReports.first.userNote, 'Wrong question after no warmth');
     expect(second.wrongReports.first.applianceCategory, 'dryer');
-    expect(second.wrongReports.first.lastQuestionId, 'heat-observed');
+    expect(second.wrongReports.first.lastQuestionId, isNot('heat-observed'));
+    expect(second.wrongReports.first.packageId, 'Dryer guide');
   });
 
   testWidgets('Settings Report a problem is reachable and saves mailto stub', (

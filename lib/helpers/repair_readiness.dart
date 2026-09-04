@@ -7,12 +7,20 @@ class RepairReadinessItem {
     required this.label,
     required this.optional,
     required this.liveElectrical,
+    this.requiresPanelOff,
+    this.requiresMeter,
   });
 
   final String id;
   final String label;
   final bool optional;
   final bool liveElectrical;
+
+  /// Package tag. Null means use fallback id / live-electrical heuristics.
+  final bool? requiresPanelOff;
+
+  /// Package tag. Null means use fallback id / live-electrical heuristics.
+  final bool? requiresMeter;
 
   bool get isCritical => !optional;
 }
@@ -31,16 +39,24 @@ List<RepairReadinessItem> readinessItemsFromToolsRequired(
     if (label.isEmpty || _isPlaceholderTool(label)) {
       continue;
     }
-    final id = canonicalToolId(label);
+    final tagged = parseToolHonestyTags(label);
+    final displayLabel = tagged.label;
+    if (displayLabel.isEmpty) {
+      continue;
+    }
+    final id = canonicalToolId(displayLabel);
     if (!seen.add(id)) {
       continue;
     }
     items.add(
       RepairReadinessItem(
         id: id,
-        label: label,
-        optional: _isOptionalTool(label),
-        liveElectrical: isLiveElectricalTool(label),
+        label: displayLabel,
+        optional: _isOptionalTool(displayLabel),
+        liveElectrical: isLiveElectricalTool(displayLabel) ||
+            tagged.requiresMeter == true,
+        requiresPanelOff: tagged.requiresPanelOff,
+        requiresMeter: tagged.requiresMeter,
       ),
     );
   }
@@ -80,6 +96,32 @@ String canonicalToolId(String label) {
       .replaceAll(RegExp(r'^-+|-+$'), '');
 }
 
+/// Reads authored `requiresPanelOff` / `requiresMeter` tokens from a tool line.
+({String label, bool? requiresPanelOff, bool? requiresMeter}) parseToolHonestyTags(
+  String raw,
+) {
+  var label = raw.trim();
+  bool? requiresPanelOff;
+  bool? requiresMeter;
+  if (RegExp(r'\brequiresPanelOff\b').hasMatch(label)) {
+    requiresPanelOff = true;
+    label = label.replaceAll(RegExp(r'\brequiresPanelOff\b'), '');
+  }
+  if (RegExp(r'\brequiresMeter\b').hasMatch(label)) {
+    requiresMeter = true;
+    label = label.replaceAll(RegExp(r'\brequiresMeter\b'), '');
+  }
+  label = label
+      .replaceAll(RegExp(r'\s*[|/,-]+\s*$'), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+  return (
+    label: label,
+    requiresPanelOff: requiresPanelOff,
+    requiresMeter: requiresMeter,
+  );
+}
+
 bool isLiveElectricalTool(String label) {
   final lower = label.toLowerCase();
   return lower.contains('multimeter') ||
@@ -111,6 +153,19 @@ String readinessDisplayLabel(RepairReadinessItem item) {
   return item.label
       .replaceAll(RegExp(r'\s*\(optional\)\s*', caseSensitive: false), '')
       .trim();
+}
+
+/// Tools card helper. Optional-only lists must not imply a required-tool lock.
+String toolsChecklistHelperLine(List<RepairReadinessItem> items) {
+  if (items.isEmpty) {
+    return 'No extra tools listed for this path.';
+  }
+  if (items.every((item) => item.optional)) {
+    return 'Mark I have or I don’t. Optional tools can be I don’t — you can '
+        'still continue.';
+  }
+  return 'Required tools must be marked I have before panel steps unlock. '
+      'Optional tools can be I don’t.';
 }
 
 bool _isPlaceholderTool(String label) {

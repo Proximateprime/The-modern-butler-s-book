@@ -94,7 +94,7 @@ void main() {
   );
 
   testWidgets(
-    'thermal-fuse warns that DIY cannot finish before numbered guidance',
+    'thermal-fuse after I\'ll repair does not lecture that DIY cannot finish',
     (tester) async {
       final dependencies = AppDependencies(
         clock: () => DateTime.utc(2026, 7, 24, 14, 5),
@@ -109,17 +109,15 @@ void main() {
         await tapVisible(tester, cont);
       }
 
-      expect(find.byKey(const Key('pro-scope-warning-card')), findsOneWidget);
-      expect(find.byKey(const Key('safe-guidance-card')), findsNothing);
+      expect(find.byKey(const Key('pro-scope-warning-card')), findsNothing);
+      expect(find.textContaining('A full fix likely needs a pro'), findsNothing);
       expect(
-        find.textContaining('A full fix likely needs a pro'),
-        findsOneWidget,
+        find.textContaining('won’t be able to finish the repair yourself at home'),
+        findsNothing,
       );
-      expect(find.byKey(const Key('inspect-use-camera')), findsNothing);
-
-      await tapVisible(
-        tester,
-        find.byKey(const Key('pro-scope-do-safe-checks')),
+      expect(
+        find.textContaining('A technician fits this part on this path'),
+        findsNothing,
       );
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
       expect(find.textContaining('Step 1 of'), findsOneWidget);

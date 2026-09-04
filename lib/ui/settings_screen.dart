@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import '../app_info.dart';
 import '../helpers/degraded_mode.dart';
@@ -6,6 +10,7 @@ import '../helpers/household_entitlement.dart';
 import '../helpers/knowledge_package_catalog.dart';
 import '../helpers/local_backup.dart';
 import '../helpers/local_backup_io.dart';
+import '../helpers/published_version.dart';
 import '../helpers/user_facing_error.dart';
 import '../models/repair_comfort_profile.dart';
 import 'about_screen.dart';
@@ -37,11 +42,47 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late bool _expertAdultConfirmed;
+  String? _publishedMismatch;
 
   @override
   void initState() {
     super.initState();
     _expertAdultConfirmed = widget.dependencies.expertMode;
+    unawaited(_checkPublishedVersion());
+  }
+
+  Future<void> _checkPublishedVersion() async {
+    if (!kIsWeb) {
+      return;
+    }
+    try {
+      final uri = Uri.parse(
+        'version.json?${publishedVersionCacheBustQuery()}',
+      );
+      final response = await http.get(
+        uri,
+        headers: const {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      );
+      if (!mounted || response.statusCode < 200 || response.statusCode >= 300) {
+        return;
+      }
+      final parsed = parsePublishedVersionJson(response.body);
+      final line = publishedBuildMismatchLine(
+        appVersion: kAppVersion,
+        appBuildNumber: kAppBuildNumber,
+        publishedVersion: parsed.version,
+        publishedBuildNumber: parsed.buildNumber,
+      );
+      if (line == null) {
+        return;
+      }
+      setState(() => _publishedMismatch = line);
+    } catch (_) {
+      // Offline / missing version.json: keep the in-app label only.
+    }
   }
 
   Future<void> _selectTheme(AppThemeChoice choice) async {
@@ -697,11 +738,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               key: const Key('settings-version-badge'),
               leading: const Icon(Icons.info_outline),
               title: Text('App $kAppVersionLabel'),
-              subtitle: const Text(
-                'Feature freeze $kFeatureFreezeDate — bugfixes only',
+              subtitle: Text(
+                _publishedMismatch ??
+                    'Feature freeze $kFeatureFreezeDate — bugfixes only',
               ),
               onTap: _openAbout,
             ),
+            if (_publishedMismatch != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _publishedMismatch!,
+                key: const Key('settings-version-mismatch'),
+                style: text.bodySmall,
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
               'Appearance, guides, and session reset only. Ranking is unchanged.',

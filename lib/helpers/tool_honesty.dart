@@ -50,12 +50,10 @@ ToolHonestyCapabilities toolHonestyFromChecklist({
     if (haveByToolId[item.id] != false) {
       continue;
     }
-    if (panelOffToolIds.contains(item.id)) {
+    if (toolItemRequiresPanelOff(item)) {
       declinedPanelOff = true;
     }
-    if (item.liveElectrical ||
-        item.id == 'multimeter' ||
-        item.id == 'voltage-tester') {
+    if (toolItemRequiresMeter(item)) {
       declinedMeter = true;
     }
   }
@@ -147,6 +145,61 @@ bool toolHonestyBlocksStep(
     return true;
   }
   return false;
+}
+
+/// Package tag wins. Id / live-electrical heuristics are fallback only.
+bool toolItemRequiresPanelOff(RepairReadinessItem item) {
+  if (item.requiresPanelOff != null) {
+    return item.requiresPanelOff!;
+  }
+  return panelOffToolIds.contains(item.id);
+}
+
+/// Package tag wins. Live-electrical / meter ids are fallback only.
+bool toolItemRequiresMeter(RepairReadinessItem item) {
+  if (item.requiresMeter != null) {
+    return item.requiresMeter!;
+  }
+  return item.liveElectrical ||
+      item.id == 'multimeter' ||
+      item.id == 'voltage-tester';
+}
+
+/// Authored steps existed, but honesty / missing-required left none to show.
+///
+/// That empty list is stop / Call a pro — not verification.
+bool guidanceEmptyBecauseHonesty({
+  required List<String> authoredSteps,
+  required List<RepairReadinessItem> items,
+  required Map<String, bool> haveByToolId,
+  required bool continueWithCaution,
+}) {
+  if (authoredSteps.isEmpty) {
+    return false;
+  }
+  final honest = guidanceStepsForToolHonesty(
+    steps: authoredSteps,
+    items: items,
+    haveByToolId: haveByToolId,
+    continueWithCaution: continueWithCaution,
+  );
+  if (honest.isNotEmpty) {
+    return false;
+  }
+  final capabilities = toolHonestyFromChecklist(
+    items: items,
+    haveByToolId: haveByToolId,
+  );
+  if (capabilities.recordedNoTools ||
+      capabilities.blocksPanelOff ||
+      capabilities.blocksMeter) {
+    return true;
+  }
+  final missing = missingRequiredTools(
+    items: items,
+    haveByToolId: haveByToolId,
+  );
+  return missing.isNotEmpty;
 }
 
 /// Required-tool gate first, then honesty on declined / no-tools answers.

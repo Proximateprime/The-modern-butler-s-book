@@ -338,19 +338,22 @@ abstract final class UserFacingCopy {
   static const reportWrongTitle = 'Report a problem';
   static const reportWrongThisWasWrong = 'This was wrong';
   static const reportWrongSettingsSubtitle =
-      'Save a local note and open a support email draft';
+      'Save a local note. Email is a draft only — no inbox yet';
   static const reportWrongLead =
       'If a diagnosis or step was wrong, write a short note. '
       'The book does not decide what was wrong.';
   static const reportWrongPrivacy =
-      'The note stays on this device. Opening email is optional and never '
-      'uploads photos, chats, or a floor plan.';
+      'The note stays on this device. Opening email is optional. '
+      'There is no support inbox yet — a mail app only makes a local draft. '
+      'Nothing is uploaded.';
   static const reportWrongNoteLabel = 'What was wrong (optional)';
-  static const reportWrongSaveEmail = 'Save note and open email';
+  static const reportWrongSaveEmail = 'Save note and open a draft';
   static const reportWrongEmailOpened =
-      'Email draft opened. The note is also saved on this device.';
+      'Note saved on this device. A mail draft opened if your device has a '
+      'mail app. There is no support inbox yet — this was not delivered.';
   static const reportWrongEmailUnavailable =
-      'Email isn’t available on this device. The note is still saved here.';
+      'Note saved on this device. Email isn’t available here, and there is '
+      'no support inbox yet.';
 }
 
 /// Local household snapshot JSON could not be read.
