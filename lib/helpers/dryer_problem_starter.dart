@@ -303,6 +303,15 @@ DryerStarterResolution resolveDryerStarter({
         .replaceAll('‘', "'");
     var anyKeyword = false;
     for (final family in dryerStarterFamilies) {
+      if (family.id == 'hazard-signs') {
+        // Shared lexicon (incl. bare burning / “burning smell”), not a
+        // first-keyword-only scan of the concatenated list.
+        if (textSuggestsHazard(trimmed)) {
+          matched.add(family.id);
+          anyKeyword = true;
+        }
+        continue;
+      }
       for (final keyword in family.keywords) {
         if (lowered.contains(keyword)) {
           matched.add(family.id);

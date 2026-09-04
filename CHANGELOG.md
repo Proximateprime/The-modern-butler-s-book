@@ -1,3 +1,12 @@
+## Typed hazard v2 (2026-09-04)
+
+App **0.1.4+27**. Typed Other (starter + interview) and free notes that
+match the shared hazard lexicon — including **burning smell** / bare
+burning — write `hazard-observation` Yes and lock/stop like the chip
+path. Nonsense typed Other does not invent a failure mode. Groq stays
+phrasing-only. GOLDEN **Call a pro** stays. Play listing stays out.
+Tests: `test/red_typed_hazard_v2_test.dart` (prior suites stay green).
+
 ## Clues honesty v1 (2026-09-04)
 
 App **0.1.4+26**. Clues chrome count and the Clues list use the same

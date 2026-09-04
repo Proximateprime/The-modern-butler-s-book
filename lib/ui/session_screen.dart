@@ -1625,6 +1625,23 @@ class _SessionScreenState extends State<SessionScreen>
       return;
     }
 
+    final trimmedFree = freeText.trim();
+    if (describing &&
+        trimmedFree.isNotEmpty &&
+        _tryRecordHazardFromTranscript(trimmedFree)) {
+      setState(() {
+        _starterConfirmed = true;
+        _starterNeedsClarification = false;
+        _starterLimitedGuidance = false;
+        _starterSymptomIds = const ['hazard-signs'];
+        _pendingCloseVerification = null;
+        _pendingAnswerPrompt = null;
+      });
+      _persistUiResume();
+      unawaited(widget.dependencies.flushPersist());
+      return;
+    }
+
     var resolution = resolveDryerStarter(
       selectedSymptomIds: chipIds,
       freeText: freeText,
@@ -2059,8 +2076,9 @@ class _SessionScreenState extends State<SessionScreen>
     });
   }
 
-  /// Voice, typed Other, and free notes share this write+lock. Hazard
-  /// language never stays as a clue-only Other / free note.
+  /// Voice, typed Other, starter Other, and free notes share this write+lock.
+  /// Shared-lexicon matches (including bare burning / “burning smell”) must
+  /// record hazard-observation Yes — never a clue-only Other / free note.
   bool _tryRecordHazardFromTranscript(String transcript) {
     if (!transcriptSuggestsHazard(transcript)) {
       return false;
@@ -2088,7 +2106,7 @@ class _SessionScreenState extends State<SessionScreen>
       });
       _persistUiResume();
     }
-    return true;
+    return wroteHazard;
   }
 
   Future<void> _captureVoiceAnswer({
