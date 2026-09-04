@@ -512,7 +512,7 @@ class _SessionScreenState extends State<SessionScreen>
 
   void _maybeAdvanceToolsAfterRestore() {
     try {
-      if (_hasUnansweredOpenInterview()) {
+      if (_hasUnansweredHeldObservationId()) {
         return;
       }
       if (_closePathPhase == ClosePathPhase.inspect) {
@@ -538,7 +538,12 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
-  bool _hasUnansweredOpenInterview() {
+  /// Unanswered pending/last-shown id, ignoring close-path phase.
+  ///
+  /// Inspect chrome must not treat a named primary as license to invent
+  /// Heavily clogged or skip to outside-vent. I'll repair ([_choseRepair])
+  /// still releases this hold.
+  bool _hasUnansweredHeldObservationId() {
     try {
       final decisionContext =
           widget.dependencies.buildDecisionContext(widget.sessionId);
@@ -554,8 +559,7 @@ class _SessionScreenState extends State<SessionScreen>
               recordedEvidence: decisionContext.evidence,
             ),
           ) &&
-          !_choseRepair &&
-          !closePathImpliesRepairChosen(_closePathPhase);
+          !_choseRepair;
     } catch (_) {
       final onScreenId =
           _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
@@ -563,25 +567,28 @@ class _SessionScreenState extends State<SessionScreen>
             onScreenTemplateId: onScreenId,
             onScreenStillOpen: onScreenId != null && onScreenId.isNotEmpty,
           ) &&
-          !_choseRepair &&
-          !closePathImpliesRepairChosen(_closePathPhase);
+          !_choseRepair;
     }
+  }
+
+  bool _hasUnansweredOpenInterview() {
+    return _hasUnansweredHeldObservationId() &&
+        !closePathImpliesRepairChosen(_closePathPhase);
   }
 
   bool _shouldBlockResumeInventedObservationWrite() {
     return shouldBlockResumeInventedObservationWrite(
       resumeNotSettled: _blockResumeObservationWrites,
-      unansweredOpenInterview: _hasUnansweredOpenInterview(),
+      unansweredOpenInterview: _hasUnansweredHeldObservationId(),
     );
   }
 
   /// Interview template the household is on, including ranking’s next question
   /// when the answer panel is showing suggested-next without a tapped chip.
   ///
-  /// On-screen open id wins over ranking next, empty-next, a named primary,
-  /// and close-path guidance so Continue repair cannot swap lint-filter for
-  /// motor-humming, most-likely-only chrome, a blank panel, or safe-steps
-  /// after a cold reload.
+  /// Unanswered painted / pending / stored open id wins over ranking next,
+  /// empty-next, a named primary, earlier interview (drum-turns), and
+  /// close-path guidance so Continue repair cannot reset lint-filter.
   String? _resumeOpenInterviewTemplateId() {
     try {
       final decisionContext =
@@ -589,13 +596,19 @@ class _SessionScreenState extends State<SessionScreen>
       final package = decisionContext.package;
       final templates = package?.evidenceTemplates ?? const [];
       final recorded = decisionContext.evidence;
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
-      final onScreenStillOpen = interviewTemplateIsStillOpen(
-        templateId: onScreenId,
-        templates: templates,
-        recordedEvidence: recorded,
-      );
+      final paintedId = _lastShownOpenInterviewTemplateId;
+      final pendingId = _pendingAnswerPrompt?.id;
+      final onScreenId = pendingId ?? paintedId;
+      final storedPendingId = _blockResumeObservationWrites
+          ? widget.dependencies
+              .uiResumeForSession(widget.sessionId)
+              ?.pendingObservationTemplateId
+          : null;
+      bool stillOpen(String? id) => interviewTemplateIsStillOpen(
+            templateId: id,
+            templates: templates,
+            recordedEvidence: recorded,
+          );
       String? rankingNextId;
       if (_pendingCloseVerification == null &&
           !_choseRepair &&
@@ -620,12 +633,27 @@ class _SessionScreenState extends State<SessionScreen>
       return preferOnScreenOpenObservationId(
         onScreenTemplateId: onScreenId,
         rankingSuggestedNextTemplateId: rankingNextId,
-        onScreenStillOpen: onScreenStillOpen,
+        onScreenStillOpen: stillOpen(onScreenId),
+        paintedTemplateId: paintedId,
+        paintedStillOpen: stillOpen(paintedId),
+        storedPendingTemplateId: storedPendingId,
+        storedPendingStillOpen: stillOpen(storedPendingId),
       );
     } catch (_) {
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
-      return onScreenId;
+      final pendingId = _pendingAnswerPrompt?.id;
+      if (pendingId != null && pendingId.isNotEmpty) {
+        return pendingId;
+      }
+      final paintedId = _lastShownOpenInterviewTemplateId;
+      if (paintedId != null && paintedId.isNotEmpty) {
+        return paintedId;
+      }
+      if (_blockResumeObservationWrites) {
+        return widget.dependencies
+            .uiResumeForSession(widget.sessionId)
+            ?.pendingObservationTemplateId;
+      }
+      return null;
     }
   }
 
@@ -695,9 +723,11 @@ class _SessionScreenState extends State<SessionScreen>
     FailureModeClosePath? closePath,
     bool inspectReviewOnly = false,
   }) {
-    if (_shouldBlockResumeInventedObservationWrite() &&
+    if (shouldBlockResumeAdvancePastUnansweredOpenInterview(
+          unansweredOpenInterview: _hasUnansweredHeldObservationId(),
+        ) &&
         phase != ClosePathPhase.conclusion &&
-        phase != ClosePathPhase.inspect) {
+        phase != ClosePathPhase.decision) {
       return;
     }
     if (phase == ClosePathPhase.inspect && inspectReviewOnly) {
@@ -2000,7 +2030,8 @@ class _SessionScreenState extends State<SessionScreen>
     required String chip,
     required FailureModeClosePath closePath,
   }) {
-    if (_shouldBlockResumeInventedObservationWrite()) {
+    if (_hasUnansweredHeldObservationId() ||
+        _shouldBlockResumeInventedObservationWrite()) {
       return;
     }
     final package = widget.dependencies.packageForSession(widget.sessionId);
