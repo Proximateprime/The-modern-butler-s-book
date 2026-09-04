@@ -316,6 +316,14 @@ void main() {
   test('unanswered open id wins over ranking next and earlier drum-turns', () {
     expect(
       preferOnScreenOpenObservationId(
+        onScreenTemplateId: 'lint-filter-condition',
+        rankingSuggestedNextTemplateId: 'drum-turns',
+        onScreenStillOpen: true,
+      ),
+      'lint-filter-condition',
+    );
+    expect(
+      preferOnScreenOpenObservationId(
         onScreenTemplateId: null,
         rankingSuggestedNextTemplateId: 'drum-turns',
         onScreenStillOpen: false,
@@ -326,9 +334,9 @@ void main() {
     );
     expect(
       preferOnScreenOpenObservationId(
-        onScreenTemplateId: 'drum-turns',
+        onScreenTemplateId: null,
         rankingSuggestedNextTemplateId: 'drum-turns',
-        onScreenStillOpen: true,
+        onScreenStillOpen: false,
         paintedTemplateId: 'lint-filter-condition',
         paintedStillOpen: true,
       ),

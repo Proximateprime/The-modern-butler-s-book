@@ -677,13 +677,13 @@ class _SessionScreenState extends State<SessionScreen>
         storedPendingStillOpen: stillOpen(storedPendingId),
       );
     } catch (_) {
-      final paintedId = _lastShownOpenInterviewTemplateId;
-      if (paintedId != null && paintedId.isNotEmpty) {
-        return paintedId;
-      }
       final pendingId = _pendingAnswerPrompt?.id;
       if (pendingId != null && pendingId.isNotEmpty) {
         return pendingId;
+      }
+      final paintedId = _lastShownOpenInterviewTemplateId;
+      if (paintedId != null && paintedId.isNotEmpty) {
+        return paintedId;
       }
       return widget.dependencies
           .uiResumeForSession(widget.sessionId)
@@ -2765,16 +2765,8 @@ class _SessionScreenState extends State<SessionScreen>
         isRankedHeatOrNoiseInterviewTemplate(pendingForInterview.id)) {
       pendingForInterview = null;
     }
-    if (restoringOpenInterview) {
-      final heldPrompt = _templateById(prompts, heldOpenInterviewId);
-      if (heldPrompt != null) {
-        pendingForInterview = heldPrompt;
-      } else if (pendingForInterview == null) {
-        pendingForInterview = _templateById(
-          prompts,
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
-        );
-      }
+    if (restoringOpenInterview && pendingForInterview == null) {
+      pendingForInterview = _templateById(prompts, heldOpenInterviewId);
     }
     final showClosePath = effectiveInvestigationStopped &&
         closePath != null &&

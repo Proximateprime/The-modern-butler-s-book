@@ -20,16 +20,16 @@ String? preferOnScreenOpenObservationId({
   bool storedPendingStillOpen = false,
 }) {
   if (unansweredOpenObservationShouldStayOnScreen(
-    onScreenTemplateId: paintedTemplateId,
-    onScreenStillOpen: paintedStillOpen,
-  )) {
-    return paintedTemplateId;
-  }
-  if (unansweredOpenObservationShouldStayOnScreen(
     onScreenTemplateId: onScreenTemplateId,
     onScreenStillOpen: onScreenStillOpen,
   )) {
     return onScreenTemplateId;
+  }
+  if (unansweredOpenObservationShouldStayOnScreen(
+    onScreenTemplateId: paintedTemplateId,
+    onScreenStillOpen: paintedStillOpen,
+  )) {
+    return paintedTemplateId;
   }
   if (unansweredOpenObservationShouldStayOnScreen(
     onScreenTemplateId: storedPendingTemplateId,
