@@ -1,3 +1,14 @@
+## Resume clues (2026-09-04)
+
+App **0.1.4+16**. Continue repair after a cold reload keeps the same open
+question and the full verified **clues** set — including the dryer lint-filter
+interview with two clues. Snapshot writes recapture if later evidence lands
+while a save is in flight, and the open question is stored even when the
+answer panel is showing ranking’s next template. Resume chrome (“Last time we
+knew…”) stays household voice and does not print engine phase names such as
+`tools` or `guidance`. Groq stays phrasing-only. GOLDEN **Call a pro** stays.
+Play listing stays out. Tests: `test/resume_clue_v1_test.dart`.
+
 ## Calm fail (2026-09-04)
 
 App **0.1.4+15**. Bad state degrades: offline / Groq unavailable keeps the

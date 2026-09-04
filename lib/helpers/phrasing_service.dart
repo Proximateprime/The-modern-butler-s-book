@@ -140,6 +140,34 @@ SpeakHumanDiagnosis applySpeakHumanOverlay({
   );
 }
 
+/// Household-only “where we left off” — never raw phase names (`tools`,
+/// `guidance`, and the rest of [ClosePathPhase]).
+String resumeWhereWeLeftOff(SessionUiResumeState state) {
+  if (state.pendingObservationTemplateId != null) {
+    return 'we were on a question';
+  }
+  if (state.pendingCloseVerificationFailureModeId != null) {
+    return 'we were verifying';
+  }
+  return switch (state.closePathPhase) {
+    ClosePathPhase.conclusion => 'we had a most likely cause',
+    ClosePathPhase.decision => 'we were choosing what to do next',
+    ClosePathPhase.parts => 'we were looking at parts',
+    ClosePathPhase.tools => 'we were checking what you already have',
+    ClosePathPhase.inspect => 'we were looking at the easy checks',
+    ClosePathPhase.guidance => 'we were on the safe steps',
+    ClosePathPhase.verification => 'we were verifying',
+    ClosePathPhase.opportunistic => 'we were looking at extra checks',
+    ClosePathPhase.done => 'we had finished the steps',
+  };
+}
+
+bool resumeLineLeaksEngineeringPhase(String text) {
+  final lower = text.toLowerCase();
+  return RegExp(r'\btools\b').hasMatch(lower) ||
+      RegExp(r'\bguidance\b').hasMatch(lower);
+}
+
 String packagedResumeKnewLine({
   required SessionUiResumeState state,
   required List<Evidence> evidence,
@@ -148,14 +176,22 @@ String packagedResumeKnewLine({
   final lastBit = last == null
       ? 'no observations yet'
       : '${last.observation}: ${last.answer ?? 'recorded'}';
-  final where = state.pendingObservationTemplateId != null
-      ? 'we were on a question'
-      : state.pendingCloseVerificationFailureModeId != null
-          ? 'we were verifying'
-          : state.closePathPhase != ClosePathPhase.conclusion
-              ? 'we were in ${state.closePathPhase.name}'
-              : 'we had a most likely cause';
-  return '$kResumeKnewLead $where. $lastBit.';
+  return '$kResumeKnewLead ${resumeWhereWeLeftOff(state)}. $lastBit.';
+}
+
+/// Groq may phrase resume chrome; drop overlays that leak engine state names.
+String resumeBannerSpokenLine({
+  required String packaged,
+  GroqPhrasingAccepted? overlay,
+}) {
+  if (overlay == null || !overlay.screenKey.startsWith('resume|')) {
+    return packaged;
+  }
+  final spoken = overlay.whyOneLine.trim();
+  if (spoken.isEmpty || resumeLineLeaksEngineeringPhase(spoken)) {
+    return packaged;
+  }
+  return spoken;
 }
 
 String packagedProHandoffSpokenParagraph({
