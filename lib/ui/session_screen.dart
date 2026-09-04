@@ -215,10 +215,22 @@ class _SessionScreenState extends State<SessionScreen>
         templates: package?.evidenceTemplates ?? const [],
         recordedEvidence: decisionContext.evidence,
       );
-      final holdOpenInterview = unansweredOpenObservationShouldStayOnScreen(
-        onScreenTemplateId: pendingTemplateId,
-        onScreenStillOpen: storedOpenStillOpen,
-      );
+      final holdOpenInterview =
+          unansweredOpenObservationShouldStayOnScreen(
+            onScreenTemplateId: pendingTemplateId,
+            onScreenStillOpen: storedOpenStillOpen,
+          ) &&
+          decisionContext.primaryFailureModeId == null &&
+          !resumeHasRealClosePathProgress(
+            choseRepair: resume?.choseRepair == true,
+            completedGuidanceStepIds:
+                resume?.completedGuidanceStepIds ?? const [],
+            guidanceStepIndex: resume?.guidanceStepIndex ?? 0,
+            readinessHaveByToolId: resume?.readinessHaveByToolId ?? const {},
+            pendingCloseVerificationFailureModeId:
+                resume?.pendingCloseVerificationFailureModeId,
+            inspectReviewOnly: resume?.inspectReviewOnly == true,
+          );
       if (pendingTemplateId != null && package != null) {
         pendingPrompt = _templateById(
           package.evidenceTemplates,
@@ -530,20 +542,25 @@ class _SessionScreenState extends State<SessionScreen>
       final onScreenId =
           _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
       return unansweredOpenObservationShouldStayOnScreen(
-        onScreenTemplateId: onScreenId,
-        onScreenStillOpen: interviewTemplateIsStillOpen(
-          templateId: onScreenId,
-          templates: templates,
-          recordedEvidence: decisionContext.evidence,
-        ),
-      );
+            onScreenTemplateId: onScreenId,
+            onScreenStillOpen: interviewTemplateIsStillOpen(
+              templateId: onScreenId,
+              templates: templates,
+              recordedEvidence: decisionContext.evidence,
+            ),
+          ) &&
+          decisionContext.primaryFailureModeId == null &&
+          !_choseRepair &&
+          !closePathImpliesRepairChosen(_closePathPhase);
     } catch (_) {
       final onScreenId =
           _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
       return unansweredOpenObservationShouldStayOnScreen(
-        onScreenTemplateId: onScreenId,
-        onScreenStillOpen: onScreenId != null && onScreenId.isNotEmpty,
-      );
+            onScreenTemplateId: onScreenId,
+            onScreenStillOpen: onScreenId != null && onScreenId.isNotEmpty,
+          ) &&
+          !_choseRepair &&
+          !closePathImpliesRepairChosen(_closePathPhase);
     }
   }
 
@@ -2570,16 +2587,20 @@ class _SessionScreenState extends State<SessionScreen>
           primaryFailureModeId: primaryFailureModeId,
         );
     final isRevisingEvidence = _revisingTemplateId != null;
-    final restoringOpenInterview = unansweredOpenObservationShouldStayOnScreen(
-      onScreenTemplateId:
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
-      onScreenStillOpen: interviewTemplateIsStillOpen(
-        templateId:
-            _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
-        templates: prompts,
-        recordedEvidence: decisionContext.evidence,
-      ),
-    );
+    final restoringOpenInterview =
+        unansweredOpenObservationShouldStayOnScreen(
+          onScreenTemplateId:
+              _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+          onScreenStillOpen: interviewTemplateIsStillOpen(
+            templateId:
+                _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+            templates: prompts,
+            recordedEvidence: decisionContext.evidence,
+          ),
+        ) &&
+        primaryFailureModeId == null &&
+        !_choseRepair &&
+        !closePathImpliesRepairChosen(_closePathPhase);
     final effectiveInvestigationStopped = investigationStopped &&
         !isRevisingEvidence &&
         !restoringOpenInterview;

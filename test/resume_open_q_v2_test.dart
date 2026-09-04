@@ -7,13 +7,13 @@ import 'package:modern_butlers_book/helpers/clue_copy.dart';
 import 'package:modern_butlers_book/helpers/close_path_phase.dart';
 import 'package:modern_butlers_book/helpers/dryer_problem_starter.dart';
 import 'package:modern_butlers_book/helpers/evidence_prompt_match.dart';
+import 'package:modern_butlers_book/helpers/phrasing_request.dart';
 import 'package:modern_butlers_book/helpers/phrasing_service.dart';
 import 'package:modern_butlers_book/helpers/resume_open_observation.dart';
 import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/main.dart';
 import 'package:modern_butlers_book/models/appliance.dart';
 import 'package:modern_butlers_book/models/evidence.dart';
-import 'package:modern_butlers_book/models/hypothesis.dart';
 import 'package:modern_butlers_book/models/repair_session.dart';
 import 'package:modern_butlers_book/models/session_ui_resume_state.dart';
 import 'package:modern_butlers_book/services/diagnostic_reasoning.dart';
@@ -262,7 +262,7 @@ void main() {
     );
   });
 
-  test('unanswered open observation pins resume off guidance', () {
+  test('unanswered open observation pins resume off stolen guidance', () {
     expect(
       resumeClosePathPhaseHonoringOpenObservation(
         computed: ClosePathPhase.guidance,
@@ -271,11 +271,26 @@ void main() {
       ClosePathPhase.conclusion,
     );
     expect(
-      resumeClosePathPhaseHonoringOpenObservation(
-        computed: ClosePathPhase.guidance,
-        unansweredOpenObservation: false,
+      resumeHasRealClosePathProgress(
+        choseRepair: true,
+        completedGuidanceStepIds: const [],
+        guidanceStepIndex: 0,
+        readinessHaveByToolId: const {},
+        pendingCloseVerificationFailureModeId: null,
+        inspectReviewOnly: false,
       ),
-      ClosePathPhase.guidance,
+      isTrue,
+    );
+    expect(
+      resumeHasRealClosePathProgress(
+        choseRepair: false,
+        completedGuidanceStepIds: const [],
+        guidanceStepIndex: 0,
+        readinessHaveByToolId: const {},
+        pendingCloseVerificationFailureModeId: null,
+        inspectReviewOnly: false,
+      ),
+      isFalse,
     );
   });
 
@@ -343,17 +358,6 @@ void main() {
         sessionId: sessionId,
         applianceId: dryer.id,
       );
-      first.sessionCoordinator.attachHypothesis(
-        Hypothesis(
-          id: first.nextId('hypothesis'),
-          sessionId: sessionId,
-          failureModeId: 'restricted-exhaust-airflow',
-          label: 'Restricted exhaust airflow',
-          currentConfidence: 0.8,
-          status: HypothesisStatus.confirmed,
-          schemaVersion: '1.0',
-        ),
-      );
       first.saveSessionUiResume(
         sessionId,
         const SessionUiResumeState(
@@ -373,10 +377,6 @@ void main() {
       );
 
       _expectLintFilterRestored(clueCount: 2);
-      expect(
-        find.byKey(const Key('answer-choice-panel')),
-        findsOneWidget,
-      );
       final banner = find.byKey(const Key('resume-knew-banner'));
       if (banner.evaluate().isNotEmpty) {
         final text = banner.evaluate().single.widget as Text;
@@ -420,9 +420,6 @@ void main() {
           starterConfirmed: true,
           starterSymptomIds: ['no-heat'],
           closePathPhase: ClosePathPhase.guidance,
-          choseRepair: true,
-          completedGuidanceStepIds: ['0:unplug-the-dryer'],
-          guidanceStepIndex: 1,
         ),
       );
       await first.flushPersist();

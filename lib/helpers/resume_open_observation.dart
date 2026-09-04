@@ -46,6 +46,25 @@ ClosePathPhase resumeClosePathPhaseHonoringOpenObservation({
   return computed;
 }
 
+/// I'll repair / tools / guidance already underway — do not steal back to
+/// an unanswered interview leftover in the resume row.
+bool resumeHasRealClosePathProgress({
+  required bool choseRepair,
+  required List<String> completedGuidanceStepIds,
+  required int guidanceStepIndex,
+  required Map<String, bool> readinessHaveByToolId,
+  required String? pendingCloseVerificationFailureModeId,
+  required bool inspectReviewOnly,
+}) {
+  final closeId = pendingCloseVerificationFailureModeId;
+  return choseRepair ||
+      completedGuidanceStepIds.isNotEmpty ||
+      guidanceStepIndex > 0 ||
+      readinessHaveByToolId.isNotEmpty ||
+      (closeId != null && closeId.isNotEmpty) ||
+      inspectReviewOnly;
+}
+
 bool interviewTemplateIsStillOpen({
   required String? templateId,
   required List<EvidenceTemplate> templates,
