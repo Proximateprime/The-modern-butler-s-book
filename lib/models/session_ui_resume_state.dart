@@ -164,43 +164,62 @@ class SessionUiResumeState {
     };
   }
 
-  factory SessionUiResumeState.fromJson(Map<String, dynamic> json) {
+      factory SessionUiResumeState.fromJson(Map<String, dynamic> json) {
     final rawHave = json['readinessHaveByToolId'] as Map? ?? const {};
     return SessionUiResumeState(
-      pendingObservationTemplateId:
-          json['pendingObservationTemplateId'] as String?,
-      pendingCloseVerificationFailureModeId:
-          json['pendingCloseVerificationFailureModeId'] as String?,
-      revisingObservationTemplateId:
-          json['revisingObservationTemplateId'] as String?,
-      starterConfirmed: json['starterConfirmed'] as bool? ?? false,
-      starterSymptomIds: List<String>.from(
-        json['starterSymptomIds'] as List? ?? const [],
+      pendingObservationTemplateId: _resumeString(json['pendingObservationTemplateId']),
+      pendingCloseVerificationFailureModeId: _resumeString(
+        json['pendingCloseVerificationFailureModeId'],
       ),
+      revisingObservationTemplateId: _resumeString(
+        json['revisingObservationTemplateId'],
+      ),
+      starterConfirmed: json['starterConfirmed'] == true,
+      starterSymptomIds: _resumeStringList(json['starterSymptomIds']),
       readinessHaveByToolId: rawHave.map(
         (key, value) => MapEntry(key.toString(), value == true),
       ),
       readinessContinueWithCaution:
-          json['readinessContinueWithCaution'] as bool? ?? false,
-      opportunisticSkippedAll:
-          json['opportunisticSkippedAll'] as bool? ?? false,
-      opportunisticAcceptedLabels: List<String>.from(
-        json['opportunisticAcceptedLabels'] as List? ?? const [],
+          json['readinessContinueWithCaution'] == true,
+      opportunisticSkippedAll: json['opportunisticSkippedAll'] == true,
+      opportunisticAcceptedLabels: _resumeStringList(
+        json['opportunisticAcceptedLabels'],
       ),
-      skipToBestGuess: json['skipToBestGuess'] as bool? ?? false,
-      closePathPhase: closePathPhaseFromName(json['closePathPhase'] as String?),
-      choseRepair: json['choseRepair'] as bool? ?? false,
-      guidanceStepIndex: json['guidanceStepIndex'] as int? ?? 0,
-      completedGuidanceStepIds: List<String>.from(
-        json['completedGuidanceStepIds'] as List? ?? const [],
+      skipToBestGuess: json['skipToBestGuess'] == true,
+      closePathPhase: closePathPhaseFromName(
+        _resumeString(json['closePathPhase']),
       ),
-      proScopeAcknowledged: json['proScopeAcknowledged'] as bool? ?? false,
-      inspectReviewOnly: json['inspectReviewOnly'] as bool? ?? false,
-      easierPathsExhausted: List<String>.from(
-        json['easierPathsExhausted'] as List? ?? const [],
+      choseRepair: json['choseRepair'] == true,
+      guidanceStepIndex: _resumeInt(json['guidanceStepIndex']) ?? 0,
+      completedGuidanceStepIds: _resumeStringList(
+        json['completedGuidanceStepIds'],
       ),
-      starterLimitedGuidance:
-          json['starterLimitedGuidance'] as bool? ?? false,
+      proScopeAcknowledged: json['proScopeAcknowledged'] == true,
+      inspectReviewOnly: json['inspectReviewOnly'] == true,
+      easierPathsExhausted: _resumeStringList(json['easierPathsExhausted']),
+      starterLimitedGuidance: json['starterLimitedGuidance'] == true,
     );
   }
+}
+
+String? _resumeString(Object? value) => value is String ? value : null;
+
+int? _resumeInt(Object? value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.toInt();
+  }
+  return null;
+}
+
+List<String> _resumeStringList(Object? value) {
+  if (value is! List) {
+    return const [];
+  }
+  return [
+    for (final item in value)
+      if (item is String) item,
+  ];
 }

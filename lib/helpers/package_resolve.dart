@@ -92,6 +92,39 @@ PackageResolution resolveKnowledgePackageForAppliance({
   );
 }
 
+/// Same as [resolveKnowledgePackage], or null when no family package is installed.
+PackageResolution? tryResolveKnowledgePackage({
+  required KnowledgePackageRepository repository,
+  required String category,
+  String? manufacturer,
+  String? modelNumber,
+  KnowledgePackage? baseOverride,
+}) {
+  try {
+    return resolveKnowledgePackage(
+      repository: repository,
+      category: category,
+      manufacturer: manufacturer,
+      modelNumber: modelNumber,
+      baseOverride: baseOverride,
+    );
+  } on StateError {
+    return null;
+  }
+}
+
+PackageResolution? tryResolveKnowledgePackageForAppliance({
+  required KnowledgePackageRepository repository,
+  required Appliance appliance,
+}) {
+  return tryResolveKnowledgePackage(
+    repository: repository,
+    category: appliance.category,
+    manufacturer: appliance.manufacturer,
+    modelNumber: appliance.modelNumber,
+  );
+}
+
 BrandPackageOverlay? matchBrandOverlay({
   required String category,
   String? manufacturer,

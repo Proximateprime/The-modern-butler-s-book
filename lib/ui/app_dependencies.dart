@@ -114,7 +114,8 @@ class AppDependencies {
       onlineListenable: onlineListenable,
       maintenanceNotifier: maintenanceNotifier ?? SilentMaintenanceNotifier(),
       enrichmentProvider: enrichmentProvider ?? const StubEnrichmentProvider(),
-      groqPhrasing: groqPhrasing ?? GroqPhrasingService(),
+      groqPhrasing: groqPhrasing ??
+          GroqPhrasingService(isOnline: () => dependencies.isOnline),
     );
     return dependencies;
   }
@@ -1337,10 +1338,13 @@ class AppDependencies {
           'The appliance does not belong to the active household.');
     }
 
-    final resolution = resolveKnowledgePackageForAppliance(
+    final resolution = tryResolveKnowledgePackageForAppliance(
       repository: knowledgePackageRepository,
       appliance: current,
     );
+    if (resolution == null) {
+      throw StateError(UserFacingCopy.packageUnavailable);
+    }
     final package = resolution.basePackage;
     final session = sessionCoordinator.startSession(
       sessionId: _nextId('session'),
@@ -1417,13 +1421,21 @@ class AppDependencies {
         ),
       );
     }
-    final resolution = resolveKnowledgePackage(
+    final resolution = tryResolveKnowledgePackage(
       repository: knowledgePackageRepository,
       category: appliance.category,
       manufacturer: appliance.manufacturer,
       modelNumber: appliance.modelNumber,
       baseOverride: context.package,
     );
+    if (resolution == null) {
+      return context.withSafetyLevel(
+        sessionSafetyLevelFor(
+          evidence: context.evidence,
+          primaryFailureModeId: context.primaryFailureModeId,
+        ),
+      );
+    }
     final resolved = context.withResolvedKnowledge(
       package: resolution.package,
       authoringIndex: context.authoringIndex,

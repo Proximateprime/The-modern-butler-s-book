@@ -23,10 +23,10 @@ Finder _firstRunBodySafeArea() {
 }
 
 void main() {
-  test('version is 0.1.4+14', () {
+  test('version is 0.1.4+15', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+14');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+14'));
+    expect(kAppVersionLabel, '0.1.4+15');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+15'));
   });
 
   test('first-run tree has no Transform and Pages pointer host stays locked',

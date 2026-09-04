@@ -5,6 +5,8 @@ import 'user_facing_error.dart';
 /// Household-facing degraded states. Never diagnosed; never a stack trace.
 enum DegradedModeKind {
   packageMissing,
+  packageThin,
+  packageCorrupt,
   offline,
   cameraDenied,
   micDenied,
@@ -15,6 +17,8 @@ enum DegradedModeKind {
 Key degradedBannerKey(DegradedModeKind kind) {
   return switch (kind) {
     DegradedModeKind.packageMissing => const Key('error-banner-package'),
+    DegradedModeKind.packageThin => const Key('error-banner-package-thin'),
+    DegradedModeKind.packageCorrupt => const Key('error-banner-package-corrupt'),
     DegradedModeKind.offline => const Key('error-banner-offline'),
     DegradedModeKind.cameraDenied => const Key('error-banner-camera'),
     DegradedModeKind.micDenied => const Key('error-banner-microphone'),
@@ -26,6 +30,8 @@ Key degradedBannerKey(DegradedModeKind kind) {
 String degradedModeMessage(DegradedModeKind kind) {
   return switch (kind) {
     DegradedModeKind.packageMissing => UserFacingCopy.packageUnavailable,
+    DegradedModeKind.packageThin => UserFacingCopy.cantHelpYet,
+    DegradedModeKind.packageCorrupt => UserFacingCopy.packageCorrupt,
     DegradedModeKind.offline => UserFacingCopy.offlineGuidesStillWork,
     DegradedModeKind.cameraDenied => UserFacingCopy.photoPermissionDenied,
     DegradedModeKind.micDenied => UserFacingCopy.voicePermissionDenied,

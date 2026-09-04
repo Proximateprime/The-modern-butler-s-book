@@ -111,6 +111,27 @@ class ErrorBanner extends StatelessWidget {
   }
 }
 
+/// Flutter error surface: household copy, never a stack dump.
+Widget butlerErrorWidget(FlutterErrorDetails details) {
+  return const Directionality(
+    textDirection: TextDirection.ltr,
+    child: ColoredBox(
+      color: Color(0xFFFAF6EF),
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Text(
+          UserFacingCopy.genericError,
+          key: Key('calm-error-screen'),
+        ),
+      ),
+    ),
+  );
+}
+
+void installButlerErrorWidget() {
+  ErrorWidget.builder = butlerErrorWidget;
+}
+
 /// Degraded-mode banner that can be dismissed with Continue / Start fresh / OK.
 class DegradedModeBanner extends StatefulWidget {
   const DegradedModeBanner({

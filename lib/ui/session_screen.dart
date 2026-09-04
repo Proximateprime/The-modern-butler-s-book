@@ -17,6 +17,7 @@ import '../helpers/washer_latch_copy.dart';
 import '../helpers/dishwasher_easy_checks.dart';
 import '../helpers/fridge_easy_checks.dart';
 import '../helpers/degraded_mode.dart';
+import '../helpers/package_usability.dart';
 import '../helpers/expert_mode.dart';
 import '../helpers/evidence_prompt_match.dart';
 import '../helpers/free_observation_intake.dart';
@@ -223,7 +224,10 @@ class _SessionScreenState extends State<SessionScreen>
       FailureModeClosePath? pendingClose;
       final pendingCloseId = resume?.pendingCloseVerificationFailureModeId;
       if (pendingCloseId != null) {
-        pendingClose = _closePathPolicy.pathForFailureMode(pendingCloseId);
+        pendingClose = closePathIfAuthoredInPackage(
+          package: package,
+          failureModeId: pendingCloseId,
+        );
       }
 
       if (package != null) {
@@ -615,14 +619,29 @@ class _SessionScreenState extends State<SessionScreen>
     required FailureModeClosePath? rankingPath,
     required String? primaryFailureModeId,
   }) {
+    final package = widget.dependencies.packageForSession(widget.sessionId);
+    FailureModeClosePath? authored(FailureModeClosePath? path) {
+      if (path == null) {
+        return null;
+      }
+      return packageFailureModeExists(package, path.failureModeId)
+          ? path
+          : null;
+    }
+
     if (primaryFailureModeId == null) {
-      return rankingPath;
+      return authored(rankingPath);
     }
     if (!closePathImpliesRepairChosen(_closePathPhase) && !_choseRepair) {
-      return rankingPath;
+      return authored(rankingPath);
     }
-    return _closePathPolicy.pathForFailureMode(primaryFailureModeId) ??
-        rankingPath;
+    return authored(
+          closePathIfAuthoredInPackage(
+            package: package,
+            failureModeId: primaryFailureModeId,
+          ),
+        ) ??
+        authored(rankingPath);
   }
 
   bool _needsEasyAirflowFirst(FailureModeClosePath closePath) {
@@ -1627,7 +1646,8 @@ class _SessionScreenState extends State<SessionScreen>
       if (!mounted) {
         return;
       }
-      if (capture.kind == VoiceAnswerKind.permissionDenied) {
+      if (capture.kind == VoiceAnswerKind.permissionDenied ||
+          capture.kind == VoiceAnswerKind.unavailable) {
         setState(() => _voicePermissionDenied = true);
         return;
       }
@@ -2173,8 +2193,12 @@ class _SessionScreenState extends State<SessionScreen>
     if (session == null || _isTerminal(session.currentState)) {
       return null;
     }
-    final context = widget.dependencies.buildDecisionContext(session.id);
-    return _safety.evaluateContext(context);
+    try {
+      final context = widget.dependencies.buildDecisionContext(session.id);
+      return _safety.evaluateContext(context);
+    } on StateError {
+      return null;
+    }
   }
 
   Future<void> _endSession({
@@ -2337,7 +2361,8 @@ class _SessionScreenState extends State<SessionScreen>
       return _guideUnavailableScaffold();
     }
     final package = decisionContext.package;
-    if (package == null) {
+    final usability = assessKnowledgePackage(package);
+    if (package == null || usability == PackageUsabilityKind.corrupt) {
       if (outcome != null) {
         return _historyMemoryScaffold(outcome);
       }
@@ -2728,6 +2753,13 @@ class _SessionScreenState extends State<SessionScreen>
                         bannerKey: Key('session-offline-banner'),
                       ),
                     ],
+                    if (usability == PackageUsabilityKind.thin) ...[
+                      const SizedBox(height: 16),
+                      const DegradedModeBanner(
+                        kind: DegradedModeKind.packageThin,
+                        bannerKey: Key('session-thin-package-banner'),
+                      ),
+                    ],
                     if (_photoCaptureOff) ...[
                       const SizedBox(height: 16),
                       DegradedModeBanner(
@@ -3026,7 +3058,8 @@ class _SessionScreenState extends State<SessionScreen>
                         if (rule.askAnotherQuestion &&
                             !interactionsLocked &&
                             !_starterLimitedGuidance &&
-                            clueCount > 0) ...[
+                            clueCount > 0 &&
+                            packageCanDiagnose(package)) ...[
                           Align(
                             alignment: Alignment.centerLeft,
                             child: TextButton(
@@ -3701,7 +3734,19 @@ class _SessionScreenState extends State<SessionScreen>
   void _startFreshFromDeniedSensor() {
     final appliance = widget.appliance;
     widget.dependencies.abandonOpenSession(appliance);
-    final newId = widget.dependencies.startOrResumeSession(appliance);
+    late final String newId;
+    try {
+      newId = widget.dependencies.startOrResumeSession(appliance);
+    } on StateError catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(userFacingErrorMessage(error))),
+      );
+      Navigator.of(context).maybePop();
+      return;
+    }
     if (!mounted) {
       return;
     }

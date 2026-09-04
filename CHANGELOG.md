@@ -1,3 +1,15 @@
+## Calm fail (2026-09-04)
+
+App **0.1.4+15**. Bad state degrades: offline / Groq unavailable keeps the
+on-device templates for diagnosis, next question, stop/handoff, and hazard
+flags. Missing, empty, or corrupt dryer packages do not invent failure modes
+or part swaps — they show honest “can’t help yet” / install copy. Camera and
+microphone refusals stay optional with calm copy. A corrupt household snapshot
+still banners; a broken resume row is dropped instead of wiping the book or
+minting clues. Groq stays phrasing-only and is not called while offline.
+GOLDEN **Call a pro** stays. Play listing stays out. Tests:
+`test/calm_fail_v1_test.dart`.
+
 ## This was wrong (2026-09-04)
 
 App **0.1.4+14**. Testers can report a bad diagnosis or step from **Settings →

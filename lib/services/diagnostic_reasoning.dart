@@ -59,6 +59,9 @@ class DiagnosticReasoning {
       starterMatchedSymptomIds: starterMatchedSymptomIds,
       energySource: energySource,
     );
+    final authoredModeIds = {
+      for (final mode in package.failureModes) mode.id,
+    };
     final closePathFailureModeId = leadingFailureModeIdForClosePath(
       standings: ranked.standings,
       evidence: evidence,
@@ -71,13 +74,18 @@ class DiagnosticReasoning {
         for (final mode in package.failureModes) mode.id: mode.commonality,
       },
     );
+    final authoredCloseId =
+        closePathFailureModeId != null &&
+                authoredModeIds.contains(closePathFailureModeId)
+            ? closePathFailureModeId
+            : null;
     final closePath =
-        closePathFailureModeId == null
+        authoredCloseId == null
             ? null
-            : closePathPolicy.pathForFailureMode(closePathFailureModeId);
+            : closePathPolicy.pathForFailureMode(authoredCloseId);
     final verificationOutcome = closePathPolicy.outcomeForPrimary(
       evidence: evidence,
-      primaryFailureModeId: closePathFailureModeId,
+      primaryFailureModeId: authoredCloseId,
     );
 
     return DiagnosticReasoningResult(
@@ -91,7 +99,7 @@ class DiagnosticReasoning {
       verificationOutcome: verificationOutcome,
       resolveEligibility: closePathPolicy.resolveEligibility(
         safetyStopActive: safetyStopActive,
-        primaryFailureModeId: closePathFailureModeId,
+        primaryFailureModeId: authoredCloseId,
         verificationOutcome: verificationOutcome,
         closePath: closePath,
       ),

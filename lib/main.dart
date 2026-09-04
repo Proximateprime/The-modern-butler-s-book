@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'services/butler_supabase.dart';
 import 'ui/app_dependencies.dart';
 import 'ui/app_theme.dart';
+import 'ui/error_banner.dart';
 import 'ui/first_run_screen.dart';
 import 'ui/home_screen.dart';
 import 'ui/safety_disclaimer_screen.dart';
@@ -13,6 +14,7 @@ import 'ui/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  installButlerErrorWidget();
   try {
     await ensureButlerSupabase();
   } catch (_) {

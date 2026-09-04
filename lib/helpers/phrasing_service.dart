@@ -19,16 +19,20 @@ class GroqPhrasingService {
   GroqPhrasingService({
     GroqPhrasingClient? client,
     this.enabled = kGroqPhrasingEnabledDefault,
-  }) : client = client ?? GroqPhrasingRuntimeClient();
+    bool Function()? isOnline,
+  }) : client = client ?? GroqPhrasingRuntimeClient(),
+       _isOnline = isOnline ?? (() => true);
 
   final GroqPhrasingClient client;
   final bool enabled;
+  final bool Function() _isOnline;
 
   final Map<String, GroqPhrasingAccepted> _cache = {};
   String? _lastScreenKey;
   final List<String> _requestedEvidenceIds = [];
 
-  bool get shouldCallNetwork => enabled && client.hasApiKey;
+  bool get shouldCallNetwork =>
+      enabled && client.hasApiKey && _isOnline();
 
   List<String> get requestedEvidenceIds =>
       List<String>.unmodifiable(_requestedEvidenceIds);
@@ -53,7 +57,7 @@ class GroqPhrasingService {
   /// Packaged first. Groq swap only when the safety gate accepts.
   Future<GroqPhrasingAccepted> phrase(PhrasingRequest request) async {
     final packaged = GroqPhrasingAccepted.packaged(request);
-    if (!enabled || !client.hasApiKey) {
+    if (!shouldCallNetwork) {
       return packaged;
     }
     final cached = _cache[request.screenKey];

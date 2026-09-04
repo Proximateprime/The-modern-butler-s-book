@@ -61,6 +61,16 @@ void main() {
     _expectDegradedActions(DegradedModeKind.packageMissing);
   });
 
+  testWidgets('package thin banner has human actions', (tester) async {
+    await _pumpBanner(tester, DegradedModeKind.packageThin);
+    _expectDegradedActions(DegradedModeKind.packageThin);
+  });
+
+  testWidgets('package corrupt banner has human actions', (tester) async {
+    await _pumpBanner(tester, DegradedModeKind.packageCorrupt);
+    _expectDegradedActions(DegradedModeKind.packageCorrupt);
+  });
+
   testWidgets('offline banner has human actions', (tester) async {
     await _pumpBanner(tester, DegradedModeKind.offline);
     _expectDegradedActions(DegradedModeKind.offline);
