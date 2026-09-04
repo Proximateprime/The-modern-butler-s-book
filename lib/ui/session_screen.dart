@@ -2521,7 +2521,15 @@ class _SessionScreenState extends State<SessionScreen>
     final isRevisingEvidence = _revisingTemplateId != null;
     final effectiveInvestigationStopped =
         investigationStopped && !isRevisingEvidence;
-    final hideNextQuestion = !rule.askAnotherQuestion && !isRevisingEvidence;
+    final restoringOpenInterview = _pendingAnswerPrompt != null &&
+        interviewTemplateIsStillOpen(
+          templateId: _pendingAnswerPrompt!.id,
+          templates: prompts,
+          recordedEvidence: decisionContext.evidence,
+        );
+    final hideNextQuestion = !rule.askAnotherQuestion &&
+        !isRevisingEvidence &&
+        !restoringOpenInterview;
     // After I'll repair, verification and End Session follow the bound
     // Primary path — the same path inspect and guidance already use.
     final verificationOutcome = closePath != null

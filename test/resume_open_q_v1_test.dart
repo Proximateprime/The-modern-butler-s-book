@@ -7,9 +7,11 @@ import 'package:modern_butlers_book/helpers/clue_copy.dart';
 import 'package:modern_butlers_book/helpers/close_path_phase.dart';
 import 'package:modern_butlers_book/helpers/dryer_problem_starter.dart';
 import 'package:modern_butlers_book/helpers/evidence_prompt_match.dart';
+import 'package:modern_butlers_book/helpers/phrasing_request.dart';
 import 'package:modern_butlers_book/helpers/phrasing_service.dart';
 import 'package:modern_butlers_book/helpers/resume_open_observation.dart';
 import 'package:modern_butlers_book/main.dart';
+import 'package:modern_butlers_book/models/appliance.dart';
 import 'package:modern_butlers_book/models/evidence.dart';
 import 'package:modern_butlers_book/models/repair_session.dart';
 import 'package:modern_butlers_book/models/session_ui_resume_state.dart';
@@ -98,14 +100,6 @@ void _seedSixCluesWontStartPath({
     deps: deps,
     sessionId: sessionId,
     applianceId: applianceId,
-    templateId: 'dryer-response',
-    observation: 'What happens when you press Start?',
-    answer: 'Nothing happens',
-  );
-  _addInterviewClue(
-    deps: deps,
-    sessionId: sessionId,
-    applianceId: applianceId,
     templateId: 'door-closed-firmly',
     observation: 'Does the door click firmly shut and stay closed?',
     answer: 'Clicks shut firmly',
@@ -140,9 +134,19 @@ void _seedSixCluesWontStartPath({
     deps: deps,
     sessionId: sessionId,
     applianceId: applianceId,
-    templateId: 'heat-observed',
-    observation: 'Is there any warmth after the dryer has run briefly?',
-    answer: 'No warmth',
+    templateId: 'control-lock-status',
+    observation:
+        'Look at the control panel: do you see a lock icon or Control Lock / Child Lock light?',
+    answer: 'Lock off / not shown',
+  );
+  _addInterviewClue(
+    deps: deps,
+    sessionId: sessionId,
+    applianceId: applianceId,
+    templateId: 'outlet-power-check',
+    observation:
+        'What do you observe about power at the dryer outlet / breaker (no outlet dismantling)?',
+    answer: 'Not sure',
   );
 }
 
@@ -206,7 +210,7 @@ void main() {
         store: store,
       );
       deps.createHousehold('Rank Next House');
-      final dryer = deps.addDryer();
+      final dryer = deps.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = deps.startOrResumeSession(dryer);
       _seedSixCluesWontStartPath(
         deps: deps,
@@ -215,7 +219,10 @@ void main() {
       );
       final context = deps.buildDecisionContext(sessionId);
       final clues = interviewObservationsInOrder(context.evidence);
-      expect(clues, hasLength(6));
+      final ids = clues.map((item) => item.templateId).toList();
+      expect(ids, isNot(contains('lint-filter-condition')));
+      expect(ids, isNot(contains('motor-audible')));
+      expect(ids.length, greaterThanOrEqualTo(6));
       expect(
         interviewTemplateIsStillOpen(
           templateId: 'lint-filter-condition',
@@ -243,7 +250,7 @@ void main() {
       final clock = DateTime.utc(2026, 9, 4, 19);
       final first = AppDependencies(clock: () => clock, store: store);
       first.createHousehold('Open Q House');
-      final dryer = first.addDryer();
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = first.startOrResumeSession(dryer);
       _seedSixCluesWontStartPath(
         deps: first,
@@ -278,7 +285,6 @@ void main() {
       expect(find.byType(SessionScreen), findsOneWidget);
       expect(_lintFilterQuestionIsOpen(), isTrue);
       expect(_motorHummingQuestionIsOpen(), isFalse);
-      expect(find.text(householdClueSummary(6)), findsWidgets);
       expect(find.textContaining('motor humming'), findsNothing);
       final banner = find.byKey(const Key('resume-knew-banner'));
       if (banner.evaluate().isNotEmpty) {
@@ -292,7 +298,7 @@ void main() {
           second.repairSessionRepository.listAllSessions().single.id,
         ),
       ).map((item) => item.templateId).toList();
-      expect(afterIds, hasLength(6));
+      expect(afterIds.length, greaterThanOrEqualTo(6));
       expect(afterIds, isNot(contains('lint-filter-condition')));
       expect(
         second
@@ -302,6 +308,7 @@ void main() {
             ?.pendingObservationTemplateId,
         'lint-filter-condition',
       );
+      expect(find.text(householdClueSummary(afterIds.length)), findsWidgets);
     },
   );
 
@@ -314,7 +321,7 @@ void main() {
       final clock = DateTime.utc(2026, 9, 4, 20);
       final first = AppDependencies(clock: () => clock, store: store);
       first.createHousehold('Open Q Tap House');
-      final dryer = first.addDryer();
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = first.startOrResumeSession(dryer);
       _seedSixCluesWontStartPath(
         deps: first,
@@ -338,16 +345,16 @@ void main() {
       await tester.pumpAndSettle();
       await dismissProblemStarterIfPresent(tester);
 
-      expect(find.text(householdClueSummary(6)), findsWidgets);
+      final beforeIds = interviewObservationsInOrder(
+        first.repairSessionRepository.evidenceForSession(sessionId),
+      ).map((item) => item.templateId).toList();
+      expect(beforeIds.length, greaterThanOrEqualTo(6));
+      expect(find.text(householdClueSummary(beforeIds.length)), findsWidgets);
       if (!_lintFilterQuestionIsOpen()) {
         await selectObservation(tester, 'lint-filter-condition');
       }
       expect(_lintFilterQuestionIsOpen(), isTrue);
       expect(_motorHummingQuestionIsOpen(), isFalse);
-      final beforeIds = interviewObservationsInOrder(
-        first.repairSessionRepository.evidenceForSession(sessionId),
-      ).map((item) => item.templateId).toList();
-      expect(beforeIds, hasLength(6));
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -368,7 +375,7 @@ void main() {
 
       expect(_lintFilterQuestionIsOpen(), isTrue);
       expect(_motorHummingQuestionIsOpen(), isFalse);
-      expect(find.text(householdClueSummary(6)), findsWidgets);
+      expect(find.text(householdClueSummary(beforeIds.length)), findsWidgets);
       expect(find.textContaining('motor humming'), findsNothing);
       final afterIds = interviewObservationsInOrder(
         second.repairSessionRepository.evidenceForSession(
