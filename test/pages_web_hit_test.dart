@@ -37,10 +37,10 @@ Future<void> _tapPaintedCenter(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
-  test('version is 0.1.4+10', () {
+  test('version is 0.1.4+11', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+10');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+10'));
+    expect(kAppVersionLabel, '0.1.4+11');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+11'));
   });
 
   test('Pages host keeps pointer events on flutter-view, not the canvas', () {

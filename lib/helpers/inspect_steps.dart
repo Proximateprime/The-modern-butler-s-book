@@ -179,13 +179,18 @@ ClosePathPhase closePathPhaseHonoringInspect({
 }
 
 /// Chip order shown on one inspect step.
-List<String> inspectStepChipLabels(InspectStep step) {
+List<String> inspectStepChipLabels(
+  InspectStep step, {
+  bool offerAlreadyChecked = true,
+}) {
   return [
     inspectMatchesOkChip,
     inspectDoesntMatchChip,
     inspectCantSeeChip,
-    if (isEasyCheckObservationTemplateId(step.evidenceTemplateId) ||
-        step.evidenceAnswerByChip.containsKey(alreadyCheckedEasyCheckAnswer))
+    if (offerAlreadyChecked &&
+        (isEasyCheckObservationTemplateId(step.evidenceTemplateId) ||
+            step.evidenceAnswerByChip
+                .containsKey(alreadyCheckedEasyCheckAnswer)))
       alreadyCheckedEasyCheckAnswer,
   ];
 }

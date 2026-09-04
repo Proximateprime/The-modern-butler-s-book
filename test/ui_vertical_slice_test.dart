@@ -54,7 +54,8 @@ void main() {
     expect(find.text('Browse failure modes'), findsOneWidget);
     expect(find.byKey(const Key('answer-choice-panel')), findsOneWidget);
     expect(find.text('Current question'), findsOneWidget);
-    expect(find.text('Evidence count: 0'), findsOneWidget);
+    expect(find.text('No clues yet'), findsWidgets);
+    expect(find.text('1 clue'), findsNothing);
 
     await selectObservation(tester, 'heat-observed');
     expect(find.byKey(const Key('answer-choice-panel')), findsOneWidget);
@@ -68,7 +69,7 @@ void main() {
       findsWidgets,
     );
     expect(find.textContaining('Answer: No warmth'), findsOneWidget);
-    expect(find.text('Evidence count: 1'), findsOneWidget);
+    expect(find.text('1 clue'), findsWidgets);
 
     await selectObservation(tester, 'cycle-heat-setting');
     await tapVisible(
@@ -79,7 +80,7 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('answer-choice-no')));
     await selectObservation(tester, 'exterior-airflow');
     await tapInspectOrAnswerChoice(tester, 'normal');
-    expect(find.text('Evidence count: 4'), findsOneWidget);
+    expect(find.text('4 clues'), findsWidgets);
 
     await selectFailureMode(tester, 'clogged-lint-pathway');
     await reachClosePathVerificationIfPresent(tester);

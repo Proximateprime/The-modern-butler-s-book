@@ -52,20 +52,20 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
   bool get _isDishwasher => widget.category == 'dishwasher';
 
   String get _kindNoun => switch (widget.category) {
-    'fridge' => 'fridge',
-    'washer' => 'washer',
-    'dishwasher' => 'dishwasher',
-    _ => 'dryer',
-  };
+        'fridge' => 'fridge',
+        'washer' => 'washer',
+        'dishwasher' => 'dishwasher',
+        _ => 'dryer',
+      };
 
   bool get _isEdit => widget.existing != null;
 
   bool get _scanAvailable => addApplianceShowsScanAction(
-    isWeb: kIsWeb,
-    ocrAvailable: widget.dependencies.ratingPlateOcr.isAvailable,
-    barcodeAvailable: widget.dependencies.barcodeScanner.isAvailable,
-    cameraOff: _cameraOff,
-  );
+        isWeb: kIsWeb,
+        ocrAvailable: widget.dependencies.ratingPlateOcr.isAvailable,
+        barcodeAvailable: widget.dependencies.barcodeScanner.isAvailable,
+        cameraOff: _cameraOff,
+      );
 
   bool get _cameraOff =>
       _cameraDenied || widget.dependencies.simulateMediaDenied;
@@ -91,8 +91,7 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
       _washerLoadStyle = existing.washerLoadStyle;
       return;
     }
-    final count =
-        widget.dependencies
+    final count = widget.dependencies
             .appliancesForCurrentHousehold()
             .where((item) => item.category == widget.category)
             .length +
@@ -100,8 +99,7 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
     final defaultName = switch (widget.category) {
       'fridge' => count == 1 ? 'Kitchen Fridge' : 'Fridge $count',
       'washer' => count == 1 ? 'Laundry Room Washer' : 'Washer $count',
-      'dishwasher' =>
-        count == 1 ? 'Kitchen Dishwasher' : 'Dishwasher $count',
+      'dishwasher' => count == 1 ? 'Kitchen Dishwasher' : 'Dishwasher $count',
       _ => count == 1 ? 'Laundry Room Dryer' : 'Dryer $count',
     };
     _name = TextEditingController(text: defaultName);
@@ -109,8 +107,7 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
     _model = TextEditingController();
     _serial = TextEditingController();
     _location = TextEditingController(
-      text:
-          (_isFridge || _isDishwasher) ? 'Kitchen' : 'Laundry Room',
+      text: (_isFridge || _isDishwasher) ? 'Kitchen' : 'Laundry Room',
     );
     _ageYears = TextEditingController();
   }
@@ -142,16 +139,15 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
       final ocrText = await widget.dependencies.ratingPlateOcr.recognizeFile(
         path,
       );
-      final barcodePayload = await widget.dependencies.barcodeScanner
-          .decodeFile(path);
+      final barcodePayload =
+          await widget.dependencies.barcodeScanner.decodeFile(path);
       if (!mounted) {
         return;
       }
 
-      final fromOcr =
-          ocrText == null || ocrText.trim().isEmpty
-              ? const RatingPlateFields()
-              : parseRatingPlateText(ocrText);
+      final fromOcr = ocrText == null || ocrText.trim().isEmpty
+          ? const RatingPlateFields()
+          : parseRatingPlateText(ocrText);
       final fromBarcode =
           barcodePayload == null || barcodePayload.trim().isEmpty
               ? const RatingPlateFields()
@@ -169,8 +165,8 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
               widget.dependencies.ratingPlateOcr.isAvailable
                   ? UserFacingCopy.ratingPlateOcrEmpty
                   : widget.dependencies.barcodeScanner.isAvailable
-                  ? UserFacingCopy.barcodeScanEmpty
-                  : UserFacingCopy.ratingPlateOcrUnavailable,
+                      ? UserFacingCopy.barcodeScanEmpty
+                      : UserFacingCopy.ratingPlateOcrUnavailable,
             ),
           ),
         );
@@ -341,229 +337,243 @@ class _AddApplianceScreenState extends State<AddApplianceScreen> {
     return Scaffold(
       key: Key(_isEdit ? 'edit-appliance-screen' : 'add-appliance-screen'),
       appBar: AppBar(title: Text(title)),
-      body: ButlerPageBody(
-        child: ListView(
-          children: [
-            if (_cameraOff) ...[
-              const DegradedModeBanner(
-                kind: DegradedModeKind.cameraDenied,
-              ),
-              const SizedBox(height: 16),
-            ],
-            const BookSectionLabel('Rating plate'),
-            const SizedBox(height: 8),
-            if (_showScan) ...[
-              const PermissionsHelpCard(
-                compact: true,
-                key: Key('add-appliance-permissions-help'),
-              ),
-              const SizedBox(height: 12),
-            ],
-            Text(
-              addApplianceIdentityHint(
-                isWeb: kIsWeb,
-                scanAvailable: _showScan,
-              ),
-              key: const Key('add-appliance-ocr-fallback'),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            if (_showScan) ...[
-              const SizedBox(height: 12),
-              FilledButton.tonalIcon(
-                key: const Key('add-appliance-scan-rating-plate'),
-                onPressed: _busy ? null : _scan,
-                icon: const Icon(Icons.document_scanner_outlined, size: 18),
-                label: const Text('Scan rating plate'),
-              ),
-            ] else if (!kIsWeb && !_cameraOff) ...[
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                key: const Key('add-appliance-keep-rating-photo'),
-                onPressed: _busy ? null : _keepRatingPhoto,
-                icon: const Icon(Icons.photo_outlined, size: 18),
-                label: const Text(UserFacingCopy.addApplianceKeepRatingPhoto),
-              ),
-            ],
-            if (_ratingLabelPhotoPath != null) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  EvidencePhotoThumb(
-                    key: const Key('add-appliance-rating-photo'),
-                    path: _ratingLabelPhotoPath!,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      UserFacingCopy.addApplianceRatingPhotoStaysLocal,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  IconButton(
-                    key: const Key('add-appliance-clear-rating-photo'),
-                    tooltip: 'Remove photo',
-                    onPressed:
-                        _busy
-                            ? null
-                            : () => setState(() => _ratingLabelPhotoPath = null),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 24),
-            const BookSectionLabel('Details'),
-            const SizedBox(height: 8),
-            TextField(
-              key: const Key('add-appliance-name-field'),
-              controller: _name,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('add-appliance-brand-field'),
-              controller: _brand,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Brand'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('add-appliance-model-field'),
-              controller: _model,
-              textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(labelText: 'Model'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('add-appliance-serial-field'),
-              controller: _serial,
-              textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(
-                labelText: 'Serial',
-                helperText: UserFacingCopy.addApplianceSerialHint,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('add-appliance-location-field'),
-              controller: _location,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Location',
-                helperText: UserFacingCopy.addApplianceLocationHint,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ListTile(
-              key: const Key('add-appliance-install-date'),
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Install or purchase date'),
-              subtitle: Text(
-                _installationDate == null
-                    ? 'Optional'
-                    : _formatInstallDate(_installationDate!),
-              ),
-              trailing:
-                  _installationDate == null
-                      ? const Icon(Icons.event_outlined)
-                      : IconButton(
-                        key: const Key('add-appliance-install-date-clear'),
-                        tooltip: 'Clear date',
-                        onPressed:
-                            _busy
-                                ? null
-                                : () => setState(() => _installationDate = null),
-                        icon: const Icon(Icons.close),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox(
+            height: constraints.maxHeight,
+            child: ButlerPageBody(
+              child: SingleChildScrollView(
+                key: const Key('add-appliance-scroll-view'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_cameraOff) ...[
+                      const DegradedModeBanner(
+                        kind: DegradedModeKind.cameraDenied,
                       ),
-              onTap: _busy ? null : _pickInstallDate,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('add-appliance-age-field'),
-              controller: _ageYears,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Approx. age (years)',
-                helperText: UserFacingCopy.addApplianceAgeHint,
-              ),
-            ),
-            if (widget.category == 'dryer') ...[
-              const SizedBox(height: 16),
-              const BookSectionLabel('Energy source'),
-              const SizedBox(height: 8),
-              Text(
-                'Electric, gas, or not sure. Needed before heat-component checks.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final source in ApplianceEnergySource.values)
-                    ChoiceChip(
-                      key: Key('add-appliance-energy-${source.name}'),
-                      label: Text(switch (source) {
-                        ApplianceEnergySource.electric => 'Electric',
-                        ApplianceEnergySource.gas => 'Gas',
-                        ApplianceEnergySource.unknown => 'Not sure',
-                      }),
-                      selected: _energySource == source,
-                      onSelected:
-                          _busy
-                              ? null
-                              : (selected) {
-                                if (selected) {
-                                  setState(() => _energySource = source);
-                                }
-                              },
+                      const SizedBox(height: 16),
+                    ],
+                    const BookSectionLabel('Rating plate'),
+                    const SizedBox(height: 8),
+                    if (_showScan) ...[
+                      const PermissionsHelpCard(
+                        compact: true,
+                        key: Key('add-appliance-permissions-help'),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    Text(
+                      addApplianceIdentityHint(
+                        isWeb: kIsWeb,
+                        scanAvailable: _showScan,
+                      ),
+                      key: const Key('add-appliance-ocr-fallback'),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                ],
-              ),
-            ],
-            if (_isWasher) ...[
-              const SizedBox(height: 16),
-              const BookSectionLabel('Lid or door'),
-              const SizedBox(height: 8),
-              Text(
-                'Top-load washers use a lid. Front-load washers use a door.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final style in WasherLoadStyle.values)
-                    ChoiceChip(
-                      key: Key('add-washer-load-${style.name}'),
-                      label: Text(switch (style) {
-                        WasherLoadStyle.topLoad => 'Top-load (lid)',
-                        WasherLoadStyle.frontLoad => 'Front-load (door)',
-                        WasherLoadStyle.unknown => 'Not sure',
-                      }),
-                      selected: _washerLoadStyle == style,
-                      onSelected:
-                          _busy
-                              ? null
-                              : (selected) {
-                                if (selected) {
-                                  setState(() => _washerLoadStyle = style);
-                                }
-                              },
+                    if (_showScan) ...[
+                      const SizedBox(height: 12),
+                      FilledButton.tonalIcon(
+                        key: const Key('add-appliance-scan-rating-plate'),
+                        onPressed: _busy ? null : _scan,
+                        icon: const Icon(Icons.document_scanner_outlined,
+                            size: 18),
+                        label: const Text('Scan rating plate'),
+                      ),
+                    ] else if (!kIsWeb && !_cameraOff) ...[
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        key: const Key('add-appliance-keep-rating-photo'),
+                        onPressed: _busy ? null : _keepRatingPhoto,
+                        icon: const Icon(Icons.photo_outlined, size: 18),
+                        label: const Text(
+                            UserFacingCopy.addApplianceKeepRatingPhoto),
+                      ),
+                    ],
+                    if (_ratingLabelPhotoPath != null) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          EvidencePhotoThumb(
+                            key: const Key('add-appliance-rating-photo'),
+                            path: _ratingLabelPhotoPath!,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              UserFacingCopy.addApplianceRatingPhotoStaysLocal,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                          IconButton(
+                            key: const Key('add-appliance-clear-rating-photo'),
+                            tooltip: 'Remove photo',
+                            onPressed: _busy
+                                ? null
+                                : () => setState(
+                                    () => _ratingLabelPhotoPath = null),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    const BookSectionLabel('Details'),
+                    const SizedBox(height: 8),
+                    TextField(
+                      key: const Key('add-appliance-name-field'),
+                      controller: _name,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(labelText: 'Name'),
                     ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      key: const Key('add-appliance-brand-field'),
+                      controller: _brand,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(labelText: 'Brand'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      key: const Key('add-appliance-model-field'),
+                      controller: _model,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: const InputDecoration(labelText: 'Model'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      key: const Key('add-appliance-serial-field'),
+                      controller: _serial,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: const InputDecoration(
+                        labelText: 'Serial',
+                        helperText: UserFacingCopy.addApplianceSerialHint,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      key: const Key('add-appliance-location-field'),
+                      controller: _location,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(
+                        labelText: 'Location',
+                        helperText: UserFacingCopy.addApplianceLocationHint,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      key: const Key('add-appliance-install-date'),
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Install or purchase date'),
+                      subtitle: Text(
+                        _installationDate == null
+                            ? 'Optional'
+                            : _formatInstallDate(_installationDate!),
+                      ),
+                      trailing: _installationDate == null
+                          ? const Icon(Icons.event_outlined)
+                          : IconButton(
+                              key:
+                                  const Key('add-appliance-install-date-clear'),
+                              tooltip: 'Clear date',
+                              onPressed: _busy
+                                  ? null
+                                  : () =>
+                                      setState(() => _installationDate = null),
+                              icon: const Icon(Icons.close),
+                            ),
+                      onTap: _busy ? null : _pickInstallDate,
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      key: const Key('add-appliance-age-field'),
+                      controller: _ageYears,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Approx. age (years)',
+                        helperText: UserFacingCopy.addApplianceAgeHint,
+                      ),
+                    ),
+                    if (widget.category == 'dryer') ...[
+                      const SizedBox(height: 16),
+                      const BookSectionLabel('Energy source'),
+                      const SizedBox(height: 8),
+                      Text(
+                        UserFacingCopy.addApplianceEnergyHint,
+                        key: const Key('add-appliance-energy-hint'),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final source in ApplianceEnergySource.values)
+                            ChoiceChip(
+                              key: Key('add-appliance-energy-${source.name}'),
+                              label: Text(switch (source) {
+                                ApplianceEnergySource.electric => 'Electric',
+                                ApplianceEnergySource.gas => 'Gas',
+                                ApplianceEnergySource.unknown => 'Not sure',
+                              }),
+                              selected: _energySource == source,
+                              onSelected: _busy
+                                  ? null
+                                  : (selected) {
+                                      if (selected) {
+                                        setState(() => _energySource = source);
+                                      }
+                                    },
+                            ),
+                        ],
+                      ),
+                    ],
+                    if (_isWasher) ...[
+                      const SizedBox(height: 16),
+                      const BookSectionLabel('Lid or door'),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Top-load washers use a lid. Front-load washers use a door.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final style in WasherLoadStyle.values)
+                            ChoiceChip(
+                              key: Key('add-washer-load-${style.name}'),
+                              label: Text(switch (style) {
+                                WasherLoadStyle.topLoad => 'Top-load (lid)',
+                                WasherLoadStyle.frontLoad =>
+                                  'Front-load (door)',
+                                WasherLoadStyle.unknown => 'Not sure',
+                              }),
+                              selected: _washerLoadStyle == style,
+                              onSelected: _busy
+                                  ? null
+                                  : (selected) {
+                                      if (selected) {
+                                        setState(
+                                            () => _washerLoadStyle = style);
+                                      }
+                                    },
+                            ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    FilledButton(
+                      key: const Key('add-appliance-save-button'),
+                      onPressed: _busy ? null : _save,
+                      child: Text(_isEdit ? 'Save changes' : 'Save appliance'),
+                    ),
+                  ],
+                ),
               ),
-            ],
-            const SizedBox(height: 24),
-            FilledButton(
-              key: const Key('add-appliance-save-button'),
-              onPressed: _busy ? null : _save,
-              child: Text(_isEdit ? 'Save changes' : 'Save appliance'),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -574,18 +584,15 @@ RatingPlateFields _mergeIdentityFields({
   required RatingPlateFields fallback,
 }) {
   return RatingPlateFields(
-    manufacturer:
-        primary.manufacturer.isNotEmpty
-            ? primary.manufacturer
-            : fallback.manufacturer,
-    modelNumber:
-        primary.modelNumber.isNotEmpty
-            ? primary.modelNumber
-            : fallback.modelNumber,
-    serialNumber:
-        primary.serialNumber.isNotEmpty
-            ? primary.serialNumber
-            : fallback.serialNumber,
+    manufacturer: primary.manufacturer.isNotEmpty
+        ? primary.manufacturer
+        : fallback.manufacturer,
+    modelNumber: primary.modelNumber.isNotEmpty
+        ? primary.modelNumber
+        : fallback.modelNumber,
+    serialNumber: primary.serialNumber.isNotEmpty
+        ? primary.serialNumber
+        : fallback.serialNumber,
     installationDate: primary.installationDate ?? fallback.installationDate,
   );
 }

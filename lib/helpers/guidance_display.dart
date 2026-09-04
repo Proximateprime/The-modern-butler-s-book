@@ -75,36 +75,31 @@ GuidanceDisplayBlock guidanceForSafeStep(String step) {
       );
     }
   }
-  final isEscalation =
-      lower.contains('call a') ||
+  final isEscalation = lower.contains('call a') ||
       lower.contains('technician') ||
       lower.contains('professional');
-  final isProhibition =
-      lower.contains('do not') ||
+  final isProhibition = lower.contains('do not') ||
       lower.contains('never') ||
       lower.contains('avoid ');
 
-  final whenToStop =
-      isEscalation ||
-              isProhibition ||
-              lower.contains('stop') ||
-              lower.contains('unplug')
-          ? trimmed
-          : _defaultWhenToStop;
+  final whenToStop = isEscalation ||
+          isProhibition ||
+          lower.contains('stop') ||
+          lower.contains('unplug')
+      ? trimmed
+      : _defaultWhenToStop;
 
   return GuidanceDisplayBlock(
-    what:
-        isEscalation
-            ? 'When to hand this to a professional'
-            : isProhibition
+    what: isEscalation
+        ? 'When to hand this to a professional'
+        : isProhibition
             ? 'Safety limit for this check'
             : _summarizeStep(trimmed),
     how: trimmed,
-    resultMeans:
-        isEscalation
-            ? 'This part of the repair needs tools, disassembly, or testing '
-                'that are outside beginner scope.'
-            : isProhibition
+    resultMeans: isEscalation
+        ? 'This part of the repair needs tools, disassembly, or testing '
+            'that are outside beginner scope.'
+        : isProhibition
             ? 'Following this keeps the check inside beginner-safe limits.'
             : 'Completing this step shows whether this cause matches what you '
                 'are seeing.',
@@ -147,8 +142,7 @@ GuidanceDisplayBlock guidanceForVerification({
 
   return GuidanceDisplayBlock(
     what: 'Complete the safe checks, then record what you observed',
-    how:
-        'Work through each Safe Guidance step below in order. When you are '
+    how: 'Work through each Safe Guidance step below in order. When you are '
         'done, choose Confirmed only if the outcome clearly matches the '
         'verification question above.',
     resultMeans: why,
@@ -183,7 +177,8 @@ const Map<String, GuidanceDisplayBlock> _closeVerificationGuidance = {
         'Do not meter live circuits or jumper the fuse. Stop for smoke or burning smell.',
   ),
   'thermistor-fault-electronic': GuidanceDisplayBlock(
-    what: 'Check whether warmth is partial or extreme rather than completely absent',
+    what:
+        'Check whether warmth is partial or extreme rather than completely absent',
     how:
         'On a heat cycle, note whether clothes get some warmth but stay damp, feel '
         'too hot, or vary during the run — versus staying completely cold.',
@@ -209,14 +204,14 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   'drum-turns': GuidanceDisplayBlock(
     what: 'Whether the drum is tumbling',
     how:
-        'Start a cycle and look through the door glass or opening. The drum should '
-        'rotate steadily.',
+        'Start a cycle and watch through the closed door glass. Do not open the '
+        'door or reach in while it is running. Unplug before any reach-in look.',
     resultMeans:
         'No tumble with motor sound often means a belt issue. Normal tumble with '
         'no heat points toward a heating-path problem.',
     whenToStop:
-        'Do not reach into a moving drum. Stop if you hear harsh grinding or smell '
-        'burning.',
+        'Do not reach into a moving drum. Unplug before reaching in. Stop if you '
+        'hear harsh grinding or smell burning.',
   ),
   'heat-observed': GuidanceDisplayBlock(
     what: 'Whether the load is getting warm',
@@ -241,8 +236,7 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   ),
   'panel-lights': GuidanceDisplayBlock(
     what: 'Whether the control panel has power',
-    how:
-        'Press buttons or turn the knob and see whether lights, numbers, or '
+    how: 'Press buttons or turn the knob and see whether lights, numbers, or '
         'display segments respond.',
     resultMeans:
         'No lights at all suggests supply/power. Lights on with no start points '
@@ -284,8 +278,7 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   ),
   'lint-housing-slot': GuidanceDisplayBlock(
     what: 'Lint packed in the filter slot or housing',
-    how:
-        'Unplug the dryer. Pull the lint filter all the way out and look down '
+    how: 'Unplug the dryer. Pull the lint filter all the way out and look down '
         'the slot with a flashlight. Note packed lint on the walls — do not '
         'dismantle the cabinet.',
     resultMeans:
@@ -307,8 +300,7 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   ),
   'heat-before-failure': GuidanceDisplayBlock(
     what: 'Whether heat was present before this complaint',
-    how:
-        'Think back to recent loads on a heat cycle — not air-only / fluff. '
+    how: 'Think back to recent loads on a heat cycle — not air-only / fluff. '
         'Did it heat normally, then go cold after a very hot run or vent issue, '
         'or has this complaint always been cold?',
     resultMeans:
@@ -321,8 +313,7 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   ),
   'door-held-closed-start': GuidanceDisplayBlock(
     what: 'Whether Start works only while holding the door closed',
-    how:
-        'Close the door and hold it firmly shut with your hand. Press Start. '
+    how: 'Close the door and hold it firmly shut with your hand. Press Start. '
         'Do not tape, jumper, or defeat the door switch.',
     resultMeans:
         'Starting only while you hold the door closed supports a door switch '
@@ -331,8 +322,7 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   ),
   'vent-hose-condition': GuidanceDisplayBlock(
     what: 'Whether the visible vent hose is restricted',
-    how:
-        'Check airflow before opening the cabinet. Unplug if you need to roll '
+    how: 'Check airflow before opening the cabinet. Unplug if you need to roll '
         'the dryer. Check the visible hose only. Do not open the cabinet for '
         'this check.',
     resultMeans:
@@ -399,8 +389,9 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   'gas-dryer-type': GuidanceDisplayBlock(
     what: 'Whether this is a gas or electric dryer',
     how:
-        'Check the back of the dryer or your manual. Gas dryers have a gas line and '
-        'vent; electric dryers have a thick cord to a 240V outlet only.',
+        'Look at the power cord, the rating plate, or the manual. Electric dryers '
+        'use a thick 240V cord. If you are not sure, choose Not sure. Do not '
+        'inspect, trace, or work on gas lines.',
     resultMeans:
         'Gas dryers with no heat need a different path than electric no-heat '
         'checks. Gas ignition work is not beginner DIY.',
@@ -442,8 +433,7 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   ),
   'heat-pattern': GuidanceDisplayBlock(
     what: 'How the load feels after a heat cycle',
-    how:
-        'Run the dryer on a heat cycle for a few minutes with a typical load. '
+    how: 'Run the dryer on a heat cycle for a few minutes with a typical load. '
         'Open carefully and note whether clothes are cold, partly warm but damp, '
         'overhot, or normally warm and drying.',
     resultMeans:
@@ -577,15 +567,13 @@ const Map<String, GuidanceDisplayBlock> _observationGuidance = {
   ),
   'recent-overheat': GuidanceDisplayBlock(
     what: 'Whether the dryer recently ran very hot or shut off from heat',
-    how:
-        'Recall the last few runs. Did the cabinet feel unusually hot, or did '
+    how: 'Recall the last few runs. Did the cabinet feel unusually hot, or did '
         'the cycle stop early because of heat?',
     resultMeans:
         'A recent overheat episode supports thermal fuse or high-limit paths. '
         'Answering no only weakens an overheat-then-no-heat fuse story; it does not '
         'by itself confirm a failed heating element.',
-    whenToStop:
-        'Stop for active smoke or burning smell.',
+    whenToStop: 'Stop for active smoke or burning smell.',
   ),
 };
 
@@ -600,8 +588,7 @@ const Set<String> _teardownGuidanceKeys = {
 final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
   'qualified technician': GuidanceDisplayBlock(
     what: 'Hand off to a qualified technician',
-    how:
-        'Book professional service rather than continuing. Describe the '
+    how: 'Book professional service rather than continuing. Describe the '
         'symptoms and the safe checks you already completed.',
     resultMeans:
         'A technician needs meter readings or cabinet work. That is outside '
@@ -634,8 +621,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
   ),
   'heater service panel': GuidanceDisplayBlock(
     what: 'Open the correct service panel for heater access',
-    how:
-        'With power off, remove the front lower panel or rear panel per your '
+    how: 'With power off, remove the front lower panel or rear panel per your '
         'model label or manual — screw locations vary by brand.',
     resultMeans:
         'Access exposes the heater housing and fuse but still requires power to stay off.',
@@ -644,8 +630,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
   ),
   'high-limit': GuidanceDisplayBlock(
     what: 'Never bypass high-limit protection',
-    how:
-        'Leave the high-limit thermostat in place. Correct the airflow cause '
+    how: 'Leave the high-limit thermostat in place. Correct the airflow cause '
         'and let a technician service the protection itself.',
     resultMeans:
         'High-limit protection is the last defence against an overheating '
@@ -655,8 +640,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
   ),
   'set to heat': GuidanceDisplayBlock(
     what: 'Confirm a heat cycle is selected',
-    how:
-        'Look at the control panel and make sure the cycle is not Air Fluff, '
+    how: 'Look at the control panel and make sure the cycle is not Air Fluff, '
         'Air Dry, or another no-heat setting.',
     resultMeans:
         'Air-only settings tumble without heat, which looks exactly like a '
@@ -665,8 +649,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
   ),
   'short heat cycle': GuidanceDisplayBlock(
     what: 'Run a short heat test cycle',
-    how:
-        'Restore power, start a few minutes on a heat cycle with the drum '
+    how: 'Restore power, start a few minutes on a heat cycle with the drum '
         'turning, then carefully feel whether the load is warm.',
     resultMeans:
         'Warmth returning points to the airflow path. Still completely cold '
@@ -700,8 +683,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
   ),
   'vent hose': GuidanceDisplayBlock(
     what: 'Check the visible vent hose',
-    how:
-        'Check airflow before opening the cabinet. Unplug if you need to roll '
+    how: 'Check airflow before opening the cabinet. Unplug if you need to roll '
         'the dryer. Check the visible hose only.',
     resultMeans:
         'A crushed or packed hose supports restricted exhaust airflow.',
@@ -723,14 +705,12 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
     how:
         'Unplug the dryer from the wall or switch off its dedicated breaker before '
         'moving it or opening access panels.',
-    resultMeans:
-        'Power is off so you can inspect safely without live parts.',
+    resultMeans: 'Power is off so you can inspect safely without live parts.',
     whenToStop: 'Never work on a plugged-in dryer beyond normal button use.',
   ),
   'do not measure live': GuidanceDisplayBlock(
     what: 'No live electrical testing',
-    how:
-        'Use only external observations — settings, sounds, warmth, and plug '
+    how: 'Use only external observations — settings, sounds, warmth, and plug '
         'condition. Do not probe terminals or heaters with tools.',
     resultMeans:
         'You avoid high-voltage shock risk while still gathering useful clues.',
@@ -752,8 +732,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
     how:
         'External gas supply valve and cycle checks only. Do not disassemble gas lines, '
         'burners, igniters, or valves.',
-    resultMeans:
-        'Gas ignition faults require a qualified gas technician.',
+    resultMeans: 'Gas ignition faults require a qualified gas technician.',
     whenToStop:
         'If gas odor is present, stop use, ventilate, and follow gas emergency procedures.',
   ),
@@ -762,8 +741,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
     how:
         'Do not attempt gas valve, igniter, burner, or flame-sensor repair. Schedule '
         'professional gas appliance service.',
-    resultMeans:
-        'Gas heat restoration is not a beginner DIY task.',
+    resultMeans: 'Gas heat restoration is not a beginner DIY task.',
     whenToStop:
         'Any gas odor — stop use, ventilate, evacuate if needed, follow gas emergency procedures.',
   ),
@@ -772,8 +750,7 @@ final Map<String, GuidanceDisplayBlock> _safeStepGuidance = {
     how:
         'Listen for hum/struggle at Start only. Do not open the motor compartment or '
         'test capacitors.',
-    resultMeans:
-        'Start assist faults require professional motor service.',
+    resultMeans: 'Start assist faults require professional motor service.',
     whenToStop:
         'Stop for burning smell, smoke, or repeated failed start attempts.',
   ),

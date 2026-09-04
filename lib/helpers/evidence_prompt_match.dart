@@ -38,7 +38,10 @@ bool usesGenericBooleanAnswerFallback(EvidenceTemplate template) {
 /// observations must never silently fall back to Yes/No/Sometimes — infer from
 /// template effect maps when choices were not authored, or offer uncertainty-only
 /// chips rather than misleading boolean labels.
-List<String> answerChoicesFor(EvidenceTemplate template) {
+List<String> answerChoicesFor(
+  EvidenceTemplate template, {
+  bool offerAlreadyChecked = true,
+}) {
   late final List<String> base;
   if (template.answerChoices.isNotEmpty) {
     base = template.answerChoices;
@@ -51,6 +54,9 @@ List<String> answerChoicesFor(EvidenceTemplate template) {
     } else {
       base = const ['Not sure', kOtherDescribeChoiceId];
     }
+  }
+  if (!offerAlreadyChecked) {
+    return base;
   }
   return withAlreadyCheckedEasyCheckChoice(
     templateId: template.id,

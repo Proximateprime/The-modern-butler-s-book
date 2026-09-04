@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:modern_butlers_book/main.dart';
+import 'package:modern_butlers_book/models/repair_session.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
 
 /// Tall surface so expanded interview sections stay tappable in widget tests.
@@ -24,8 +25,23 @@ Future<void> confirmAddAppliance(WidgetTester tester) async {
   if (save.evaluate().isEmpty) {
     return;
   }
+  await tester.ensureVisible(save);
+  await tester.pumpAndSettle();
   await tester.tap(save);
   await tester.pumpAndSettle();
+}
+
+void seedPriorCompletedRepair(AppDependencies dependencies) {
+  final appliances = dependencies.appliancesForCurrentHousehold();
+  if (appliances.isEmpty) {
+    return;
+  }
+  final appliance = appliances.last;
+  final sessionId = dependencies.startOrResumeSession(appliance);
+  dependencies.endSession(
+    sessionId: sessionId,
+    resolutionStatus: SessionResolutionStatus.resolved,
+  );
 }
 
 Future<void> openDryerSession(
@@ -33,6 +49,7 @@ Future<void> openDryerSession(
   AppDependencies dependencies,
   String householdName, {
   bool skipProblemStarter = true,
+  bool priorRepairHistory = false,
   Size? viewSize,
 }) async {
   if (viewSize != null) {
@@ -55,6 +72,9 @@ Future<void> openDryerSession(
   await tester.tap(find.byKey(const Key('add-dryer-button')));
   await tester.pumpAndSettle();
   await confirmAddAppliance(tester);
+  if (priorRepairHistory) {
+    seedPriorCompletedRepair(dependencies);
+  }
   await tester.tap(find.text('Laundry Room Dryer'));
   await tester.pumpAndSettle();
   await startRepairFromDetail(tester);
@@ -66,8 +86,9 @@ Future<void> openDryerSession(
 Future<void> openWasherSession(
   WidgetTester tester,
   AppDependencies dependencies,
-  String householdName,
-) async {
+  String householdName, {
+  bool priorRepairHistory = false,
+}) async {
   await prepareTallSurface(tester);
   await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
   await tester.tap(find.byKey(const Key('create-household-button')));
@@ -81,6 +102,9 @@ Future<void> openWasherSession(
   await tester.tap(find.byKey(const Key('add-washer-button')));
   await tester.pumpAndSettle();
   await confirmAddAppliance(tester);
+  if (priorRepairHistory) {
+    seedPriorCompletedRepair(dependencies);
+  }
   await tester.tap(find.text('Laundry Room Washer'));
   await tester.pumpAndSettle();
   await startRepairFromDetail(tester);
@@ -89,8 +113,9 @@ Future<void> openWasherSession(
 Future<void> openFridgeSession(
   WidgetTester tester,
   AppDependencies dependencies,
-  String householdName,
-) async {
+  String householdName, {
+  bool priorRepairHistory = false,
+}) async {
   await prepareTallSurface(tester);
   await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
   await tester.tap(find.byKey(const Key('create-household-button')));
@@ -104,6 +129,9 @@ Future<void> openFridgeSession(
   await tester.tap(find.byKey(const Key('add-fridge-button')));
   await tester.pumpAndSettle();
   await confirmAddAppliance(tester);
+  if (priorRepairHistory) {
+    seedPriorCompletedRepair(dependencies);
+  }
   await tester.tap(find.text('Kitchen Fridge'));
   await tester.pumpAndSettle();
   await startRepairFromDetail(tester);
@@ -112,8 +140,9 @@ Future<void> openFridgeSession(
 Future<void> openDishwasherSession(
   WidgetTester tester,
   AppDependencies dependencies,
-  String householdName,
-) async {
+  String householdName, {
+  bool priorRepairHistory = false,
+}) async {
   await prepareTallSurface(tester);
   await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
   await tester.tap(find.byKey(const Key('create-household-button')));
@@ -127,6 +156,9 @@ Future<void> openDishwasherSession(
   await tester.tap(find.byKey(const Key('add-dishwasher-button')));
   await tester.pumpAndSettle();
   await confirmAddAppliance(tester);
+  if (priorRepairHistory) {
+    seedPriorCompletedRepair(dependencies);
+  }
   await tester.tap(find.text('Kitchen Dishwasher'));
   await tester.pumpAndSettle();
   await startRepairFromDetail(tester);
@@ -449,14 +481,13 @@ Future<void> reachClosePathVerificationIfPresent(WidgetTester tester) async {
 
 Future<void> selectObservation(WidgetTester tester, String templateId) async {
   final promptKey = Key('observation-prompt-$templateId');
-  final alreadyActive =
-      find
-          .descendant(
-            of: find.byKey(const Key('answer-choice-panel')),
-            matching: find.byKey(promptKey),
-          )
-          .evaluate()
-          .isNotEmpty;
+  final alreadyActive = find
+      .descendant(
+        of: find.byKey(const Key('answer-choice-panel')),
+        matching: find.byKey(promptKey),
+      )
+      .evaluate()
+      .isNotEmpty;
   if (alreadyActive) {
     return;
   }
@@ -464,7 +495,8 @@ Future<void> selectObservation(WidgetTester tester, String templateId) async {
   await tapVisible(tester, find.byKey(promptKey));
 }
 
-Future<void> selectFailureMode(WidgetTester tester, String failureModeId) async {
+Future<void> selectFailureMode(
+    WidgetTester tester, String failureModeId) async {
   final modeFinder = find.byKey(Key('failure-mode-$failureModeId'));
   if (modeFinder.hitTestable().evaluate().isEmpty) {
     await tapVisible(tester, find.byKey(const Key('failure-modes-tile')));

@@ -16,6 +16,7 @@ void main() {
         deps,
         'Already Checked Interview',
         skipProblemStarter: false,
+        priorRepairHistory: true,
       );
       await confirmNoHeatStarter(tester);
       await answerObservation(tester, 'drum-turns', 'turns-normally');
@@ -44,7 +45,12 @@ void main() {
     'washer drain easy checks offer Already checked on door click',
     (tester) async {
       final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 18, 18, 10));
-      await openWasherSession(tester, deps, 'Already Checked Washer');
+      await openWasherSession(
+        tester,
+        deps,
+        'Already Checked Washer',
+        priorRepairHistory: true,
+      );
       await tapVisible(
         tester,
         find.byKey(const Key('answer-choice-won-t-drain')),
@@ -71,7 +77,12 @@ void main() {
     'Already checked on inspect unlocks panel after lint, hood, and hose',
     (tester) async {
       final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 18, 18, 20));
-      await openDryerSession(tester, deps, 'Already Checked Guidance');
+      await openDryerSession(
+        tester,
+        deps,
+        'Already Checked Guidance',
+        priorRepairHistory: true,
+      );
       await selectFailureMode(tester, 'thermal-fuse-open');
       await advanceClosePathFromConclusionIfPresent(tester);
 
@@ -170,7 +181,12 @@ void main() {
     'dishwasher door and filter questions offer Already checked',
     (tester) async {
       final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 19, 12));
-      await openDishwasherSession(tester, deps, 'Already Checked Dishwasher');
+      await openDishwasherSession(
+        tester,
+        deps,
+        'Already Checked Dishwasher',
+        priorRepairHistory: true,
+      );
       await tapVisible(
         tester,
         find.byKey(const Key('answer-choice-standing-water')),

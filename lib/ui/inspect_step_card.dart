@@ -27,6 +27,7 @@ class InspectStepCard extends StatefulWidget {
     this.progressTotal,
     this.whyAskBody,
     this.expertMode = false,
+    this.offerAlreadyChecked = true,
     super.key,
   });
 
@@ -50,6 +51,9 @@ class InspectStepCard extends StatefulWidget {
 
   /// Expert Mode only affects beginner-blocked heater-panel extras.
   final bool expertMode;
+
+  /// First session with no completed history hides Already checked.
+  final bool offerAlreadyChecked;
 
   @override
   State<InspectStepCard> createState() => _InspectStepCardState();
@@ -76,9 +80,7 @@ class _InspectStepCardState extends State<InspectStepCard> {
       !widget.cameraStartDenied;
 
   bool get _live =>
-      _wantedCamera &&
-      _controller != null &&
-      _controller!.value.isInitialized;
+      _wantedCamera && _controller != null && _controller!.value.isInitialized;
 
   @override
   void initState() {
@@ -173,8 +175,12 @@ class _InspectStepCardState extends State<InspectStepCard> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final chips = inspectStepChipLabels(_step);
-    final normalizedSelected = normalizeObservationAnswer(widget.selectedAnswer);
+    final chips = inspectStepChipLabels(
+      _step,
+      offerAlreadyChecked: widget.offerAlreadyChecked,
+    );
+    final normalizedSelected =
+        normalizeObservationAnswer(widget.selectedAnswer);
     final showDenied = _viewOnly &&
         (_cameraDenied || widget.cameraStartDenied) &&
         _wantedCamera;
@@ -345,8 +351,7 @@ class _InspectStepCardState extends State<InspectStepCard> {
                 for (final chip in chips)
                   _InspectChipButton(
                     choice: chip,
-                    isSelected:
-                        normalizedSelected != null &&
+                    isSelected: normalizedSelected != null &&
                         normalizedSelected ==
                             normalizeObservationAnswer(
                               _step.answerForChip(chip),
@@ -400,7 +405,8 @@ class _InspectChipButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 48),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         ),
         onPressed: onPressed,
         child: child,

@@ -1,3 +1,17 @@
+## Natural UI v2 honesty (2026-09-04)
+
+App **0.1.4+11**. Presentation and honesty only. Empty brand/model on a real
+Save stay **Unknown**, never Demo Manufacturer / DEMO-*. Add-appliance
+Energy + Save scroll on a short pane. Session progress uses one household
+**clues** count. Energy **Not sure** is valid copy. Gas how-to does not
+inspect gas lines. Drum-turns how-to does not contradict unplug-before
+reach-in. **What's going on?** is observations, not a diagnosis. **Skip to
+best guess** hides with zero clues. **Already checked** hides on a first
+session with no history. Pages/desktop does not claim voice; inspect
+Doesn't-match copy does not fight **Can't see**. Groq stays phrasing-only.
+GOLDEN **Call a pro** stays. Play listing stays out. Tests:
+`test/natural_ui_v2_test.dart`.
+
 ## First-run whole-screen tap (2026-09-04)
 
 App **0.1.4+10**. Presentation only. First-run has no bottom Continue /

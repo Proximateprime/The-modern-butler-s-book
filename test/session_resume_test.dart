@@ -114,7 +114,7 @@ void main() {
 
       expect(find.byKey(const Key('primary-hypothesis-banner')), findsOneWidget);
       expect(find.byKey(const Key('current-conclusion-card')), findsOneWidget);
-      expect(find.text('Evidence count: 2'), findsOneWidget);
+      expect(find.text('2 clues'), findsWidgets);
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -129,7 +129,7 @@ void main() {
       await startRepairFromDetail(tester);
       await dismissProblemStarterIfPresent(tester);
 
-      expect(find.text('Evidence count: 2'), findsOneWidget);
+      expect(find.text('2 clues'), findsWidgets);
       expect(find.byKey(const Key('primary-hypothesis-banner')), findsOneWidget);
       expect(find.byKey(const Key('current-conclusion-card')), findsOneWidget);
     },
@@ -208,7 +208,7 @@ void main() {
     await tester.pumpAndSettle();
     await dismissProblemStarterIfPresent(tester);
 
-    expect(find.text('Evidence count: 1'), findsOneWidget);
+    expect(find.text('1 clue'), findsWidgets);
     expect(find.byKey(const Key('primary-hypothesis-banner')), findsOneWidget);
     expect(find.byKey(const Key('current-conclusion-card')), findsOneWidget);
     expect(second.repairSessionRepository.listAllSessions(), hasLength(1));
@@ -368,7 +368,7 @@ void main() {
       await completeRepairReadinessIfPresent(tester);
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
       expect(find.textContaining('Step 1 of'), findsOneWidget);
-      expect(find.text('Evidence count: 4'), findsOneWidget);
+      expect(find.text('4 clues'), findsWidgets);
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -379,7 +379,7 @@ void main() {
       expect(find.byKey(const Key('repair-readiness-card')), findsNothing);
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
       expect(find.textContaining('Step 1 of'), findsOneWidget);
-      expect(find.text('Evidence count: 4'), findsOneWidget);
+      expect(find.text('4 clues'), findsWidgets);
     },
   );
 
@@ -427,7 +427,7 @@ void main() {
       expect(find.byKey(const Key('current-conclusion-card')), findsOneWidget);
       expect(find.byKey(const Key('close-path-ill-repair')), findsNothing);
       expect(find.byKey(const Key('safe-guidance-card')), findsNothing);
-      expect(find.text('Evidence count: 1'), findsOneWidget);
+      expect(find.text('1 clue'), findsWidgets);
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -438,7 +438,7 @@ void main() {
       expect(find.byKey(const Key('current-conclusion-card')), findsOneWidget);
       expect(find.byKey(const Key('close-path-ill-repair')), findsNothing);
       expect(find.byKey(const Key('safe-guidance-card')), findsNothing);
-      expect(find.text('Evidence count: 1'), findsOneWidget);
+      expect(find.text('1 clue'), findsWidgets);
     },
   );
 
@@ -488,7 +488,7 @@ void main() {
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('guidance-did-this')));
       expect(find.textContaining('Step 2 of'), findsOneWidget);
-      expect(find.textContaining('Evidence count:'), findsOneWidget);
+      expect(find.textContaining('clues'), findsWidgets);
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -497,7 +497,7 @@ void main() {
       expect(find.text(UserFacingCopy.resumeFailed), findsNothing);
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
       expect(find.textContaining('Step 2 of'), findsOneWidget);
-      expect(find.textContaining('Evidence count: 3'), findsOneWidget);
+      expect(find.text('3 clues'), findsWidgets);
     },
   );
 
@@ -511,7 +511,7 @@ void main() {
         tester,
         find.byKey(const Key('answer-choice-no-warmth')),
       );
-      expect(find.text('Evidence count: 1'), findsOneWidget);
+      expect(find.text('1 clue'), findsWidgets);
 
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -542,7 +542,7 @@ void main() {
 
       expect(find.text(UserFacingCopy.resumeFailed), findsNothing);
       expect(find.textContaining('Answer: No warmth'), findsNothing);
-      expect(find.text('Evidence count: 0'), findsOneWidget);
+      expect(find.text('No clues yet'), findsWidgets);
     },
   );
 

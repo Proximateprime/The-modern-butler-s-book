@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../helpers/blocking_reason.dart';
+import '../helpers/clue_copy.dart';
 import '../helpers/close_path_phase.dart';
 import '../helpers/confidence_display.dart';
 import '../helpers/dryer_energy_source.dart';
@@ -142,7 +143,8 @@ class _SessionScreenState extends State<SessionScreen>
       TextEditingController();
   final DiagnosticReasoning _reasoning = const DiagnosticReasoning();
   final SafetyDecisionService _safety = const SafetyDecisionService();
-  final ClosePathPolicyService _closePathPolicy = const ClosePathPolicyService();
+  final ClosePathPolicyService _closePathPolicy =
+      const ClosePathPolicyService();
 
   @override
   void initState() {
@@ -187,8 +189,7 @@ class _SessionScreenState extends State<SessionScreen>
       final package = decisionContext.package;
       final resume = widget.dependencies.uiResumeForSession(widget.sessionId);
 
-      _starterConfirmed =
-          widget.appliance.category != 'dryer' ||
+      _starterConfirmed = widget.appliance.category != 'dryer' ||
           resume?.starterConfirmed == true ||
           decisionContext.evidence.isNotEmpty;
       _starterSymptomIds = List<String>.from(
@@ -234,10 +235,8 @@ class _SessionScreenState extends State<SessionScreen>
           );
           final resumePhase =
               resume?.closePathPhase ?? ClosePathPhase.conclusion;
-          if (boundPath != null &&
-              resumePhase == ClosePathPhase.verification) {
-            final alreadyVerified =
-                _closePathPolicy.findVerificationEvidence(
+          if (boundPath != null && resumePhase == ClosePathPhase.verification) {
+            final alreadyVerified = _closePathPolicy.findVerificationEvidence(
                   evidence: decisionContext.evidence,
                   failureModeId: boundPath.failureModeId,
                 ) !=
@@ -281,8 +280,7 @@ class _SessionScreenState extends State<SessionScreen>
       _opportunisticSkippedAll = resume?.opportunisticSkippedAll ?? false;
       _skipToBestGuess = resume?.skipToBestGuess ?? false;
       final storedPhase = resume?.closePathPhase ?? ClosePathPhase.conclusion;
-      _choseRepair =
-          resume?.choseRepair == true ||
+      _choseRepair = resume?.choseRepair == true ||
           closePathImpliesRepairChosen(storedPhase);
       _closePathPhase = storedPhase;
       final storedSession = widget.dependencies.repairSessionRepository
@@ -296,8 +294,7 @@ class _SessionScreenState extends State<SessionScreen>
         ..addAll({...sessionIds, ...resumeIds});
       _guidanceStepIndex =
           sessionIndex > resumeIndex ? sessionIndex : resumeIndex;
-      _proScopeAcknowledged =
-          resume?.proScopeAcknowledged == true ||
+      _proScopeAcknowledged = resume?.proScopeAcknowledged == true ||
           _completedGuidanceStepIds.isNotEmpty;
       _inspectReviewOnly = resume?.inspectReviewOnly == true;
       _easierPathsExhausted
@@ -333,15 +330,15 @@ class _SessionScreenState extends State<SessionScreen>
         completedIds: _completedGuidanceStepIds,
         choseRepair: _choseRepair,
         toolsChecklistComplete: toolsReady,
-        hasIncompleteInspect:
-            boundForResume != null &&
+        hasIncompleteInspect: boundForResume != null &&
             hasIncompleteInspectStep(
               steps: _inspectStepsFor(boundForResume),
               recordedEvidence: decisionContext.evidence,
             ),
         inspectReviewOnly: _inspectReviewOnly,
       );
-      if (_closePathPhase == ClosePathPhase.guidance && boundForResume != null) {
+      if (_closePathPhase == ClosePathPhase.guidance &&
+          boundForResume != null) {
         _snapGuidanceResume(boundForResume);
       }
       final landedClosePath = boundForResume != null;
@@ -388,8 +385,7 @@ class _SessionScreenState extends State<SessionScreen>
           resume.readinessHaveByToolId,
         );
         _readinessContinueWithCaution = resume.readinessContinueWithCaution;
-        _choseRepair =
-            resume.choseRepair ||
+        _choseRepair = resume.choseRepair ||
             closePathImpliesRepairChosen(resume.closePathPhase);
         _closePathPhase = resumeClosePathPhase(
           stored: resume.closePathPhase,
@@ -406,23 +402,21 @@ class _SessionScreenState extends State<SessionScreen>
           ..addAll(resume.easierPathsExhausted);
         _starterLimitedGuidance = resume.starterLimitedGuidance;
         _proScopeAcknowledged =
-            resume.proScopeAcknowledged ||
-            _completedGuidanceStepIds.isNotEmpty;
+            resume.proScopeAcknowledged || _completedGuidanceStepIds.isNotEmpty;
       } else if (_completedGuidanceStepIds.isNotEmpty) {
         _closePathPhase = ClosePathPhase.guidance;
       }
       final evidence = widget.dependencies.repairSessionRepository
           .evidenceForSession(widget.sessionId);
-      _starterConfirmed =
-          widget.appliance.category != 'dryer' ||
+      _starterConfirmed = widget.appliance.category != 'dryer' ||
           resume?.starterConfirmed == true ||
           evidence.isNotEmpty;
     } catch (_) {}
   }
 
   FailureModeClosePath? _boundClosePathForCurrentSession() {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null) {
       return null;
     }
@@ -539,8 +533,7 @@ class _SessionScreenState extends State<SessionScreen>
     }
     final resolved = closePathPhaseHonoringInspect(
       requested: phase,
-      hasIncompleteInspect:
-          closePath != null &&
+      hasIncompleteInspect: closePath != null &&
           !_inspectReviewOnly &&
           _hasIncompleteInspect(closePath),
     );
@@ -586,8 +579,8 @@ class _SessionScreenState extends State<SessionScreen>
     final haveByToolId = Map<String, bool>.from(_readinessHaveByToolId);
     final owned =
         widget.dependencies.currentHousehold?.ownedToolIds ?? const <String>[];
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     DecisionContext? decisionContext;
     if (session != null) {
       decisionContext = widget.dependencies.buildDecisionContext(session.id);
@@ -603,8 +596,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   List<Evidence> _sessionEvidence() {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null) {
       return const [];
     }
@@ -756,8 +749,7 @@ class _SessionScreenState extends State<SessionScreen>
     if (_needsEasyAirflowFirst(closePath)) {
       gated = guidanceStepsForEasyAirflowGate(
         steps: afterTools,
-        easyChecksSatisfied:
-            !inspectIncomplete &&
+        easyChecksSatisfied: !inspectIncomplete &&
             easyAirflowChecksSatisfied(
               recordedEvidence: _sessionEvidence(),
               steps: afterTools,
@@ -767,8 +759,7 @@ class _SessionScreenState extends State<SessionScreen>
     } else if (_needsWasherEasyChecksFirst(closePath)) {
       gated = guidanceStepsForWasherEasyGate(
         steps: afterTools,
-        easyChecksSatisfied:
-            !inspectIncomplete &&
+        easyChecksSatisfied: !inspectIncomplete &&
             washerEasyChecksSatisfied(
               recordedEvidence: _sessionEvidence(),
               steps: afterTools,
@@ -778,8 +769,7 @@ class _SessionScreenState extends State<SessionScreen>
     } else if (_needsDishwasherEasyChecksFirst(closePath)) {
       gated = guidanceStepsForDishwasherEasyGate(
         steps: afterTools,
-        easyChecksSatisfied:
-            !inspectIncomplete &&
+        easyChecksSatisfied: !inspectIncomplete &&
             dishwasherEasyChecksSatisfied(
               recordedEvidence: _sessionEvidence(),
               steps: afterTools,
@@ -789,8 +779,7 @@ class _SessionScreenState extends State<SessionScreen>
     } else if (_needsFridgeEasyChecksFirst(closePath)) {
       gated = guidanceStepsForFridgeEasyGate(
         steps: afterTools,
-        easyChecksSatisfied:
-            !inspectIncomplete &&
+        easyChecksSatisfied: !inspectIncomplete &&
             fridgeEasyChecksSatisfied(
               recordedEvidence: _sessionEvidence(),
               steps: afterTools,
@@ -876,7 +865,12 @@ class _SessionScreenState extends State<SessionScreen>
     required List<Evidence> evidence,
     bool prefetchOnly = false,
   }) {
-    final options = answerChoicesFor(template);
+    final options = answerChoicesFor(
+      template,
+      offerAlreadyChecked: widget.dependencies
+          .repairHistoryForAppliance(widget.appliance.id)
+          .isNotEmpty,
+    );
     return GroqPhrasingRequest(
       hook: GroqPhrasingHook.questionCard,
       family: widget.appliance.category,
@@ -996,8 +990,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   ClosePathPhase _phaseAfterInspectComplete(FailureModeClosePath closePath) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     return phaseAfterInspect(
       objective: session?.sessionObjective,
       hasTools: _readinessItemsFor(closePath.failureModeId).isNotEmpty,
@@ -1129,8 +1123,8 @@ class _SessionScreenState extends State<SessionScreen>
       return;
     }
     final items = _readinessItemsFor(closePath.failureModeId);
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     final objective = session?.sessionObjective;
     final hasParts = closePathShowsParts(
       objective: objective,
@@ -1169,8 +1163,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _setSessionObjective(SessionObjective objective) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null || _isTerminal(session.currentState)) {
       return;
     }
@@ -1181,8 +1175,8 @@ class _SessionScreenState extends State<SessionScreen>
 
   void _confirmProblemStarter() {
     final package = widget.dependencies.packageForSession(widget.sessionId);
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (package == null || session == null) {
       return;
     }
@@ -1191,7 +1185,8 @@ class _SessionScreenState extends State<SessionScreen>
       for (final id in _starterSelectedIds)
         if (id != dryerStarterOtherDescribeId) id,
     };
-    final describing = _starterSelectedIds.contains(dryerStarterOtherDescribeId);
+    final describing =
+        _starterSelectedIds.contains(dryerStarterOtherDescribeId);
     final freeText = describing ? _starterFreeTextController.text : '';
     if (chipIds.isEmpty && !describing) {
       return;
@@ -1267,18 +1262,17 @@ class _SessionScreenState extends State<SessionScreen>
 
     final recordedAfterStarter =
         widget.dependencies.repairSessionRepository.evidenceForSession(
-          session.id,
-        );
-    final template =
-        resolution.isHazard
-            ? null
-            : starterInterviewTemplate(
-              templates: package.evidenceTemplates,
-              recordedEvidence: recordedAfterStarter,
-              firstTemplateId: resolution.firstTemplateId,
-              starterMatchedSymptomIds: resolution.matchedSymptomIds.toSet(),
-              energySource: widget.appliance.energySource,
-            );
+      session.id,
+    );
+    final template = resolution.isHazard
+        ? null
+        : starterInterviewTemplate(
+            templates: package.evidenceTemplates,
+            recordedEvidence: recordedAfterStarter,
+            firstTemplateId: resolution.firstTemplateId,
+            starterMatchedSymptomIds: resolution.matchedSymptomIds.toSet(),
+            energySource: widget.appliance.energySource,
+          );
 
     setState(() {
       _starterConfirmed = true;
@@ -1365,13 +1359,12 @@ class _SessionScreenState extends State<SessionScreen>
 
   void _skipProblemStarter() {
     final package = widget.dependencies.packageForSession(widget.sessionId);
-    final template =
-        package == null
-            ? null
-            : starterFirstTemplate(
-              templates: package.evidenceTemplates,
-              firstTemplateId: dryerStarterDefaultTemplateId,
-            );
+    final template = package == null
+        ? null
+        : starterFirstTemplate(
+            templates: package.evidenceTemplates,
+            firstTemplateId: dryerStarterDefaultTemplateId,
+          );
     setState(() {
       _starterConfirmed = true;
       _starterNeedsClarification = false;
@@ -1510,8 +1503,8 @@ class _SessionScreenState extends State<SessionScreen>
       if (trimmed.isNotEmpty) {
         final liveSession =
             widget.dependencies.repairSessionRepository.getSession(
-              widget.sessionId,
-            );
+          widget.sessionId,
+        );
         widget.dependencies.queueEnrichmentRequest(
           EnrichmentRequest(
             key: enrichmentCacheKey(
@@ -1535,8 +1528,8 @@ class _SessionScreenState extends State<SessionScreen>
     if (note.isEmpty) {
       return;
     }
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null || _isTerminal(session.currentState)) {
       return;
     }
@@ -1617,9 +1610,7 @@ class _SessionScreenState extends State<SessionScreen>
     required void Function(String choice) onChip,
     required void Function(String note) onDescribe,
   }) async {
-    if (_voiceCaptureOff ||
-        _voiceListening ||
-        _currentSafetyStop() != null) {
+    if (_voiceCaptureOff || _voiceListening || _currentSafetyStop() != null) {
       return;
     }
     setState(() {
@@ -1681,8 +1672,8 @@ class _SessionScreenState extends State<SessionScreen>
     required FailureModeClosePath closePath,
     required String answer,
   }) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null) {
       return;
     }
@@ -1755,8 +1746,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _advanceToNextEasierFirstMode({required String exhaustedId}) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null) {
       return;
     }
@@ -1850,8 +1841,8 @@ class _SessionScreenState extends State<SessionScreen>
     required String answer,
     bool keepCurrentQuestion = false,
   }) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null) {
       return;
     }
@@ -1997,8 +1988,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _recordStandalonePhoto(String path) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null || _isTerminal(session.currentState)) {
       return;
     }
@@ -2032,8 +2023,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _selectPrimaryFailureMode(FailureMode failureMode) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null) {
       return;
     }
@@ -2171,8 +2162,8 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   SafetyStop? _currentSafetyStop() {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null || _isTerminal(session.currentState)) {
       return null;
     }
@@ -2188,20 +2179,18 @@ class _SessionScreenState extends State<SessionScreen>
   }) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder:
-            (context) => SessionOutcomeScreen(
-              dependencies: widget.dependencies,
-              appliance: widget.appliance,
-              sessionId: widget.sessionId,
-              eligibility: eligibility,
-              rankingLeaderLabel: rankingLeaderLabel,
-              rankingLeaderFailureModeId: rankingLeaderFailureModeId,
-              initialCloseKind:
-                  initialCloseKind ??
-                  (eligibility == CloseResolveEligibility.safetyStop
-                      ? SessionCloseKind.calledProfessional
-                      : null),
-            ),
+        builder: (context) => SessionOutcomeScreen(
+          dependencies: widget.dependencies,
+          appliance: widget.appliance,
+          sessionId: widget.sessionId,
+          eligibility: eligibility,
+          rankingLeaderLabel: rankingLeaderLabel,
+          rankingLeaderFailureModeId: rankingLeaderFailureModeId,
+          initialCloseKind: initialCloseKind ??
+              (eligibility == CloseResolveEligibility.safetyStop
+                  ? SessionCloseKind.calledProfessional
+                  : null),
+        ),
       ),
     );
     if (saved == true && mounted) {
@@ -2290,11 +2279,10 @@ class _SessionScreenState extends State<SessionScreen>
     )) {
       await Navigator.of(context).push<void>(
         MaterialPageRoute(
-          builder:
-              (context) => PackageManagerScreen(
-                dependencies: widget.dependencies,
-                preferCategory: widget.appliance.category,
-              ),
+          builder: (context) => PackageManagerScreen(
+            dependencies: widget.dependencies,
+            preferCategory: widget.appliance.category,
+          ),
         ),
       );
     }
@@ -2315,8 +2303,8 @@ class _SessionScreenState extends State<SessionScreen>
 
   @override
   Widget build(BuildContext context) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
     if (session == null) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.appliance.name)),
@@ -2332,7 +2320,7 @@ class _SessionScreenState extends State<SessionScreen>
     final outcome = widget.dependencies.outcomeForSession(session.id);
     final appliance =
         widget.dependencies.applianceRepository.getById(widget.appliance.id) ??
-        widget.appliance;
+            widget.appliance;
     DecisionContext decisionContext;
     try {
       decisionContext = widget.dependencies.buildDecisionContext(session.id);
@@ -2349,18 +2337,18 @@ class _SessionScreenState extends State<SessionScreen>
       }
       return _guideUnavailableScaffold();
     }
-    final prompts =
-        widget.appliance.category == 'washer'
-            ? washerLatchInterviewTemplates(
-              package.evidenceTemplates,
-              widget.appliance.washerLoadStyle,
-            )
-            : package.evidenceTemplates;
+    final prompts = widget.appliance.category == 'washer'
+        ? washerLatchInterviewTemplates(
+            package.evidenceTemplates,
+            widget.appliance.washerLoadStyle,
+          )
+        : package.evidenceTemplates;
     final sessionObjective = session.sessionObjective;
     final primaryHypothesis = decisionContext.primaryHypothesis;
     final primaryFailureModeId = decisionContext.primaryFailureModeId;
     final reasoning = _evaluateReasoning(decisionContext);
-    final standings = reasoning?.standings ?? const <String, FailureModeStanding>{};
+    final standings =
+        reasoning?.standings ?? const <String, FailureModeStanding>{};
     final orderedFailureModes =
         reasoning?.orderedFailureModes ?? const <FailureMode>[];
     final clearLeaderId = reasoning?.clearLeaderFailureModeId;
@@ -2381,11 +2369,9 @@ class _SessionScreenState extends State<SessionScreen>
       confirmedPrimaryId: primaryFailureModeId,
       exhaustedModeIds: _easierPathsExhausted,
     );
-    final easierRankingPath =
-        easierPursuitId == null
-            ? reasoning?.closePath
-            : (closePathForFailureMode(easierPursuitId) ??
-                reasoning?.closePath);
+    final easierRankingPath = easierPursuitId == null
+        ? reasoning?.closePath
+        : (closePathForFailureMode(easierPursuitId) ?? reasoning?.closePath);
     final closePath = safetyStop == null
         ? _closePathBoundToConfirmedPrimary(
             rankingPath: easierRankingPath,
@@ -2400,8 +2386,7 @@ class _SessionScreenState extends State<SessionScreen>
       recommendPrimaryFailureModeId: recommendPrimaryId,
       skipToBestGuess: _skipToBestGuess,
     );
-    final investigationStopped =
-        !isTerminal &&
+    final investigationStopped = !isTerminal &&
         safetyStop == null &&
         shouldStopInvestigation(
           templates: prompts,
@@ -2411,8 +2396,7 @@ class _SessionScreenState extends State<SessionScreen>
     final isRevisingEvidence = _revisingTemplateId != null;
     final effectiveInvestigationStopped =
         investigationStopped && !isRevisingEvidence;
-    final hideNextQuestion =
-        !rule.askAnotherQuestion && !isRevisingEvidence;
+    final hideNextQuestion = !rule.askAnotherQuestion && !isRevisingEvidence;
     // After I'll repair, verification and End Session follow the bound
     // Primary path — the same path inspect and guidance already use.
     final verificationOutcome = closePath != null
@@ -2421,10 +2405,9 @@ class _SessionScreenState extends State<SessionScreen>
             primaryFailureModeId: closePath.failureModeId,
           )
         : (reasoning?.verificationOutcome ?? VerificationOutcome.notApplicable);
-    final resolveEligibility =
-        safetyStop != null
-            ? CloseResolveEligibility.safetyStop
-            : closePath != null
+    final resolveEligibility = safetyStop != null
+        ? CloseResolveEligibility.safetyStop
+        : closePath != null
             ? _closePathPolicy.resolveEligibility(
                 safetyStopActive: false,
                 primaryFailureModeId: closePath.failureModeId,
@@ -2471,8 +2454,7 @@ class _SessionScreenState extends State<SessionScreen>
         isRankedHeatOrNoiseInterviewTemplate(pendingForInterview.id)) {
       pendingForInterview = null;
     }
-    final showClosePath =
-        effectiveInvestigationStopped &&
+    final showClosePath = effectiveInvestigationStopped &&
         closePath != null &&
         safetyStop == null;
     FailureMode? recommendedPrimary;
@@ -2480,8 +2462,7 @@ class _SessionScreenState extends State<SessionScreen>
         !effectiveInvestigationStopped &&
         safetyStop == null &&
         rule.showDiagnosis) {
-      final diagnosisId =
-          recommendPrimaryId ??
+      final diagnosisId = recommendPrimaryId ??
           ((hideNextQuestion && orderedFailureModes.isNotEmpty)
               ? orderedFailureModes.first.id
               : null);
@@ -2498,47 +2479,47 @@ class _SessionScreenState extends State<SessionScreen>
         hideNextQuestion || safetyStop != null || unmatchedNoMatch
             ? (isRevisingEvidence ? _pendingAnswerPrompt : null)
             : (pendingForInterview ?? suggestedNext);
-    final alternateObservations =
-        !hideNextQuestion && !_starterLimitedGuidance
-            ? unusedTemplates(
-              templates: prompts,
+    final alternateObservations = !hideNextQuestion && !_starterLimitedGuidance
+        ? unusedTemplates(
+            templates: prompts,
+            recordedEvidence: decisionContext.evidence,
+          ).where((prompt) {
+            if (prompt.id == activeObservation?.id) {
+              return false;
+            }
+            return !shouldSuppressObservationForHeatPolarity(
+              templateId: prompt.id,
               recordedEvidence: decisionContext.evidence,
-            ).where((prompt) {
-              if (prompt.id == activeObservation?.id) {
-                return false;
-              }
-              return !shouldSuppressObservationForHeatPolarity(
-                templateId: prompt.id,
-                recordedEvidence: decisionContext.evidence,
-                templates: prompts,
-              );
-            }).toList()
-            : !_starterLimitedGuidance
+              templates: prompts,
+            );
+          }).toList()
+        : !_starterLimitedGuidance
             ? const <EvidenceTemplate>[]
             : unusedTemplates(
-              templates: prompts,
-              recordedEvidence: decisionContext.evidence,
-            ).where((prompt) {
-              if (prompt.id == activeObservation?.id) {
-                return false;
-              }
-              return unmatchedUniversalTemplateIds.contains(prompt.id);
-            }).toList();
-    final canGoBack =
-        !interactionsLocked &&
+                templates: prompts,
+                recordedEvidence: decisionContext.evidence,
+              ).where((prompt) {
+                if (prompt.id == activeObservation?.id) {
+                  return false;
+                }
+                return unmatchedUniversalTemplateIds.contains(prompt.id);
+              }).toList();
+    final canGoBack = !interactionsLocked &&
         activeObservation != null &&
         _canGoBackOneQuestion(decisionContext.evidence);
-    final selectedAnswerForActive =
-        activeObservation == null
-            ? null
-            : answerForTemplate(
-              recordedEvidence: decisionContext.evidence,
-              templateId: activeObservation.id,
-            );
+    final selectedAnswerForActive = activeObservation == null
+        ? null
+        : answerForTemplate(
+            recordedEvidence: decisionContext.evidence,
+            templateId: activeObservation.id,
+          );
 
     final clueCount = interviewObservationsInOrder(
       decisionContext.evidence,
     ).length;
+    final offerAlreadyChecked = widget.dependencies
+        .repairHistoryForAppliance(widget.appliance.id)
+        .isNotEmpty;
     final safetyKind = safetyLightForSession(
       safetyStop: safetyStop != null,
       closePathActive: showClosePath,
@@ -2547,11 +2528,11 @@ class _SessionScreenState extends State<SessionScreen>
     final priorHint = isTerminal
         ? null
         : priorRootCauseHint(
-          history: widget.dependencies.repairHistoryForAppliance(
-            widget.appliance.id,
-          ),
-          excludeSessionId: widget.sessionId,
-        );
+            history: widget.dependencies.repairHistoryForAppliance(
+              widget.appliance.id,
+            ),
+            excludeSessionId: widget.sessionId,
+          );
 
     GroqPhrasingRequest? phrasingRequest;
     if (safetyStop != null) {
@@ -2606,8 +2587,7 @@ class _SessionScreenState extends State<SessionScreen>
         allowResolvedWhenConfirmed: false,
         offersFixed: false,
       );
-    } else if (showClosePath &&
-        _closePathPhase == ClosePathPhase.conclusion) {
+    } else if (showClosePath && _closePathPhase == ClosePathPhase.conclusion) {
       phrasingRequest = GroqPhrasingRequest(
         hook: GroqPhrasingHook.diagnosisSummary,
         family: widget.appliance.category,
@@ -2621,8 +2601,7 @@ class _SessionScreenState extends State<SessionScreen>
         safety: 'none',
         packagedTitle: primaryHypothesis?.label ?? 'Most likely',
         packagedWhyOneLine: leaderWhyFromStandings(
-              orderedIds:
-                  orderedFailureModes.map((mode) => mode.id).toList(),
+              orderedIds: orderedFailureModes.map((mode) => mode.id).toList(),
               orderedLabels:
                   orderedFailureModes.map((mode) => mode.label).toList(),
               standings: standings,
@@ -2655,13 +2634,12 @@ class _SessionScreenState extends State<SessionScreen>
         : _SafetyStopBanner(
             reason: safetyStopDisplayCopy(
               safetyStop,
-              groqShortenedOfficial:
-                  phrasingOverlay != null &&
-                          phrasingOverlay.screenKey.startsWith(
-                            'safetyStop|',
-                          )
-                      ? phrasingOverlay.whyOneLine
-                      : null,
+              groqShortenedOfficial: phrasingOverlay != null &&
+                      phrasingOverlay.screenKey.startsWith(
+                        'safetyStop|',
+                      )
+                  ? phrasingOverlay.whyOneLine
+                  : null,
             ),
           );
 
@@ -2669,12 +2647,7 @@ class _SessionScreenState extends State<SessionScreen>
       appBar: SessionChromeBar(
         applianceName: widget.appliance.name,
         safetyKind: safetyKind,
-        clueSummary:
-            clueCount == 0
-                ? 'No clues yet'
-                : clueCount == 1
-                ? '1 clue'
-                : '$clueCount clues',
+        clueSummary: householdClueSummary(clueCount),
         stateLabel: 'Now: ${_chromeNowLabel(
           session: session,
           safetyStop: safetyStop,
@@ -2702,764 +2675,794 @@ class _SessionScreenState extends State<SessionScreen>
                     ? const EdgeInsets.fromLTRB(20, 4, 20, 32)
                     : const EdgeInsets.fromLTRB(20, 12, 20, 32),
                 child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.dependencies.currentMember != null) ...[
-              Text(
-                'Using as ${widget.dependencies.currentMember!.displayName}',
-                key: const Key('session-current-member'),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-            ],
-            if (_showResumeKnew && _resumeKnewLine != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                (phrasingOverlay != null &&
-                        phrasingOverlay.screenKey.startsWith('resume|'))
-                    ? phrasingOverlay.whyOneLine
-                    : _resumeKnewLine!,
-                key: const Key('resume-knew-banner'),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-            if (_resumeFailed) ...[
-              const SizedBox(height: 16),
-              DegradedModeBanner(
-                kind: DegradedModeKind.resumeFailed,
-                onStartFresh: () {
-                  widget.dependencies.abandonOpenSession(widget.appliance);
-                  Navigator.of(context).maybePop();
-                },
-              ),
-            ],
-            if (!widget.dependencies.isOnline) ...[
-              const SizedBox(height: 16),
-              const DegradedModeBanner(
-                kind: DegradedModeKind.offline,
-                bannerKey: Key('session-offline-banner'),
-              ),
-            ],
-            if (_photoCaptureOff) ...[
-              const SizedBox(height: 16),
-              DegradedModeBanner(
-                kind: DegradedModeKind.cameraDenied,
-                onOk: () {},
-                onContinueManually: () {},
-                onStartFresh: _startFreshFromDeniedSensor,
-              ),
-            ],
-            if (_voiceCaptureOff) ...[
-              const SizedBox(height: 16),
-              DegradedModeBanner(
-                kind: DegradedModeKind.micDenied,
-                onOk: () {},
-                onContinueManually: () {},
-                onStartFresh: _startFreshFromDeniedSensor,
-              ),
-            ],
-            if (_voiceHazardConfirm) ...[
-              const SizedBox(height: 16),
-              const ErrorBanner(
-                message: UserFacingCopy.voiceHazardConfirm,
-                messageKey: Key('voice-hazard-confirm-banner'),
-              ),
-            ],
-            if (shouldShowWarrantyHint(appliance)) ...[
-              const SizedBox(height: 16),
-              WarrantyHintCard(appliance: appliance),
-            ],
-            if (priorHint != null) ...[
-              const SizedBox(height: 16),
-              PriorRootCauseHintCard(
-                key: const Key('prior-root-cause-hint'),
-                hint: priorHint,
-              ),
-            ],
-            if (!isTerminal && coverageNotice != null) ...[
-              const SizedBox(height: 16),
-              Text(
-                coverageNotice,
-                key: Key(
-                  coverageNotice == UserFacingCopy.missingMachinePlateNotice
-                      ? 'missing-plate-notice'
-                      : 'general-dryer-guide-notice',
-                ),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-            if (!isTerminal && session.overlayPackageId != null) ...[
-              const SizedBox(height: 12),
-              _OverlayAccessNotesCard(
-                notes: resolveKnowledgePackageForAppliance(
-                  repository: widget.dependencies.knowledgePackageRepository,
-                  appliance: appliance,
-                ).accessNotes,
-              ),
-            ],
-            if (outcome != null) ...[
-              const SizedBox(height: 16),
-              _sessionOutcomeMemoryCard(
-                outcome: outcome,
-                evidenceCount: decisionContext.evidence.length,
-              ),
-            ],
-            if (safetyStop != null) const SizedBox(height: 8),
-            if (!isTerminal &&
-                effectiveInvestigationStopped &&
-                safetyStop == null) ...[
-              const SizedBox(height: 16),
-              if (_blockingReasonLineFor(
-                    closePath: closePath,
-                    safetyStop: false,
-                  )
-                  case final blocking?)
-                _BlockingReasonLine(line: blocking)
-              else
-                _NextActionCue(
-                  key: const Key('next-action-cue'),
-                  title: _steppedClosePathCueTitle(
-                    verificationOutcome: verificationOutcome,
-                    resolveEligibility: resolveEligibility,
-                  ),
-                  detail: _steppedClosePathCueDetail(
-                    verificationOutcome: verificationOutcome,
-                    resolveEligibility: resolveEligibility,
-                  ),
-                ),
-              const SizedBox(height: 12),
-              ..._closePathSteppedContent(
-                closePath: closePath,
-                showClosePath: showClosePath,
-                primaryHypothesis: primaryHypothesis,
-                primaryFailureModeId: primaryFailureModeId,
-                verificationOutcome: verificationOutcome,
-                resolveEligibility: resolveEligibility,
-                orderedFailureModes: orderedFailureModes,
-                standings: standings,
-                decisionContext: decisionContext,
-                sessionObjective: sessionObjective,
-                isTerminal: isTerminal,
-                interactionsLocked: interactionsLocked,
-                rankingLeaderLabel: outcome?.rankingLeaderLabel,
-                phrasingOverlay: phrasingOverlay,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  showClosePath
-                      ? 'No more questions for now — we have a most likely '
-                          'cause. Finish this step, then End Session.'
-                      : 'No more questions for now — we have a most likely '
-                          'cause. Use End Session below to record what happened.',
-                  key: const Key('observation-paused-message'),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-            ] else if (!isTerminal && safetyStop == null) ...[
-              const SizedBox(height: 16),
-              _SessionObjectiveChips(
-                selected: sessionObjective,
-                enabled: !interactionsLocked,
-                onSelected: _setSessionObjective,
-              ),
-              if (!_starterConfirmed &&
-                  decisionContext.evidence.isEmpty) ...[
-                const SizedBox(height: 16),
-                const _NextActionCue(
-                  key: Key('next-action-cue'),
-                  title: 'Next: choose what’s going on',
-                  detail:
-                      'Pick every observation that fits, or use Other / describe. '
-                      'Confirm before questions begin.',
-                ),
-                const SizedBox(height: 12),
-                _ProblemStarterPanel(
-                  selectedIds: _starterSelectedIds,
-                  needsClarification: _starterNeedsClarification,
-                  freeTextController: _starterFreeTextController,
-                  onSelectEntry: _selectStarterEntry,
-                  onClarify: _clarifyStarterWith,
-                  onFreeTextChanged: (_) => setState(() {
-                    _starterNeedsClarification = false;
-                    _applyStarterKeywordMatcher();
-                  }),
-                  onConfirm: _confirmProblemStarter,
-                  onSkip: _skipProblemStarter,
-                ),
-              ] else ...[
-              if (recommendedPrimary case final FailureMode primary) ...[
-                const SizedBox(height: 16),
-                _NextActionCue(
-                  key: const Key('next-action-cue'),
-                  title: sessionObjectiveInterviewCueTitle(
-                    objective: sessionObjective,
-                    hasRecommendedPrimary: true,
-                  ),
-                  detail: sessionObjectiveInterviewCueDetail(
-                    objective: sessionObjective,
-                    hasRecommendedPrimary: true,
-                    hideNextQuestion: hideNextQuestion,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _RecommendedPrimaryCard(
-                  failureMode: primary,
-                  enabled: !interactionsLocked,
-                  hint: sessionObjectiveRecommendedHint(sessionObjective),
-                  alternatives: rankedPossibilitiesForDisplay(
-                    orderedFailureModes: orderedFailureModes,
-                    standings: standings,
-                    excludeFailureModeId: primary.id,
-                    surface: ConfidenceDisplaySurface.recommendation,
-                  ),
-                  onAccept: () => _selectPrimaryFailureMode(primary),
-                  onCallPro:
-                      showEarlyProHandoffOnRecommended(sessionObjective)
-                          ? () => _endSession(
-                            eligibility: resolveEligibility,
-                            rankingLeaderLabel: primary.label,
-                            rankingLeaderFailureModeId: primary.id,
-                            initialCloseKind:
-                                SessionCloseKind.calledProfessional,
-                          )
-                          : null,
-                ),
-                if (showPartsCostOnRecommendedPrimary(sessionObjective) &&
-                    _partsEstimatesFor(primary.id).isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  PartsCostCard(
-                    parts: _partsEstimatesFor(primary.id),
-                    diyOutOfScope: partsCostDiyOutOfScope(primary.id),
-                    onIllRepair:
-                        showIllRepairOnPartsCard(sessionObjective)
-                            ? () {}
-                            : null,
-                    onCallPro:
-                        showCallProOnPartsCard(sessionObjective)
-                            ? () => _endSession(
-                              eligibility: resolveEligibility,
-                              rankingLeaderLabel: primary.label,
-                              rankingLeaderFailureModeId: primary.id,
-                              initialCloseKind:
-                                  SessionCloseKind.calledProfessional,
-                            )
-                            : null,
-                  ),
-                ],
-                const SizedBox(height: 28),
-              ] else ...[
-                const SizedBox(height: 16),
-                _NextActionCue(
-                  key: const Key('next-action-cue'),
-                  title: sessionObjectiveInterviewCueTitle(
-                    objective: sessionObjective,
-                    hasRecommendedPrimary: false,
-                  ),
-                  detail: sessionObjectiveInterviewCueDetail(
-                    objective: sessionObjective,
-                    hasRecommendedPrimary: false,
-                    hideNextQuestion: hideNextQuestion,
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-              if (_starterSymptomIds.isNotEmpty) ...[
-                Text(
-                  'Starting from: ${_starterSymptomIds.map((id) => dryerStarterFamilyById(id)?.label ?? id).join(', ')}',
-                  key: const Key('starter-confirmed-summary'),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (_starterLimitedGuidance) ...[
-                Text(
-                  UserFacingCopy.unmatchedStarterGuidance,
-                  key: const Key('starter-limited-guidance'),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  unmatchedNoteEcho(
-                    unmatchedOtherNote(decisionContext.evidence),
-                  ),
-                  key: const Key('unmatched-note-echo'),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (unmatchedNoMatch && !interactionsLocked) ...[
-                Text(
-                  UserFacingCopy.unmatchedNoMatchTitle,
-                  key: const Key('unmatched-no-match-title'),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  UserFacingCopy.unmatchedNoMatchBody,
-                  key: const Key('unmatched-no-match-body'),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 12),
-                PrimaryCta(
-                  key: const Key('unmatched-no-match-call-pro'),
-                  label: 'Call a pro',
-                  semanticLabel: 'Call a pro',
-                  onPressed: () => _endSession(
-                    eligibility: CloseResolveEligibility.needsProfessional,
-                    rankingLeaderLabel: null,
-                    rankingLeaderFailureModeId: null,
-                    initialCloseKind: SessionCloseKind.calledProfessional,
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (widget.dependencies
-                  .acceptedEnrichmentNotes(applianceId: appliance.id)
-                  .isNotEmpty) ...[
-                Text(
-                  widget.dependencies
-                      .acceptedEnrichmentNotes(applianceId: appliance.id)
-                      .last
-                      .body,
-                  key: const Key('household-enrichment-note'),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (rule.askAnotherQuestion &&
-                  !interactionsLocked &&
-                  !_starterLimitedGuidance) ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    key: const Key('skip-to-best-guess'),
-                    onPressed: _skipToBestGuessTapped,
-                    child: const Text(UserFacingCopy.skipToBestGuess),
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-              if (activeObservation != null) ...[
-              Text(
-                isRevisingEvidence
-                    ? 'Change previous answer'
-                    : recommendedPrimary == null
-                    ? 'Current question'
-                    : 'Optional follow-up question',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 10),
-              Builder(
-                builder: (context) {
-                  final inspectStep = _inspectStepForTemplate(
-                    activeObservation.id,
-                  );
-                  final packagedWhy = _whyAskBody(
-                    template: activeObservation,
-                    inspectStep: inspectStep,
-                    orderedFailureModes: orderedFailureModes,
-                    standings: standings,
-                    packageModes: package.failureModes,
-                  );
-                  final questionOverlay =
-                      phrasingOverlay != null &&
-                              phrasingOverlay.screenKey.contains(
-                                activeObservation.id,
-                              )
-                          ? phrasingOverlay
-                          : null;
-                  // Unmatched Other: packaged observation-only why. Groq
-                  // may phrase the echo; it must not rewrite this into a
-                  // diagnosis they never gave.
-                  final displayedWhy = _starterLimitedGuidance
-                      ? packagedWhy
-                      : (questionOverlay?.whyOneLine ?? packagedWhy);
-                  if (inspectStep != null) {
-                    return InspectStepCard(
-                      step: inspectStep,
-                      selectedAnswer: selectedAnswerForActive,
-                      cameraStartDenied:
-                          widget.dependencies.simulateMediaDenied,
-                      offerLiveCamera: false,
-                      expertMode: widget.dependencies.expertMode,
-                      whyAskBody: displayedWhy,
-                      onChip:
-                          (chip) => _submitInterviewInspectChip(
-                            step: inspectStep,
-                            prompt: activeObservation,
-                            chip: chip,
-                          ),
-                    );
-                  }
-                  return _AnswerChoicePanel(
-                  prompt: activeObservation,
-                  expertMode: widget.dependencies.expertMode,
-                  displayTitle: questionOverlay?.title,
-                  optionLabels: questionOverlay?.optionLabels,
-                  whyAskBody: displayedWhy,
-                  emphasize: recommendedPrimary == null,
-                  selectedAnswer: selectedAnswerForActive,
-                  isRevising: isRevisingEvidence,
-                  photoPath: _pendingPhotoPath,
-                  photoEnabled: !interactionsLocked && !_photoCaptureOff,
-                  photoVisible: !_photoCaptureOff,
-                  voiceListening: _voiceListening,
-                  voiceAvailable:
-                      widget.dependencies.voiceAnswer.isAvailable &&
-                      !_voiceCaptureOff,
-                  voiceShowButton:
-                      widget.dependencies.voiceAnswer.isAvailable &&
-                      !_voiceCaptureOff,
-                  voiceUnavailableHint:
-                      !widget.dependencies.voiceAnswer.isAvailable &&
-                      !_voiceCaptureOff,
-                  freeNoteController: _freeObservationController,
-                  freeNoteEnabled: !interactionsLocked,
-                  freeNoteSuggestions: _freeObservationSuggestions,
-                  onSaveFreeNote: _saveFreeObservationNote,
-                  onMarkFreeNoteSuggestion: _markFreeObservationSuggestion,
-                  onVoice:
-                      () => _captureVoiceAnswer(
-                        choices: answerChoicesFor(activeObservation),
-                        onChip:
-                            (choice) => _selectAnswerChoice(
-                              choice,
-                              forPrompt: activeObservation,
-                            ),
-                            onDescribe:
-                            (note) => _selectAnswerChoice(
-                              kOtherDescribeChoiceId,
-                              forPrompt: activeObservation,
-                              describeNote: note,
-                            ),
-                      ),
-                  onPickGallery:
-                      () => _pickEvidencePhoto(
-                        origin: EvidencePhotoOrigin.gallery,
-                        standalone: false,
-                      ),
-                  onPickCamera:
-                      () => _pickEvidencePhoto(
-                        origin: EvidencePhotoOrigin.camera,
-                        standalone: false,
-                      ),
-                  onSelected:
-                      (choice) => _selectAnswerChoice(
-                        choice,
-                        forPrompt: activeObservation,
-                      ),
-                  onBack:
-                      canGoBack
-                          ? () => _goBackOneQuestion(
-                            evidence: decisionContext.evidence,
-                            templates: prompts,
-                          )
-                          : null,
-                  onCancel:
-                      _pendingAnswerPrompt == null && !isRevisingEvidence
-                          ? null
-                          : () {
-                            setState(() {
-                              _pendingAnswerPrompt = null;
-                              _pendingPhotoPath = null;
-                              _clearRevisionState();
-                            });
-                            _persistUiResume();
-                          },
-                );
-                },
-              ),
-              ] else if (prompts.isEmpty)
-                const Text(
-                  UserFacingCopy.emptyRepairQuestions,
-                  key: Key('empty-prompts-message'),
-                )
-              else ...[
-                _NextActionCue(
-                  key: const Key('suggested-next-empty'),
-                  title: UserFacingCopy.emptyFurtherQuestionsTitle,
-                  detail:
-                      recommendedPrimary != null
-                          ? UserFacingCopy.emptyFurtherQuestionsWithPrimary
-                          : UserFacingCopy.emptyFurtherQuestionsWithoutPrimary,
-                ),
-              ],
-              ],
-            ],
-            if (!isTerminal && safetyStop != null) ...[
-              const SizedBox(height: 16),
-              const _BlockingReasonLine(line: blockingReasonSafetyLine),
-              const SizedBox(height: 16),
-              _endSessionCta(
-                eligibility: resolveEligibility,
-                orderedFailureModes: orderedFailureModes,
-                primaryFailureModeId: primaryFailureModeId,
-                isTerminal: isTerminal,
-              ),
-            ],
-            if (outcome != null) ...[
-              const SizedBox(height: 16),
-              _NextActionCue(
-                key: const Key('finished-next-action-cue'),
-                title: 'Session finished',
-                detail: switch (outcome.resolutionStatus) {
-                  SessionResolutionStatus.resolved =>
-                    'Fixed was recorded. Exit to return home.',
-                  SessionResolutionStatus.partiallyResolved =>
-                    'Needs a professional was recorded. Exit to return home.',
-                  SessionResolutionStatus.unresolved =>
-                    'Unresolved was recorded. Exit to return home.',
-                },
-              ),
-              const SizedBox(height: 16),
-              HowWeGotHereTile(
-                observations: sessionTimelineObservations(
-                  decisionContext.evidence,
-                ),
-                leaderWhy: leaderWhyFromStandings(
-                  orderedIds:
-                      orderedFailureModes.map((mode) => mode.id).toList(),
-                  orderedLabels:
-                      orderedFailureModes.map((mode) => mode.label).toList(),
-                  standings: standings,
-                  preferredLabel: outcome.rankingLeaderLabel,
-                ),
-              ),
-            ],
-            const SizedBox(height: 28),
-            _SessionSecondaryDetails(
-              children: [
-                if (alternateObservations.isNotEmpty &&
-                    safetyStop == null &&
-                    !isTerminal)
-                  _OtherObservationsPicker(
-                    prompts: alternateObservations,
-                    enabled: !interactionsLocked,
-                    photoVisible: !_photoCaptureOff,
-                    onSelected: _beginAnswerPrompt,
-                    onPickGallery:
-                        () => _pickEvidencePhoto(
-                          origin: EvidencePhotoOrigin.gallery,
-                          standalone: true,
-                        ),
-                    onPickCamera:
-                        () => _pickEvidencePhoto(
-                          origin: EvidencePhotoOrigin.camera,
-                          standalone: true,
-                        ),
-                  ),
-                ExpansionTile(
-                  key: const Key('evidence-history-tile'),
-                  title: Text(
-                    'Evidence history (${decisionContext.evidence.length})',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  subtitle: Text(
-                    decisionContext.evidence.isEmpty
-                        ? UserFacingCopy.emptyEvidence
-                        : 'Tap an answer to change it',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (decisionContext.evidence.isEmpty)
-                      const ListTile(
-                        title: Text(
-                          UserFacingCopy.emptyEvidence,
-                          key: Key('empty-evidence-message'),
+                    if (widget.dependencies.currentMember != null) ...[
+                      Text(
+                        'Using as ${widget.dependencies.currentMember!.displayName}',
+                        key: const Key('session-current-member'),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    if (_showResumeKnew && _resumeKnewLine != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        (phrasingOverlay != null &&
+                                phrasingOverlay.screenKey.startsWith('resume|'))
+                            ? phrasingOverlay.whyOneLine
+                            : _resumeKnewLine!,
+                        key: const Key('resume-knew-banner'),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                    if (_resumeFailed) ...[
+                      const SizedBox(height: 16),
+                      DegradedModeBanner(
+                        kind: DegradedModeKind.resumeFailed,
+                        onStartFresh: () {
+                          widget.dependencies
+                              .abandonOpenSession(widget.appliance);
+                          Navigator.of(context).maybePop();
+                        },
+                      ),
+                    ],
+                    if (!widget.dependencies.isOnline) ...[
+                      const SizedBox(height: 16),
+                      const DegradedModeBanner(
+                        kind: DegradedModeKind.offline,
+                        bannerKey: Key('session-offline-banner'),
+                      ),
+                    ],
+                    if (_photoCaptureOff) ...[
+                      const SizedBox(height: 16),
+                      DegradedModeBanner(
+                        kind: DegradedModeKind.cameraDenied,
+                        onOk: () {},
+                        onContinueManually: () {},
+                        onStartFresh: _startFreshFromDeniedSensor,
+                      ),
+                    ],
+                    if (_voiceCaptureOff) ...[
+                      const SizedBox(height: 16),
+                      DegradedModeBanner(
+                        kind: DegradedModeKind.micDenied,
+                        onOk: () {},
+                        onContinueManually: () {},
+                        onStartFresh: _startFreshFromDeniedSensor,
+                      ),
+                    ],
+                    if (_voiceHazardConfirm) ...[
+                      const SizedBox(height: 16),
+                      const ErrorBanner(
+                        message: UserFacingCopy.voiceHazardConfirm,
+                        messageKey: Key('voice-hazard-confirm-banner'),
+                      ),
+                    ],
+                    if (shouldShowWarrantyHint(appliance)) ...[
+                      const SizedBox(height: 16),
+                      WarrantyHintCard(appliance: appliance),
+                    ],
+                    if (priorHint != null) ...[
+                      const SizedBox(height: 16),
+                      PriorRootCauseHintCard(
+                        key: const Key('prior-root-cause-hint'),
+                        hint: priorHint,
+                      ),
+                    ],
+                    if (!isTerminal && coverageNotice != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        coverageNotice,
+                        key: Key(
+                          coverageNotice ==
+                                  UserFacingCopy.missingMachinePlateNotice
+                              ? 'missing-plate-notice'
+                              : 'general-dryer-guide-notice',
                         ),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                    if (!isTerminal && session.overlayPackageId != null) ...[
+                      const SizedBox(height: 12),
+                      _OverlayAccessNotesCard(
+                        notes: resolveKnowledgePackageForAppliance(
+                          repository:
+                              widget.dependencies.knowledgePackageRepository,
+                          appliance: appliance,
+                        ).accessNotes,
+                      ),
+                    ],
+                    if (outcome != null) ...[
+                      const SizedBox(height: 16),
+                      _sessionOutcomeMemoryCard(
+                        outcome: outcome,
+                        evidenceCount: decisionContext.evidence.length,
+                      ),
+                    ],
+                    if (safetyStop != null) const SizedBox(height: 8),
+                    if (!isTerminal &&
+                        effectiveInvestigationStopped &&
+                        safetyStop == null) ...[
+                      const SizedBox(height: 16),
+                      if (_blockingReasonLineFor(
+                        closePath: closePath,
+                        safetyStop: false,
                       )
-                    else
-                      for (final evidenceItem
-                          in decisionContext.evidence.reversed)
-                        ListTile(
-                          dense: true,
-                          enabled:
-                              !interactionsLocked &&
-                              isInterviewObservationEvidence(evidenceItem),
-                          leading: Icon(
-                            Icons.check_circle_outline,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.primary,
+                          case final blocking?)
+                        _BlockingReasonLine(line: blocking)
+                      else
+                        _NextActionCue(
+                          key: const Key('next-action-cue'),
+                          title: _steppedClosePathCueTitle(
+                            verificationOutcome: verificationOutcome,
+                            resolveEligibility: resolveEligibility,
                           ),
-                          title: Text(
-                            evidenceItem.answer == null
-                                ? evidenceItem.observation
-                                : 'Answer: ${evidenceItem.answer}',
+                          detail: _steppedClosePathCueDetail(
+                            verificationOutcome: verificationOutcome,
+                            resolveEligibility: resolveEligibility,
+                          ),
+                        ),
+                      const SizedBox(height: 12),
+                      ..._closePathSteppedContent(
+                        closePath: closePath,
+                        showClosePath: showClosePath,
+                        primaryHypothesis: primaryHypothesis,
+                        primaryFailureModeId: primaryFailureModeId,
+                        verificationOutcome: verificationOutcome,
+                        resolveEligibility: resolveEligibility,
+                        orderedFailureModes: orderedFailureModes,
+                        standings: standings,
+                        decisionContext: decisionContext,
+                        sessionObjective: sessionObjective,
+                        isTerminal: isTerminal,
+                        interactionsLocked: interactionsLocked,
+                        rankingLeaderLabel: outcome?.rankingLeaderLabel,
+                        phrasingOverlay: phrasingOverlay,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          showClosePath
+                              ? 'No more questions for now — we have a most likely '
+                                  'cause. Finish this step, then End Session.'
+                              : 'No more questions for now — we have a most likely '
+                                  'cause. Use End Session below to record what happened.',
+                          key: const Key('observation-paused-message'),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ] else if (!isTerminal && safetyStop == null) ...[
+                      const SizedBox(height: 16),
+                      _SessionObjectiveChips(
+                        selected: sessionObjective,
+                        enabled: !interactionsLocked,
+                        onSelected: _setSessionObjective,
+                      ),
+                      if (!_starterConfirmed &&
+                          decisionContext.evidence.isEmpty) ...[
+                        const SizedBox(height: 16),
+                        const _NextActionCue(
+                          key: Key('next-action-cue'),
+                          title: 'Next: choose what’s going on',
+                          detail:
+                              'Pick every observation that fits, or use Other / describe. '
+                              'Confirm before questions begin.',
+                        ),
+                        const SizedBox(height: 12),
+                        _ProblemStarterPanel(
+                          selectedIds: _starterSelectedIds,
+                          needsClarification: _starterNeedsClarification,
+                          freeTextController: _starterFreeTextController,
+                          onSelectEntry: _selectStarterEntry,
+                          onClarify: _clarifyStarterWith,
+                          onFreeTextChanged: (_) => setState(() {
+                            _starterNeedsClarification = false;
+                            _applyStarterKeywordMatcher();
+                          }),
+                          onConfirm: _confirmProblemStarter,
+                          onSkip: _skipProblemStarter,
+                        ),
+                      ] else ...[
+                        if (recommendedPrimary
+                            case final FailureMode primary) ...[
+                          const SizedBox(height: 16),
+                          _NextActionCue(
+                            key: const Key('next-action-cue'),
+                            title: sessionObjectiveInterviewCueTitle(
+                              objective: sessionObjective,
+                              hasRecommendedPrimary: true,
+                            ),
+                            detail: sessionObjectiveInterviewCueDetail(
+                              objective: sessionObjective,
+                              hasRecommendedPrimary: true,
+                              hideNextQuestion: hideNextQuestion,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _RecommendedPrimaryCard(
+                            failureMode: primary,
+                            enabled: !interactionsLocked,
+                            hint: sessionObjectiveRecommendedHint(
+                                sessionObjective),
+                            alternatives: rankedPossibilitiesForDisplay(
+                              orderedFailureModes: orderedFailureModes,
+                              standings: standings,
+                              excludeFailureModeId: primary.id,
+                              surface: ConfidenceDisplaySurface.recommendation,
+                            ),
+                            onAccept: () => _selectPrimaryFailureMode(primary),
+                            onCallPro: showEarlyProHandoffOnRecommended(
+                                    sessionObjective)
+                                ? () => _endSession(
+                                      eligibility: resolveEligibility,
+                                      rankingLeaderLabel: primary.label,
+                                      rankingLeaderFailureModeId: primary.id,
+                                      initialCloseKind:
+                                          SessionCloseKind.calledProfessional,
+                                    )
+                                : null,
+                          ),
+                          if (showPartsCostOnRecommendedPrimary(
+                                  sessionObjective) &&
+                              _partsEstimatesFor(primary.id).isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            PartsCostCard(
+                              parts: _partsEstimatesFor(primary.id),
+                              diyOutOfScope: partsCostDiyOutOfScope(primary.id),
+                              onIllRepair:
+                                  showIllRepairOnPartsCard(sessionObjective)
+                                      ? () {}
+                                      : null,
+                              onCallPro: showCallProOnPartsCard(
+                                      sessionObjective)
+                                  ? () => _endSession(
+                                        eligibility: resolveEligibility,
+                                        rankingLeaderLabel: primary.label,
+                                        rankingLeaderFailureModeId: primary.id,
+                                        initialCloseKind:
+                                            SessionCloseKind.calledProfessional,
+                                      )
+                                  : null,
+                            ),
+                          ],
+                          const SizedBox(height: 28),
+                        ] else ...[
+                          const SizedBox(height: 16),
+                          _NextActionCue(
+                            key: const Key('next-action-cue'),
+                            title: sessionObjectiveInterviewCueTitle(
+                              objective: sessionObjective,
+                              hasRecommendedPrimary: false,
+                            ),
+                            detail: sessionObjectiveInterviewCueDetail(
+                              objective: sessionObjective,
+                              hasRecommendedPrimary: false,
+                              hideNextQuestion: hideNextQuestion,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                        if (_starterSymptomIds.isNotEmpty) ...[
+                          Text(
+                            'Starting from: ${_starterSymptomIds.map((id) => dryerStarterFamilyById(id)?.label ?? id).join(', ')}',
+                            key: const Key('starter-confirmed-summary'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (_starterLimitedGuidance) ...[
+                          Text(
+                            UserFacingCopy.unmatchedStarterGuidance,
+                            key: const Key('starter-limited-guidance'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            unmatchedNoteEcho(
+                              unmatchedOtherNote(decisionContext.evidence),
+                            ),
+                            key: const Key('unmatched-note-echo'),
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
-                          subtitle:
-                              evidenceItem.answer == null
-                                  ? null
-                                  : Text(
-                                    evidenceItem.observation,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                          const SizedBox(height: 12),
+                        ],
+                        if (unmatchedNoMatch && !interactionsLocked) ...[
+                          Text(
+                            UserFacingCopy.unmatchedNoMatchTitle,
+                            key: const Key('unmatched-no-match-title'),
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            UserFacingCopy.unmatchedNoMatchBody,
+                            key: const Key('unmatched-no-match-body'),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          PrimaryCta(
+                            key: const Key('unmatched-no-match-call-pro'),
+                            label: 'Call a pro',
+                            semanticLabel: 'Call a pro',
+                            onPressed: () => _endSession(
+                              eligibility:
+                                  CloseResolveEligibility.needsProfessional,
+                              rankingLeaderLabel: null,
+                              rankingLeaderFailureModeId: null,
+                              initialCloseKind:
+                                  SessionCloseKind.calledProfessional,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (widget.dependencies
+                            .acceptedEnrichmentNotes(applianceId: appliance.id)
+                            .isNotEmpty) ...[
+                          Text(
+                            widget.dependencies
+                                .acceptedEnrichmentNotes(
+                                    applianceId: appliance.id)
+                                .last
+                                .body,
+                            key: const Key('household-enrichment-note'),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (rule.askAnotherQuestion &&
+                            !interactionsLocked &&
+                            !_starterLimitedGuidance &&
+                            clueCount > 0) ...[
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              key: const Key('skip-to-best-guess'),
+                              onPressed: _skipToBestGuessTapped,
+                              child: const Text(UserFacingCopy.skipToBestGuess),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        if (activeObservation != null) ...[
+                          Text(
+                            isRevisingEvidence
+                                ? 'Change previous answer'
+                                : recommendedPrimary == null
+                                    ? 'Current question'
+                                    : 'Optional follow-up question',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 10),
+                          Builder(
+                            builder: (context) {
+                              final inspectStep = _inspectStepForTemplate(
+                                activeObservation.id,
+                              );
+                              final packagedWhy = _whyAskBody(
+                                template: activeObservation,
+                                inspectStep: inspectStep,
+                                orderedFailureModes: orderedFailureModes,
+                                standings: standings,
+                                packageModes: package.failureModes,
+                              );
+                              final questionOverlay = phrasingOverlay != null &&
+                                      phrasingOverlay.screenKey.contains(
+                                        activeObservation.id,
+                                      )
+                                  ? phrasingOverlay
+                                  : null;
+                              // Unmatched Other: packaged observation-only why. Groq
+                              // may phrase the echo; it must not rewrite this into a
+                              // diagnosis they never gave.
+                              final displayedWhy = _starterLimitedGuidance
+                                  ? packagedWhy
+                                  : (questionOverlay?.whyOneLine ??
+                                      packagedWhy);
+                              if (inspectStep != null) {
+                                return InspectStepCard(
+                                  step: inspectStep,
+                                  selectedAnswer: selectedAnswerForActive,
+                                  cameraStartDenied:
+                                      widget.dependencies.simulateMediaDenied,
+                                  offerLiveCamera: false,
+                                  expertMode: widget.dependencies.expertMode,
+                                  offerAlreadyChecked: offerAlreadyChecked,
+                                  whyAskBody: displayedWhy,
+                                  onChip: (chip) => _submitInterviewInspectChip(
+                                    step: inspectStep,
+                                    prompt: activeObservation,
+                                    chip: chip,
+                                  ),
+                                );
+                              }
+                              return _AnswerChoicePanel(
+                                prompt: activeObservation,
+                                expertMode: widget.dependencies.expertMode,
+                                offerAlreadyChecked: offerAlreadyChecked,
+                                displayTitle: questionOverlay?.title,
+                                optionLabels: questionOverlay?.optionLabels,
+                                whyAskBody: displayedWhy,
+                                emphasize: recommendedPrimary == null,
+                                selectedAnswer: selectedAnswerForActive,
+                                isRevising: isRevisingEvidence,
+                                photoPath: _pendingPhotoPath,
+                                photoEnabled:
+                                    !interactionsLocked && !_photoCaptureOff,
+                                photoVisible: !_photoCaptureOff,
+                                voiceListening: _voiceListening,
+                                voiceAvailable: widget
+                                        .dependencies.voiceAnswer.isAvailable &&
+                                    !_voiceCaptureOff,
+                                voiceShowButton: widget
+                                        .dependencies.voiceAnswer.isAvailable &&
+                                    !_voiceCaptureOff,
+                                voiceUnavailableHint: !kIsWeb &&
+                                    !widget
+                                        .dependencies.voiceAnswer.isAvailable &&
+                                    !_voiceCaptureOff,
+                                freeNoteController: _freeObservationController,
+                                freeNoteEnabled: !interactionsLocked,
+                                freeNoteSuggestions:
+                                    _freeObservationSuggestions,
+                                onSaveFreeNote: _saveFreeObservationNote,
+                                onMarkFreeNoteSuggestion:
+                                    _markFreeObservationSuggestion,
+                                onVoice: () => _captureVoiceAnswer(
+                                  choices: answerChoicesFor(
+                                    activeObservation,
+                                    offerAlreadyChecked: offerAlreadyChecked,
+                                  ),
+                                  onChip: (choice) => _selectAnswerChoice(
+                                    choice,
+                                    forPrompt: activeObservation,
+                                  ),
+                                  onDescribe: (note) => _selectAnswerChoice(
+                                    kOtherDescribeChoiceId,
+                                    forPrompt: activeObservation,
+                                    describeNote: note,
+                                  ),
+                                ),
+                                onPickGallery: () => _pickEvidencePhoto(
+                                  origin: EvidencePhotoOrigin.gallery,
+                                  standalone: false,
+                                ),
+                                onPickCamera: () => _pickEvidencePhoto(
+                                  origin: EvidencePhotoOrigin.camera,
+                                  standalone: false,
+                                ),
+                                onSelected: (choice) => _selectAnswerChoice(
+                                  choice,
+                                  forPrompt: activeObservation,
+                                ),
+                                onBack: canGoBack
+                                    ? () => _goBackOneQuestion(
+                                          evidence: decisionContext.evidence,
+                                          templates: prompts,
+                                        )
+                                    : null,
+                                onCancel: _pendingAnswerPrompt == null &&
+                                        !isRevisingEvidence
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          _pendingAnswerPrompt = null;
+                                          _pendingPhotoPath = null;
+                                          _clearRevisionState();
+                                        });
+                                        _persistUiResume();
+                                      },
+                              );
+                            },
+                          ),
+                        ] else if (prompts.isEmpty)
+                          const Text(
+                            UserFacingCopy.emptyRepairQuestions,
+                            key: Key('empty-prompts-message'),
+                          )
+                        else ...[
+                          _NextActionCue(
+                            key: const Key('suggested-next-empty'),
+                            title: UserFacingCopy.emptyFurtherQuestionsTitle,
+                            detail: recommendedPrimary != null
+                                ? UserFacingCopy
+                                    .emptyFurtherQuestionsWithPrimary
+                                : UserFacingCopy
+                                    .emptyFurtherQuestionsWithoutPrimary,
+                          ),
+                        ],
+                      ],
+                    ],
+                    if (!isTerminal && safetyStop != null) ...[
+                      const SizedBox(height: 16),
+                      const _BlockingReasonLine(line: blockingReasonSafetyLine),
+                      const SizedBox(height: 16),
+                      _endSessionCta(
+                        eligibility: resolveEligibility,
+                        orderedFailureModes: orderedFailureModes,
+                        primaryFailureModeId: primaryFailureModeId,
+                        isTerminal: isTerminal,
+                      ),
+                    ],
+                    if (outcome != null) ...[
+                      const SizedBox(height: 16),
+                      _NextActionCue(
+                        key: const Key('finished-next-action-cue'),
+                        title: 'Session finished',
+                        detail: switch (outcome.resolutionStatus) {
+                          SessionResolutionStatus.resolved =>
+                            'Fixed was recorded. Exit to return home.',
+                          SessionResolutionStatus.partiallyResolved =>
+                            'Needs a professional was recorded. Exit to return home.',
+                          SessionResolutionStatus.unresolved =>
+                            'Unresolved was recorded. Exit to return home.',
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      HowWeGotHereTile(
+                        observations: sessionTimelineObservations(
+                          decisionContext.evidence,
+                        ),
+                        leaderWhy: leaderWhyFromStandings(
+                          orderedIds: orderedFailureModes
+                              .map((mode) => mode.id)
+                              .toList(),
+                          orderedLabels: orderedFailureModes
+                              .map((mode) => mode.label)
+                              .toList(),
+                          standings: standings,
+                          preferredLabel: outcome.rankingLeaderLabel,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 28),
+                    _SessionSecondaryDetails(
+                      children: [
+                        if (alternateObservations.isNotEmpty &&
+                            safetyStop == null &&
+                            !isTerminal)
+                          _OtherObservationsPicker(
+                            prompts: alternateObservations,
+                            enabled: !interactionsLocked,
+                            photoVisible: !_photoCaptureOff,
+                            onSelected: _beginAnswerPrompt,
+                            onPickGallery: () => _pickEvidencePhoto(
+                              origin: EvidencePhotoOrigin.gallery,
+                              standalone: true,
+                            ),
+                            onPickCamera: () => _pickEvidencePhoto(
+                              origin: EvidencePhotoOrigin.camera,
+                              standalone: true,
+                            ),
+                          ),
+                        ExpansionTile(
+                          key: const Key('evidence-history-tile'),
+                          title: Text(
+                            UserFacingCopy.cluesListTitle,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                          ),
+                          subtitle: Text(
+                            decisionContext.evidence.isEmpty
+                                ? UserFacingCopy.emptyEvidence
+                                : 'Tap an answer to change it',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          children: [
+                            if (decisionContext.evidence.isEmpty)
+                              const ListTile(
+                                title: Text(
+                                  UserFacingCopy.emptyEvidence,
+                                  key: Key('empty-evidence-message'),
+                                ),
+                              )
+                            else
+                              for (final evidenceItem
+                                  in decisionContext.evidence.reversed)
+                                ListTile(
+                                  dense: true,
+                                  enabled: !interactionsLocked &&
+                                      isInterviewObservationEvidence(
+                                          evidenceItem),
+                                  leading: Icon(
+                                    Icons.check_circle_outline,
+                                    size: 20,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                  title: Text(
+                                    evidenceItem.answer == null
+                                        ? evidenceItem.observation
+                                        : 'Answer: ${evidenceItem.answer}',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                  subtitle: evidenceItem.answer == null
+                                      ? null
+                                      : Text(
+                                          evidenceItem.observation,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
+                                        ),
+                                  trailing: evidenceItem.localPhotoPath ==
+                                              null ||
+                                          evidenceItem.localPhotoPath!.isEmpty
+                                      ? null
+                                      : EvidencePhotoThumb(
+                                          key: Key(
+                                            'evidence-history-photo-${evidenceItem.id}',
+                                          ),
+                                          path: evidenceItem.localPhotoPath!,
+                                        ),
+                                  onTap: interactionsLocked ||
+                                          !isInterviewObservationEvidence(
+                                            evidenceItem,
+                                          )
+                                      ? null
+                                      : () => _beginReviseEvidence(
+                                            evidence: evidenceItem,
+                                            templates: prompts,
+                                          ),
+                                ),
+                          ],
+                        ),
+                        if (safetyStop == null && !isTerminal)
+                          ExpansionTile(
+                            key: const Key('failure-modes-tile'),
+                            title: Text(
+                              'Browse failure modes',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                            ),
+                            subtitle: Text(
+                              recommendedPrimary != null
+                                  ? 'Optional — a recommendation is already shown above'
+                                  : 'Optional — set Primary manually if needed',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            children: [
+                              if (package.failureModes.isEmpty)
+                                const ListTile(
+                                  title: Text(
+                                    UserFacingCopy.emptyFailureModes,
+                                    key: Key('empty-failure-modes-message'),
+                                  ),
+                                )
+                              else
+                                for (final failureMode in orderedFailureModes)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: _FailureModeTile(
+                                      failureMode: failureMode,
+                                      isPrimary: failureMode.id ==
+                                          primaryFailureModeId,
+                                      standing: standings[failureMode.id] ??
+                                          const FailureModeStanding(
+                                            supportCount: 0,
+                                            excludeCount: 0,
+                                          ),
+                                      isClearLeader:
+                                          clearLeaderId == failureMode.id &&
+                                              failureMode.id !=
+                                                  primaryFailureModeId,
+                                      showStandingChrome: false,
+                                      enabled: !interactionsLocked,
+                                      onSelected: () =>
+                                          _selectPrimaryFailureMode(
+                                              failureMode),
+                                    ),
+                                  ),
+                            ],
+                          ),
+                        ExpansionTile(
+                          key: const Key('package-summary-tile'),
+                          title: Text(
+                            'About this guide',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                          ),
+                          children: [_PackageSummaryCard(package: package)],
+                        ),
+                        ExpansionTile(
+                          key: const Key('hypotheses-tile'),
+                          title: Text(
+                            'Working notes (${decisionContext.currentHypotheses.length})',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                          ),
+                          children: [
+                            if (decisionContext.currentHypotheses.isEmpty)
+                              const ListTile(
+                                title: Text(
+                                  UserFacingCopy.emptyHypotheses,
+                                  key: Key('empty-hypotheses-message'),
+                                ),
+                              )
+                            else
+                              for (final hypothesis
+                                  in decisionContext.currentHypotheses)
+                                ListTile(
+                                  key: Key('hypothesis-${hypothesis.id}'),
+                                  title: Text(hypothesis.label),
+                                  subtitle: Text(
+                                    switch (hypothesis.status) {
+                                      HypothesisStatus.confirmed => 'Primary',
+                                      HypothesisStatus.ruledOut => 'Ruled out',
+                                      HypothesisStatus.active =>
+                                        'Still possible',
+                                    },
                                     style:
                                         Theme.of(context).textTheme.bodySmall,
                                   ),
-                          trailing:
-                              evidenceItem.localPhotoPath == null ||
-                                      evidenceItem.localPhotoPath!.isEmpty
-                                  ? null
-                                  : EvidencePhotoThumb(
-                                    key: Key(
-                                      'evidence-history-photo-${evidenceItem.id}',
-                                    ),
-                                    path: evidenceItem.localPhotoPath!,
-                                  ),
-                          onTap:
-                              interactionsLocked ||
-                                      !isInterviewObservationEvidence(
-                                        evidenceItem,
-                                      )
-                                  ? null
-                                  : () => _beginReviseEvidence(
-                                    evidence: evidenceItem,
-                                    templates: prompts,
-                                  ),
+                                ),
+                          ],
                         ),
-                  ],
-                ),
-                if (safetyStop == null && !isTerminal)
-                  ExpansionTile(
-                    key: const Key('failure-modes-tile'),
-                    title: Text(
-                      'Browse failure modes',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    subtitle: Text(
-                      recommendedPrimary != null
-                          ? 'Optional — a recommendation is already shown above'
-                          : 'Optional — set Primary manually if needed',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    children: [
-                      if (package.failureModes.isEmpty)
-                        const ListTile(
+                        ExpansionTile(
+                          key: const Key('decision-context-tile'),
                           title: Text(
-                            UserFacingCopy.emptyFailureModes,
-                            key: Key('empty-failure-modes-message'),
+                            'Session details',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
                           ),
-                        )
-                      else
-                        for (final failureMode in orderedFailureModes)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: _FailureModeTile(
-                              failureMode: failureMode,
-                              isPrimary:
-                                  failureMode.id == primaryFailureModeId,
-                              standing:
-                                  standings[failureMode.id] ??
-                                  const FailureModeStanding(
-                                    supportCount: 0,
-                                    excludeCount: 0,
-                                  ),
-                              isClearLeader:
-                                  clearLeaderId == failureMode.id &&
-                                  failureMode.id != primaryFailureModeId,
-                              showStandingChrome: false,
-                              enabled: !interactionsLocked,
-                              onSelected:
-                                  () => _selectPrimaryFailureMode(failureMode),
-                            ),
-                          ),
-                    ],
-                  ),
-                ExpansionTile(
-                  key: const Key('package-summary-tile'),
-                  title: Text(
-                    'About this guide',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  children: [_PackageSummaryCard(package: package)],
-                ),
-                ExpansionTile(
-                  key: const Key('hypotheses-tile'),
-                  title: Text(
-                    'Working notes (${decisionContext.currentHypotheses.length})',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  children: [
-                    if (decisionContext.currentHypotheses.isEmpty)
-                      const ListTile(
-                        title: Text(
-                          UserFacingCopy.emptyHypotheses,
-                          key: Key('empty-hypotheses-message'),
-                        ),
-                      )
-                    else
-                      for (final hypothesis
-                          in decisionContext.currentHypotheses)
-                        ListTile(
-                          key: Key('hypothesis-${hypothesis.id}'),
-                          title: Text(hypothesis.label),
                           subtitle: Text(
-                            switch (hypothesis.status) {
-                              HypothesisStatus.confirmed => 'Primary',
-                              HypothesisStatus.ruledOut => 'Ruled out',
-                              HypothesisStatus.active => 'Still possible',
-                            },
+                            householdClueSummary(clueCount),
+                            key: const Key('context-evidence-count'),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
+                          children: [
+                            ListTile(
+                              key: const Key('decision-context-summary'),
+                              title: Text(
+                                'State: ${_stateLabel(decisionContext.currentState)}',
+                              ),
+                              subtitle: Text(
+                                _safetyLevelLine(decisionContext.safetyLevel),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                          ],
                         ),
-                  ],
-                ),
-                ExpansionTile(
-                  key: const Key('decision-context-tile'),
-                  title: Text(
-                    'Session details',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
+                      ],
                     ),
-                  ),
-                  subtitle: Text(
-                    safetyStop != null
-                        ? (clueCount == 0
-                            ? 'No clues yet'
-                            : clueCount == 1
-                            ? '1 clue'
-                            : '$clueCount clues')
-                        : 'Evidence count: ${decisionContext.evidence.length}',
-                    key: const Key('context-evidence-count'),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  children: [
-                    ListTile(
-                      key: const Key('decision-context-summary'),
-                      title: Text(
-                        'State: ${_stateLabel(decisionContext.currentState)}',
+                    const SizedBox(height: 24),
+                    if (outcome == null &&
+                        safetyStop == null &&
+                        !effectiveInvestigationStopped)
+                      _endSessionCta(
+                        eligibility: resolveEligibility,
+                        orderedFailureModes: orderedFailureModes,
+                        primaryFailureModeId: primaryFailureModeId,
+                        isTerminal: isTerminal,
                       ),
-                      subtitle: Text(
-                        _safetyLevelLine(decisionContext.safetyLevel),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
                   ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            if (outcome == null &&
-                safetyStop == null &&
-                !effectiveInvestigationStopped)
-              _endSessionCta(
-                eligibility: resolveEligibility,
-                orderedFailureModes: orderedFailureModes,
-                primaryFailureModeId: primaryFailureModeId,
-                isTerminal: isTerminal,
-              ),
-          ],
                 ),
               ),
             ),
@@ -3628,16 +3631,12 @@ class _SessionScreenState extends State<SessionScreen>
           : 'Next: answer verification';
     }
     return switch (resolveEligibility) {
-      CloseResolveEligibility.allowResolved =>
-        'Next: Fixed',
-      CloseResolveEligibility.needsProfessional =>
-        'Next: Needs a professional',
-      CloseResolveEligibility.unresolvedOnly =>
-        'Next: Unresolved',
+      CloseResolveEligibility.allowResolved => 'Next: Fixed',
+      CloseResolveEligibility.needsProfessional => 'Next: Needs a professional',
+      CloseResolveEligibility.unresolvedOnly => 'Next: Unresolved',
       CloseResolveEligibility.pendingVerification =>
         'Next: answer verification',
-      CloseResolveEligibility.safetyStop =>
-        'Next: Needs a professional',
+      CloseResolveEligibility.safetyStop => 'Next: Needs a professional',
     };
   }
 
@@ -3694,12 +3693,11 @@ class _SessionScreenState extends State<SessionScreen>
     }
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder:
-            (context) => SessionScreen(
-              dependencies: widget.dependencies,
-              appliance: appliance,
-              sessionId: newId,
-            ),
+        builder: (context) => SessionScreen(
+          dependencies: widget.dependencies,
+          appliance: appliance,
+          sessionId: newId,
+        ),
       ),
     );
   }
@@ -3758,8 +3756,7 @@ class _SessionScreenState extends State<SessionScreen>
     required bool isTerminal,
     String? closePathFailureModeId,
   }) {
-    final leaderId =
-        closePathFailureModeId ??
+    final leaderId = closePathFailureModeId ??
         primaryFailureModeId ??
         (orderedFailureModes.isEmpty ? null : orderedFailureModes.first.id);
     String? leaderLabel;
@@ -3777,10 +3774,9 @@ class _SessionScreenState extends State<SessionScreen>
       key: const Key('end-session-button'),
       label: _endSessionButtonLabel(eligibility),
       semanticLabel: 'End Session',
-      onPressed:
-          isTerminal
-              ? null
-              : () => _endSession(
+      onPressed: isTerminal
+          ? null
+          : () => _endSession(
                 eligibility: eligibility,
                 rankingLeaderLabel: leaderLabel,
                 rankingLeaderFailureModeId: leaderId,
@@ -3849,22 +3845,20 @@ class _SessionScreenState extends State<SessionScreen>
   List<VisualGuideAnchor> _resolvedVisualGuides(
     FailureModeClosePath closePath,
   ) {
-    final session =
-        widget.dependencies.repairSessionRepository.getSession(widget.sessionId);
-    final appliance =
-        session == null
-            ? null
-            : widget.dependencies.applianceRepository.getById(
-              session.applianceId,
-            );
-    final overlay =
-        appliance == null
-            ? null
-            : matchBrandOverlay(
-              category: appliance.category,
-              manufacturer: appliance.manufacturer,
-              modelNumber: appliance.modelNumber,
-            );
+    final session = widget.dependencies.repairSessionRepository
+        .getSession(widget.sessionId);
+    final appliance = session == null
+        ? null
+        : widget.dependencies.applianceRepository.getById(
+            session.applianceId,
+          );
+    final overlay = appliance == null
+        ? null
+        : matchBrandOverlay(
+            category: appliance.category,
+            manufacturer: appliance.manufacturer,
+            modelNumber: appliance.modelNumber,
+          );
     return visualGuidesForOverlay(
       guides: visualGuidesForAppliance(
         guides: closePath.visualGuides,
@@ -3909,16 +3903,16 @@ class _SessionScreenState extends State<SessionScreen>
       ClosePathPhase.inspect => 'Next: match what you see',
       ClosePathPhase.guidance => _guidanceCueTitle(),
       ClosePathPhase.verification => _closePathNextActionTitle(
-        verificationOutcome: verificationOutcome,
-        resolveEligibility: resolveEligibility,
-        answersOpen: _pendingCloseVerification != null,
-      ),
+          verificationOutcome: verificationOutcome,
+          resolveEligibility: resolveEligibility,
+          answersOpen: _pendingCloseVerification != null,
+        ),
       ClosePathPhase.opportunistic => 'Next: optional extras, then done',
       ClosePathPhase.done => _closePathNextActionTitle(
-        verificationOutcome: verificationOutcome,
-        resolveEligibility: resolveEligibility,
-        answersOpen: false,
-      ),
+          verificationOutcome: verificationOutcome,
+          resolveEligibility: resolveEligibility,
+          answersOpen: false,
+        ),
     };
   }
 
@@ -3939,15 +3933,15 @@ class _SessionScreenState extends State<SessionScreen>
         'Look at the part. Choose whether it matches, does not match, or you cannot see it.',
       ClosePathPhase.guidance => _guidanceCueDetail(),
       ClosePathPhase.verification => _closePathNextActionDetail(
-        verificationOutcome: verificationOutcome,
-        resolveEligibility: resolveEligibility,
-      ),
+          verificationOutcome: verificationOutcome,
+          resolveEligibility: resolveEligibility,
+        ),
       ClosePathPhase.opportunistic =>
         'Optional while-you’re-there checks. Skip if you want to finish.',
       ClosePathPhase.done => _closePathNextActionDetail(
-        verificationOutcome: verificationOutcome,
-        resolveEligibility: resolveEligibility,
-      ),
+          verificationOutcome: verificationOutcome,
+          resolveEligibility: resolveEligibility,
+        ),
     };
   }
 
@@ -4043,8 +4037,9 @@ class _SessionScreenState extends State<SessionScreen>
                       why: leaderWhyFromStandings(
                         orderedIds:
                             orderedFailureModes.map((mode) => mode.id).toList(),
-                        orderedLabels:
-                            orderedFailureModes.map((mode) => mode.label).toList(),
+                        orderedLabels: orderedFailureModes
+                            .map((mode) => mode.label)
+                            .toList(),
                         standings: standings,
                         preferredLabel: primaryHypothesis?.label,
                       ),
@@ -4066,26 +4061,24 @@ class _SessionScreenState extends State<SessionScreen>
                         }
                         return householdStandingPhrase(
                           standing: standing,
-                          surface:
-                              ConfidenceDisplaySurface.diagnosisSummary,
+                          surface: ConfidenceDisplaySurface.diagnosisSummary,
                         );
                       }(),
                     ),
-                    overlay:
-                        phrasingOverlay != null &&
-                                phrasingOverlay.screenKey.startsWith(
-                                  'diagnosisSummary|',
-                                )
-                            ? phrasingOverlay
-                            : null,
+                    overlay: phrasingOverlay != null &&
+                            phrasingOverlay.screenKey.startsWith(
+                              'diagnosisSummary|',
+                            )
+                        ? phrasingOverlay
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 12),
                 if (_confirmNotFixedLine(
-                      closePath: closePath,
-                      verificationOutcome: verificationOutcome,
-                      overlay: phrasingOverlay,
-                    )
+                  closePath: closePath,
+                  verificationOutcome: verificationOutcome,
+                  overlay: phrasingOverlay,
+                )
                     case final confirmLine?) ...[
                   Text(
                     confirmLine,
@@ -4154,28 +4147,26 @@ class _SessionScreenState extends State<SessionScreen>
                 if (_inspectStepsFor(closePath).isNotEmpty) ...[
                   OutlinedButton(
                     key: const Key('close-path-show-inspect'),
-                    onPressed:
-                        () => _goClosePathPhase(
-                          ClosePathPhase.inspect,
-                          closePath: closePath,
-                          inspectReviewOnly: true,
-                        ),
+                    onPressed: () => _goClosePathPhase(
+                      ClosePathPhase.inspect,
+                      closePath: closePath,
+                      inspectReviewOnly: true,
+                    ),
                     child: const Text(UserFacingCopy.inspectShowMeWhatToCheck),
                   ),
                   const SizedBox(height: 8),
                 ],
                 FilledButton(
                   key: const Key('close-path-continue'),
-                  onPressed:
-                      () => _goClosePathPhase(
-                        phaseAfterConclusion(
-                          objective: sessionObjective,
-                          hasParts: hasParts,
-                          hasTools: hasTools,
-                          hasIncompleteInspect: _hasIncompleteInspect(closePath),
-                        ),
-                        closePath: closePath,
-                      ),
+                  onPressed: () => _goClosePathPhase(
+                    phaseAfterConclusion(
+                      objective: sessionObjective,
+                      hasParts: hasParts,
+                      hasTools: hasTools,
+                      hasIncompleteInspect: _hasIncompleteInspect(closePath),
+                    ),
+                    closePath: closePath,
+                  ),
                   child: const Text('Continue'),
                 ),
               ],
@@ -4223,14 +4214,12 @@ class _SessionScreenState extends State<SessionScreen>
                 if (showCallProOnPartsCard(sessionObjective))
                   FilledButton.tonal(
                     key: const Key('close-path-call-pro'),
-                    onPressed:
-                        () => _endSession(
-                          eligibility: resolveEligibility,
-                          rankingLeaderLabel: primaryHypothesis?.label,
-                          rankingLeaderFailureModeId: primaryFailureModeId,
-                          initialCloseKind:
-                              SessionCloseKind.calledProfessional,
-                        ),
+                    onPressed: () => _endSession(
+                      eligibility: resolveEligibility,
+                      rankingLeaderLabel: primaryHypothesis?.label,
+                      rankingLeaderFailureModeId: primaryFailureModeId,
+                      initialCloseKind: SessionCloseKind.calledProfessional,
+                    ),
                     child: const Text('Call a pro'),
                   ),
                 const SizedBox(height: 8),
@@ -4257,14 +4246,13 @@ class _SessionScreenState extends State<SessionScreen>
                 const SizedBox(height: 16),
                 FilledButton(
                   key: const Key('close-path-parts-continue'),
-                  onPressed:
-                      () => _goClosePathPhase(
-                        phaseAfterParts(
-                          hasTools: hasTools,
-                          hasIncompleteInspect: _hasIncompleteInspect(closePath),
-                        ),
-                        closePath: closePath,
-                      ),
+                  onPressed: () => _goClosePathPhase(
+                    phaseAfterParts(
+                      hasTools: hasTools,
+                      hasIncompleteInspect: _hasIncompleteInspect(closePath),
+                    ),
+                    closePath: closePath,
+                  ),
                   child: const Text('Continue'),
                 ),
                 backButton(ClosePathPhase.decision),
@@ -4284,7 +4272,7 @@ class _SessionScreenState extends State<SessionScreen>
                   haveByToolId: haveByToolId,
                   ownedToolIds:
                       widget.dependencies.currentHousehold?.ownedToolIds ??
-                      const [],
+                          const [],
                   onMark: _markReadinessTool,
                   onSaveToInventory: _saveReadinessToolToInventory,
                 ),
@@ -4298,12 +4286,10 @@ class _SessionScreenState extends State<SessionScreen>
                   _MissingCriticalToolPanel(
                     missing: missing,
                     allowCaution: allowContinueWithCaution(missing),
-                    onStop:
-                        () => _closeFromReadiness(SessionCloseKind.stopped),
-                    onCallPro:
-                        () => _closeFromReadiness(
-                          SessionCloseKind.calledProfessional,
-                        ),
+                    onStop: () => _closeFromReadiness(SessionCloseKind.stopped),
+                    onCallPro: () => _closeFromReadiness(
+                      SessionCloseKind.calledProfessional,
+                    ),
                     onContinueCaution: _continueReadinessWithCaution,
                   ),
                 ],
@@ -4322,13 +4308,13 @@ class _SessionScreenState extends State<SessionScreen>
                 const SizedBox(height: 8),
                 backButton(
                   closePathShowsParts(
-                        objective: sessionObjective,
-                        hasParts: hasParts,
-                      )
+                    objective: sessionObjective,
+                    hasParts: hasParts,
+                  )
                       ? ClosePathPhase.parts
                       : closePathShowsDecision(sessionObjective)
-                      ? ClosePathPhase.decision
-                      : ClosePathPhase.conclusion,
+                          ? ClosePathPhase.decision
+                          : ClosePathPhase.conclusion,
                 ),
               ],
             ),
@@ -4370,11 +4356,10 @@ class _SessionScreenState extends State<SessionScreen>
                   ],
                   FilledButton(
                     key: const Key('inspect-review-back'),
-                    onPressed:
-                        () => _goClosePathPhase(
-                          ClosePathPhase.conclusion,
-                          closePath: closePath,
-                        ),
+                    onPressed: () => _goClosePathPhase(
+                      ClosePathPhase.conclusion,
+                      closePath: closePath,
+                    ),
                     child: const Text('Back to most likely'),
                   ),
                   const SizedBox(height: 8),
@@ -4389,9 +4374,9 @@ class _SessionScreenState extends State<SessionScreen>
           recordedEvidence: decisionContext.evidence,
         );
         final inspectStep = firstIncompleteInspectStep(
-              steps: inspectSteps,
-              recordedEvidence: decisionContext.evidence,
-            );
+          steps: inspectSteps,
+          recordedEvidence: decisionContext.evidence,
+        );
         return [
           KeyedSubtree(
             key: const Key('close-path-phase-inspect'),
@@ -4407,10 +4392,12 @@ class _SessionScreenState extends State<SessionScreen>
                       recordedEvidence: decisionContext.evidence,
                       templateId: inspectStep.evidenceTemplateId,
                     ),
-                    cameraStartDenied:
-                        widget.dependencies.simulateMediaDenied,
+                    cameraStartDenied: widget.dependencies.simulateMediaDenied,
                     offerLiveCamera: false,
                     expertMode: widget.dependencies.expertMode,
+                    offerAlreadyChecked: widget.dependencies
+                        .repairHistoryForAppliance(widget.appliance.id)
+                        .isNotEmpty,
                     whyAskBody: _whyAskBody(
                       template: _templateById(
                         decisionContext.package?.evidenceTemplates ?? const [],
@@ -4431,11 +4418,10 @@ class _SessionScreenState extends State<SessionScreen>
                 else
                   FilledButton(
                     key: const Key('inspect-continue-guidance'),
-                    onPressed:
-                        () => _goClosePathPhase(
-                          _phaseAfterInspectComplete(closePath),
-                          closePath: closePath,
-                        ),
+                    onPressed: () => _goClosePathPhase(
+                      _phaseAfterInspectComplete(closePath),
+                      closePath: closePath,
+                    ),
                     child: const Text('Continue'),
                   ),
                 const SizedBox(height: 8),
@@ -4454,10 +4440,8 @@ class _SessionScreenState extends State<SessionScreen>
           steps: steps,
           completedIds: _completedGuidanceStepIds,
         );
-        final safeChecksDone =
-            steps.isEmpty || incompleteIndex >= steps.length;
-        final showProWarning =
-            diyPro &&
+        final safeChecksDone = steps.isEmpty || incompleteIndex >= steps.length;
+        final showProWarning = diyPro &&
             !_proScopeAcknowledged &&
             _completedGuidanceStepIds.isEmpty;
         final showProHandoff = diyPro && !showProWarning && safeChecksDone;
@@ -4487,11 +4471,10 @@ class _SessionScreenState extends State<SessionScreen>
                       setState(() => _proScopeAcknowledged = true);
                       _persistUiResume();
                     },
-                    onEndSession:
-                        () => _endAsProfessional(
-                          rankingLeaderLabel: rankingLeaderLabel,
-                          rankingLeaderFailureModeId: primaryFailureModeId,
-                        ),
+                    onEndSession: () => _endAsProfessional(
+                      rankingLeaderLabel: rankingLeaderLabel,
+                      rankingLeaderFailureModeId: primaryFailureModeId,
+                    ),
                   )
                 else if (showProHandoff)
                   _ProRecommendedCard(
@@ -4507,11 +4490,10 @@ class _SessionScreenState extends State<SessionScreen>
                         ))
                           guidanceForSafeStep(steps[i]).what,
                     ],
-                    onUnderstand:
-                        () => _endAsProfessional(
-                          rankingLeaderLabel: rankingLeaderLabel,
-                          rankingLeaderFailureModeId: primaryFailureModeId,
-                        ),
+                    onUnderstand: () => _endAsProfessional(
+                      rankingLeaderLabel: rankingLeaderLabel,
+                      rankingLeaderFailureModeId: primaryFailureModeId,
+                    ),
                     onCouldNot: () {
                       setState(() => _guidanceCouldNot = true);
                     },
@@ -4579,19 +4561,17 @@ class _SessionScreenState extends State<SessionScreen>
                           const SizedBox(height: 14),
                           FilledButton(
                             key: const Key('guidance-could-not-stop'),
-                            onPressed:
-                                () => _closeFromReadiness(
-                                  SessionCloseKind.stopped,
-                                ),
+                            onPressed: () => _closeFromReadiness(
+                              SessionCloseKind.stopped,
+                            ),
                             child: const Text('Stop'),
                           ),
                           const SizedBox(height: 8),
                           FilledButton.tonal(
                             key: const Key('guidance-could-not-call-pro'),
-                            onPressed:
-                                () => _closeFromReadiness(
-                                  SessionCloseKind.calledProfessional,
-                                ),
+                            onPressed: () => _closeFromReadiness(
+                              SessionCloseKind.calledProfessional,
+                            ),
                             child: const Text('Call a professional'),
                           ),
                         ],
@@ -4637,26 +4617,24 @@ class _SessionScreenState extends State<SessionScreen>
                     voiceListening: _voiceListening,
                     voiceAvailable:
                         widget.dependencies.voiceAnswer.isAvailable &&
-                        !_voiceCaptureOff,
+                            !_voiceCaptureOff,
                     voiceShowButton:
                         widget.dependencies.voiceAnswer.isAvailable &&
-                        !_voiceCaptureOff,
-                    onVoice:
-                        () => _captureVoiceAnswer(
-                          choices: closeVerificationChoices,
-                          onChip: _selectAnswerChoice,
-                          onDescribe: (_) {},
-                        ),
+                            !_voiceCaptureOff,
+                    onVoice: () => _captureVoiceAnswer(
+                      choices: closeVerificationChoices,
+                      onChip: _selectAnswerChoice,
+                      onDescribe: (_) {},
+                    ),
                     onSelected: _selectAnswerChoice,
-                    onBack:
-                        verificationOutcome != VerificationOutcome.pending
-                            ? () {
-                              setState(() {
-                                _pendingCloseVerification = null;
-                              });
-                              _persistUiResume();
-                            }
-                            : null,
+                    onBack: verificationOutcome != VerificationOutcome.pending
+                        ? () {
+                            setState(() {
+                              _pendingCloseVerification = null;
+                            });
+                            _persistUiResume();
+                          }
+                        : null,
                     onCancel: () {
                       setState(() {
                         _pendingCloseVerification = null;
@@ -4685,8 +4663,8 @@ class _SessionScreenState extends State<SessionScreen>
                     const SizedBox(height: 8),
                     FilledButton.tonal(
                       key: const Key('close-path-continue'),
-                      onPressed:
-                          () => _goClosePathPhase(ClosePathPhase.opportunistic),
+                      onPressed: () =>
+                          _goClosePathPhase(ClosePathPhase.opportunistic),
                       child: const Text('While you\'re there'),
                     ),
                   ],
@@ -4795,8 +4773,7 @@ class _SessionObjectiveChips extends StatelessWidget {
                 key: Key('session-objective-chip-${objective.name}'),
                 label: Text(sessionObjectiveChipLabel(objective)),
                 selected: selected == objective,
-                onSelected:
-                    enabled ? (_) => onSelected(objective) : null,
+                onSelected: enabled ? (_) => onSelected(objective) : null,
               ),
           ],
         ),
@@ -4877,8 +4854,7 @@ class _ProblemStarterPanel extends StatelessWidget {
         selectedSymptomIds: chipIds,
       );
     }
-    final canConfirm =
-        selectedIds.isNotEmpty &&
+    final canConfirm = selectedIds.isNotEmpty &&
         !needsClarification &&
         (describing
             ? (freeTextController.text.trim().isNotEmpty || chipIds.isNotEmpty)
@@ -4898,7 +4874,7 @@ class _ProblemStarterPanel extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Describe what you notice — not what you think is broken',
+              UserFacingCopy.problemStarterHelper,
               key: const Key('problem-starter-helper'),
               style: Theme.of(context).textTheme.bodySmall,
             ),
@@ -4918,16 +4894,14 @@ class _ProblemStarterPanel extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     minimumSize: const Size.fromHeight(48),
                     side: BorderSide(
-                      color:
-                          selectedIds.contains(id)
-                              ? scheme.primary
-                              : scheme.outline,
+                      color: selectedIds.contains(id)
+                          ? scheme.primary
+                          : scheme.outline,
                       width: selectedIds.contains(id) ? 1.5 : 1,
                     ),
-                    backgroundColor:
-                        selectedIds.contains(id)
-                            ? scheme.primaryContainer.withValues(alpha: 0.55)
-                            : null,
+                    backgroundColor: selectedIds.contains(id)
+                        ? scheme.primaryContainer.withValues(alpha: 0.55)
+                        : null,
                   ),
                   onPressed: () => onSelectEntry(id),
                   child: Row(
@@ -4948,7 +4922,8 @@ class _ProblemStarterPanel extends StatelessWidget {
             if (describing) ...[
               const SizedBox(height: 8),
               Text(
-                'Describe what you notice — not what you think is broken',
+                UserFacingCopy.problemStarterHelper,
+                key: const Key('problem-starter-describe-helper'),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
@@ -4983,8 +4958,8 @@ class _ProblemStarterPanel extends StatelessWidget {
                       Text(
                         'No keyword match — pick the closest observation',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: scheme.onSurface,
-                        ),
+                              color: scheme.onSurface,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -4994,13 +4969,13 @@ class _ProblemStarterPanel extends StatelessWidget {
                       const SizedBox(height: 10),
                       for (final id in dryerStarterClarifyChoiceIds)
                         Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: OutlinedButton(
-                              key: Key('starter-clarify-$id'),
-                              onPressed: () => onClarify(id),
-                              child: Text(dryerStarterEntryChipLabel(id)),
-                            ),
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: OutlinedButton(
+                            key: Key('starter-clarify-$id'),
+                            onPressed: () => onClarify(id),
+                            child: Text(dryerStarterEntryChipLabel(id)),
                           ),
+                        ),
                     ],
                   ),
                 ),
@@ -5018,7 +4993,7 @@ class _ProblemStarterPanel extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Interpreted as',
+                        'Observations selected',
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: 4),
@@ -5060,8 +5035,8 @@ class _ProblemStarterPanel extends StatelessWidget {
                         freeTextController.text.trim().isNotEmpty
                     ? 'Confirm with what I typed'
                     : resolution.isHazard
-                    ? 'Confirm — stop and get help'
-                    : 'Confirm and continue',
+                        ? 'Confirm — stop and get help'
+                        : 'Confirm and continue',
               ),
             const SizedBox(height: 8),
             TextButton(
@@ -5142,8 +5117,8 @@ class _BlockingReasonLine extends StatelessWidget {
         child: Text(
           line,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: scheme.onSurface,
-          ),
+                color: scheme.onSurface,
+              ),
         ),
       ),
     );
@@ -5179,9 +5154,9 @@ class _NextActionCue extends StatelessWidget {
             Text(
               title,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -5230,10 +5205,10 @@ class _RecommendedPrimaryCard extends StatelessWidget {
             Text(
               UserFacingCopy.bestMatchSoFar,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: scheme.primary,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.4,
-              ),
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.4,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -5245,15 +5220,15 @@ class _RecommendedPrimaryCard extends StatelessWidget {
             Text(
               failureMode.description,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: scheme.onPrimaryContainer,
-              ),
+                    color: scheme.onPrimaryContainer,
+                  ),
             ),
             const SizedBox(height: 10),
             Text(
               hint ?? UserFacingCopy.bestMatchHumble,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: scheme.onPrimaryContainer,
-              ),
+                    color: scheme.onPrimaryContainer,
+                  ),
             ),
             if (alternatives.isNotEmpty) ...[
               const SizedBox(height: 16),
@@ -5352,8 +5327,8 @@ class _FailureModeTile extends StatelessWidget {
                 : 'failure-mode-select-${failureMode.id}',
           ),
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: isPrimary ? scheme.primary : scheme.onSurfaceVariant,
-          ),
+                color: isPrimary ? scheme.primary : scheme.onSurfaceVariant,
+              ),
         ),
         onTap: enabled ? onSelected : null,
       ),
@@ -5378,21 +5353,19 @@ class _VoiceAnswerMicButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       key: micKey,
-      tooltip:
-          !available
-              ? UserFacingCopy.voiceWorksBestOnPhone
-              : listening
+      tooltip: !available
+          ? UserFacingCopy.voiceWorksBestOnPhone
+          : listening
               ? 'Listening…'
               : 'Speak your answer',
       onPressed: !available || listening ? null : onPressed,
-      icon:
-          listening
-              ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-              : Icon(available ? Icons.mic_none : Icons.mic_off_outlined),
+      icon: listening
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(available ? Icons.mic_none : Icons.mic_off_outlined),
     );
   }
 }
@@ -5425,6 +5398,7 @@ class _AnswerChoicePanel extends StatelessWidget {
     this.displayTitle,
     this.optionLabels,
     this.expertMode = false,
+    this.offerAlreadyChecked = true,
   });
 
   final EvidenceTemplate prompt;
@@ -5432,6 +5406,7 @@ class _AnswerChoicePanel extends StatelessWidget {
   final String? displayTitle;
   final Map<String, String>? optionLabels;
   final bool expertMode;
+  final bool offerAlreadyChecked;
   final ValueChanged<String> onSelected;
   final VoidCallback onPickGallery;
   final VoidCallback onPickCamera;
@@ -5457,7 +5432,10 @@ class _AnswerChoicePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final choices = answerChoicesFor(prompt);
+    final choices = answerChoicesFor(
+      prompt,
+      offerAlreadyChecked: offerAlreadyChecked,
+    );
     final normalizedSelected = normalizeObservationAnswer(selectedAnswer);
     return Card(
       key: const Key('answer-choice-panel'),
@@ -5465,7 +5443,9 @@ class _AnswerChoicePanel extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: emphasize ? scheme.primary.withValues(alpha: 0.45) : scheme.outline,
+          color: emphasize
+              ? scheme.primary.withValues(alpha: 0.45)
+              : scheme.outline,
           width: emphasize ? 1.5 : 1,
         ),
       ),
@@ -5478,7 +5458,9 @@ class _AnswerChoicePanel extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    isRevising ? 'Change this answer' : 'Answer this observation',
+                    isRevising
+                        ? 'Change this answer'
+                        : 'Answer this observation',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ),
@@ -5503,8 +5485,8 @@ class _AnswerChoicePanel extends StatelessWidget {
               Text(
                 'Current: $selectedAnswer',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+                      color: scheme.onSurfaceVariant,
+                    ),
               ),
             ],
             const SizedBox(height: 8),
@@ -5516,15 +5498,15 @@ class _AnswerChoicePanel extends StatelessWidget {
                     : observationPromptTitle(prompt),
                 key: Key('observation-prompt-${prompt.id}'),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontSize: 18,
-                  height: 1.35,
-                ),
+                      fontSize: 18,
+                      height: 1.35,
+                    ),
               ),
             ),
             if (visibleGuidanceDisplayBlock(
-                  observationGuidanceForTemplate(prompt.id),
-                  expertMode: expertMode,
-                )
+              observationGuidanceForTemplate(prompt.id),
+              expertMode: expertMode,
+            )
                 case final guidance?) ...[
               const SizedBox(height: 12),
               _GuidanceBlockCard(
@@ -5548,8 +5530,7 @@ class _AnswerChoicePanel extends StatelessWidget {
                   _AnswerChoiceButton(
                     choice: choice,
                     displayLabel: optionLabels?[choice],
-                    isSelected:
-                        normalizedSelected != null &&
+                    isSelected: normalizedSelected != null &&
                         normalizedSelected ==
                             normalizeObservationAnswer(choice),
                     onPressed: () => onSelected(choice),
@@ -5638,8 +5619,8 @@ class _FreeObservationIntake extends StatelessWidget {
           Text(
             UserFacingCopy.freeObservationHint,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
+                  color: scheme.onSurfaceVariant,
+                ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -5722,7 +5703,8 @@ class _AnswerChoiceButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 48),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         ),
         onPressed: onPressed,
         child: child,
@@ -5765,8 +5747,8 @@ class _OtherObservationsPicker extends StatelessWidget {
       title: Text(
         UserFacingCopy.otherObservationPickerTitle,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
       ),
       children: [
         if (photoVisible)
@@ -5892,8 +5874,8 @@ class _PrimaryHypothesisBanner extends StatelessWidget {
             Text(
               'Current Primary',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: scheme.primary,
-              ),
+                    color: scheme.primary,
+                  ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -6060,8 +6042,8 @@ class _CurrentConclusionCard extends StatelessWidget {
               primaryLabel ?? 'Insufficient evidence',
               key: const Key('current-conclusion-label'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -6177,16 +6159,16 @@ class _CloseVerificationCard extends StatelessWidget {
               answered ? 'Verification result' : 'Verification (required)',
               key: const Key('verification-title'),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: scheme.primary,
-              ),
+                    color: scheme.primary,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               closePath.verificationAsk,
               key: const Key('verification-ask'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: scheme.onSurface,
-              ),
+                    color: scheme.onSurface,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -6210,8 +6192,8 @@ class _CloseVerificationCard extends StatelessWidget {
                 'Result: ${_resultLabel(outcome)}',
                 key: const Key('verification-result'),
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: scheme.onSurface,
-                ),
+                      color: scheme.onSurface,
+                    ),
               )
             else if (answersVisible)
               Text(
@@ -6350,8 +6332,8 @@ class _ReadinessToolRow extends StatelessWidget {
               item.optional
                   ? 'Optional'
                   : item.liveElectrical
-                  ? 'Not for beginner steps'
-                  : 'Required',
+                      ? 'Not for beginner steps'
+                      : 'Required',
               style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ],
@@ -6393,8 +6375,7 @@ class _ReadinessToolRow extends StatelessWidget {
               key: Key('readiness-missing-${item.id}'),
               onPressed: () => onMark(item, false),
               style: OutlinedButton.styleFrom(
-                backgroundColor:
-                    have == false ? scheme.errorContainer : null,
+                backgroundColor: have == false ? scheme.errorContainer : null,
               ),
               child: const Text("I don't"),
             ),
@@ -6763,8 +6744,7 @@ class _SafeGuidanceCard extends StatelessWidget {
         guidanceForSafeStep(step);
     final visibleStep = visibleHouseholdHowTo(step, expertMode: expertMode);
     final visibility = comfortStepVisibility(level: comfort, step: step);
-    final safetyNeeded =
-        visibility.showWhenToStop &&
+    final safetyNeeded = visibility.showWhenToStop &&
         block.whenToStop.trim().isNotEmpty &&
         block.whenToStop.trim() != step.trim() &&
         block.whenToStop != _defaultGuidanceWhenToStop;
@@ -6781,16 +6761,16 @@ class _SafeGuidanceCard extends StatelessWidget {
                   : 'Step ${index + 1} of ${steps.length} · Step detail: ${comfort.label}',
               key: const Key('guidance-step-progress'),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: scheme.primary,
-              ),
+                    color: scheme.primary,
+                  ),
             ),
             const SizedBox(height: 6),
             Text(
               'Safe Guidance',
               key: const Key('safe-guidance-title'),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: scheme.onSurface,
-              ),
+                    color: scheme.onSurface,
+                  ),
             ),
             const SizedBox(height: 10),
             HouseholdHowToText(
@@ -6924,8 +6904,7 @@ class _RootCauseInsightCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               const SizedBox(height: 4),
-              for (final action in insight.preventionActions)
-                Text('• $action'),
+              for (final action in insight.preventionActions) Text('• $action'),
             ],
             if (insight.commonMisdiagnoses.isNotEmpty) ...[
               const SizedBox(height: 10),
@@ -6934,8 +6913,7 @@ class _RootCauseInsightCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               const SizedBox(height: 4),
-              for (final item in insight.commonMisdiagnoses)
-                Text('• $item'),
+              for (final item in insight.commonMisdiagnoses) Text('• $item'),
             ],
           ],
         ),
@@ -6957,11 +6935,11 @@ class _GuidanceBlockCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shown = visibleGuidanceDisplayBlock(block, expertMode: expertMode) ??
-        block;
+    final shown =
+        visibleGuidanceDisplayBlock(block, expertMode: expertMode) ?? block;
     final labelStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
-      color: Theme.of(context).colorScheme.primary,
-    );
+          color: Theme.of(context).colorScheme.primary,
+        );
     final bodyStyle = Theme.of(context).textTheme.bodyMedium;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -7073,8 +7051,8 @@ class _CloseAnswerChoicePanel extends StatelessWidget {
               Text(
                 'Current: $selectedAnswer',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
               ),
             ],
             const SizedBox(height: 8),
@@ -7082,8 +7060,8 @@ class _CloseAnswerChoicePanel extends StatelessWidget {
               ask,
               key: const Key('close-answer-choice-prompt'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -7093,8 +7071,7 @@ class _CloseAnswerChoicePanel extends StatelessWidget {
                 for (final choice in closeVerificationChoices)
                   _AnswerChoiceButton(
                     choice: choice,
-                    isSelected:
-                        normalizedSelected != null &&
+                    isSelected: normalizedSelected != null &&
                         normalizedSelected ==
                             normalizeObservationAnswer(choice),
                     onPressed: () => onSelected(choice),
@@ -7154,17 +7131,17 @@ class _SafetyStopBanner extends StatelessWidget {
               'Needs a professional',
               key: const Key('safety-stop-title'),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: scheme.onErrorContainer,
-                fontWeight: FontWeight.w700,
-              ),
+                    color: scheme.onErrorContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               reason,
               key: const Key('safety-stop-reason'),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: scheme.onErrorContainer,
-              ),
+                    color: scheme.onErrorContainer,
+                  ),
             ),
           ],
         ),
@@ -7197,8 +7174,8 @@ class _PackageSummaryCard extends StatelessWidget {
           Text(
             'Knowledge Package',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
           ),
           const SizedBox(height: 8),
           Text('Name: ${package!.displayName}', key: const Key('package-name')),
@@ -7243,7 +7220,8 @@ class _OptionalDescribeNoteDialog extends StatefulWidget {
       _OptionalDescribeNoteDialogState();
 }
 
-class _OptionalDescribeNoteDialogState extends State<_OptionalDescribeNoteDialog> {
+class _OptionalDescribeNoteDialogState
+    extends State<_OptionalDescribeNoteDialog> {
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -7296,4 +7274,3 @@ class _OptionalDescribeNoteDialogState extends State<_OptionalDescribeNoteDialog
     );
   }
 }
-
