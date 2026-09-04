@@ -8,7 +8,9 @@ inspect gas lines. Drum-turns how-to does not contradict unplug-before
 reach-in. **What's going on?** is observations, not a diagnosis. **Skip to
 best guess** hides with zero clues. **Already checked** hides on a first
 session with no history. Pages/desktop does not claim voice; inspect
-Doesn't-match copy does not fight **Can't see**. Groq stays phrasing-only.
+Doesn't-match copy does not fight **Can't see**. First-run **Skip** on
+**What Butler does** completes on the first pointer-down (no autofocus
+click-to-focus). Groq stays phrasing-only.
 GOLDEN **Call a pro** stays. Play listing stays out. Tests:
 `test/natural_ui_v2_test.dart`.
 

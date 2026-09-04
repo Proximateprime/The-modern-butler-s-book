@@ -29,14 +29,19 @@ void main() {
     expect(_read('pubspec.yaml'), contains('version: 0.1.4+11'));
   });
 
-  test('first-run tree has no Transform and Pages pointer host stays locked', () {
+  test('first-run tree has no Transform and Pages pointer host stays locked',
+      () {
     final firstRun = _read('lib/ui/first_run_screen.dart');
     expect(firstRun, isNot(contains('Transform(')));
     expect(firstRun, isNot(contains('Transform.')));
     expect(firstRun, contains('SafeArea'));
     expect(firstRun, contains('first-run-next-button'));
     expect(firstRun, contains('first-run-done-button'));
-    expect(firstRun, contains('minimumSize: const Size(64, 48)'));
+    expect(firstRun, contains('minHeight: 48'));
+    expect(firstRun, contains('onPointerDown'));
+    expect(firstRun, contains('canRequestFocus: false'));
+    expect(firstRun, isNot(contains('autofocus: true')));
+    expect(firstRun, isNot(contains('requestFocus()')));
 
     final index = _read('web/index.html');
     expect(index, contains('overflow: hidden'));
@@ -120,6 +125,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 950));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('first-run-page-what')), findsOneWidget);
+    expect(find.text(UserFacingCopy.firstRunDoesTitle), findsOneWidget);
     final skip = find.byKey(const Key('first-run-skip-button'));
     expect(skip.hitTestable(), findsOneWidget);
     final skipBox = tester.getRect(skip);
@@ -149,8 +156,10 @@ void main() {
 
     expect(find.byKey(const Key('first-run-screen')), findsNothing);
     expect(find.byKey(const Key('safety-disclaimer-screen')), findsOneWidget);
-    expect(find.byKey(const Key('safety-disclaimer-acknowledge')), findsOneWidget);
-    expect(find.text(UserFacingCopy.safetyDisclaimerAcknowledge), findsOneWidget);
+    expect(
+        find.byKey(const Key('safety-disclaimer-acknowledge')), findsOneWidget);
+    expect(
+        find.text(UserFacingCopy.safetyDisclaimerAcknowledge), findsOneWidget);
     expect(find.byKey(const Key('create-household-button')), findsNothing);
     expect(deps.disclaimerAcknowledged, isFalse);
 
@@ -166,7 +175,8 @@ void main() {
     expect(deps.disclaimerAcknowledged, isTrue);
   });
 
-  testWidgets('last-page tap finishes first-run then still requires I understand', (
+  testWidgets(
+      'last-page tap finishes first-run then still requires I understand', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -220,7 +230,8 @@ void main() {
 
     final viewHeight =
         tester.view.physicalSize.height / tester.view.devicePixelRatio;
-    final advance = tester.getRect(find.byKey(const Key('first-run-next-button')));
+    final advance =
+        tester.getRect(find.byKey(const Key('first-run-next-button')));
     expect(
       advance.bottom,
       lessThanOrEqualTo(viewHeight - bottomInset + 0.5),
@@ -230,7 +241,8 @@ void main() {
     expect(page.bottom, lessThanOrEqualTo(advance.bottom + 0.5));
   });
 
-  testWidgets('advance hit target matches painted first-run body, not a Transform', (
+  testWidgets(
+      'advance hit target matches painted first-run body, not a Transform', (
     tester,
   ) async {
     final deps = AppDependencies(
@@ -246,9 +258,11 @@ void main() {
 
     final next = find.byKey(const Key('first-run-next-button'));
     final box = tester.getRect(next);
-    expect(box.height, greaterThan(200), reason: 'advance target is the body, not a bottom strip');
+    expect(box.height, greaterThan(200),
+        reason: 'advance target is the body, not a bottom strip');
 
-    final paintedTitle = tester.getRect(find.text(UserFacingCopy.firstRunDoesTitle));
+    final paintedTitle =
+        tester.getRect(find.text(UserFacingCopy.firstRunDoesTitle));
     expect(box.contains(paintedTitle.center), isTrue);
 
     await tester.tapAt(paintedTitle.center);

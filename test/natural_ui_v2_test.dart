@@ -10,6 +10,7 @@ import 'package:modern_butlers_book/knowledge_factory/dryer_inspect_steps.dart';
 import 'package:modern_butlers_book/main.dart';
 import 'package:modern_butlers_book/models/appliance.dart';
 import 'package:modern_butlers_book/ui/app_dependencies.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/session_test_helpers.dart';
 
@@ -240,4 +241,82 @@ void main() {
     expect(find.text('Observations selected'), findsOneWidget);
     expect(find.text('Interpreted as'), findsNothing);
   });
+
+  test('Skip on What Butler does uses first-pointer hit-target, not autofocus',
+      () {
+    final firstRun = _read('lib/ui/first_run_screen.dart');
+    expect(firstRun, contains('onPointerDown'));
+    expect(firstRun, contains('canRequestFocus: false'));
+    expect(firstRun, contains('minHeight: 48'));
+    expect(firstRun, isNot(contains('autofocus: true')));
+    expect(firstRun, isNot(contains('requestFocus()')));
+    expect(firstRun, isNot(contains('Transform(')));
+    expect(_read('web/index.html'), contains('bindFlutterPointerHost'));
+    expect(_read('lib/ui/product_chrome.dart'), isNot(contains('Transform(')));
+  });
+
+  testWidgets(
+    'Skip from What Butler does leaves first-run on the first tap',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final deps = AppDependencies(
+        clock: () => DateTime.utc(2026, 9, 4, 2, 40),
+        firstRunComplete: false,
+        disclaimerAcknowledged: false,
+      );
+      await prepareTallSurface(tester);
+      await tester.pumpWidget(ModernButlerApp(dependencies: deps));
+
+      expect(find.byKey(const Key('first-run-page-what')), findsOneWidget);
+      expect(find.text(UserFacingCopy.firstRunDoesTitle), findsOneWidget);
+
+      final skip = find.byKey(const Key('first-run-skip-button'));
+      expect(skip.hitTestable(), findsOneWidget);
+      final skipBox = tester.getRect(skip);
+      expect(skipBox.height, greaterThanOrEqualTo(48));
+
+      await tester.tapAt(skipBox.center);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('first-run-page-what')), findsNothing);
+      expect(find.byKey(const Key('first-run-page-not')), findsNothing);
+      expect(find.byKey(const Key('first-run-screen')), findsNothing);
+      expect(find.byKey(const Key('safety-disclaimer-screen')), findsOneWidget);
+      expect(deps.firstRunComplete, isTrue);
+      expect(deps.disclaimerAcknowledged, isFalse);
+    },
+  );
+
+  testWidgets(
+    'Skip from What Butler does still completes on the first tap after splash',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final deps = AppDependencies(
+        clock: () => DateTime.utc(2026, 9, 4, 2, 45),
+        firstRunComplete: false,
+        disclaimerAcknowledged: false,
+      );
+      await prepareShortViewport(tester);
+      await tester.pumpWidget(
+        ModernButlerApp(dependencies: deps, forceBrandSplash: true),
+      );
+      await tester.pump();
+      expect(find.byKey(const Key('splash-screen')), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 950));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('first-run-page-what')), findsOneWidget);
+      expect(find.text(UserFacingCopy.firstRunDoesTitle), findsOneWidget);
+
+      final skip = find.byKey(const Key('first-run-skip-button'));
+      expect(skip.hitTestable(), findsOneWidget);
+      await tester.tapAt(tester.getRect(skip).center);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('first-run-screen')), findsNothing);
+      expect(find.byKey(const Key('first-run-page-not')), findsNothing);
+      expect(find.byKey(const Key('safety-disclaimer-screen')), findsOneWidget);
+      expect(deps.firstRunComplete, isTrue);
+    },
+  );
 }

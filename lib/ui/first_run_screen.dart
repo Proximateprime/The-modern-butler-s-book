@@ -48,25 +48,6 @@ class FirstRunScreen extends StatefulWidget {
 class _FirstRunScreenState extends State<FirstRunScreen> {
   int _page = 0;
   bool _busy = false;
-  final FocusNode _skipFocus = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-    // First tap after splash must land. Autofocus + explicit post-frame
-    // focus so the Skip control is the first-frame gesture target.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _skipFocus.requestFocus();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _skipFocus.dispose();
-    super.dispose();
-  }
 
   bool get _last => _page >= _firstRunSlides.length - 1;
 
@@ -109,17 +90,28 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
           child: Wordmark(compact: true),
         ),
         actions: [
-          TextButton(
+          // First pointer-down must complete Skip on page 1. Do not autofocus
+          // Skip — that ate the first Pages click (focus, then activate).
+          // Pack #13 class: 48px target, no Transform, view keeps focus.
+          Listener(
             key: const Key('first-run-skip-button'),
-            focusNode: _skipFocus,
-            autofocus: true,
-            style: TextButton.styleFrom(
-              minimumSize: const Size(64, 48),
-              tapTargetSize: MaterialTapTargetSize.padded,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (_) {
+              if (!_busy) {
+                _finish();
+              }
+            },
+            child: InkWell(
+              canRequestFocus: false,
+              onTap: _busy ? null : _finish,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 64, minHeight: 48),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(child: Text('Skip')),
+                ),
+              ),
             ),
-            onPressed: _busy ? null : _finish,
-            child: const Text('Skip'),
           ),
         ],
       ),
