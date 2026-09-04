@@ -13,9 +13,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'support/session_test_helpers.dart';
 
 void main() {
-  test('version is 0.1.4+18', () {
+  test('version is 0.1.4+19', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+18');
+    expect(kAppVersionLabel, '0.1.4+19');
   });
 
   test('first-run greeting uses book theme type, not a bare Georgia family', () {

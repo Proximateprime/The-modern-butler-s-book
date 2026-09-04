@@ -193,6 +193,7 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   /// Restores Continue repair landing. Cases: docs/qa/RESUME_CASES.md.
+  /// Unanswered on-screen interview is held even when a primary is named.
   void _restoreUiResume() {
     try {
       final decisionContext =
@@ -215,22 +216,20 @@ class _SessionScreenState extends State<SessionScreen>
         templates: package?.evidenceTemplates ?? const [],
         recordedEvidence: decisionContext.evidence,
       );
-      final holdOpenInterview =
-          unansweredOpenObservationShouldStayOnScreen(
-            onScreenTemplateId: pendingTemplateId,
-            onScreenStillOpen: storedOpenStillOpen,
-          ) &&
-          decisionContext.primaryFailureModeId == null &&
-          !resumeHasRealClosePathProgress(
-            choseRepair: resume?.choseRepair == true,
-            completedGuidanceStepIds:
-                resume?.completedGuidanceStepIds ?? const [],
-            guidanceStepIndex: resume?.guidanceStepIndex ?? 0,
-            readinessHaveByToolId: resume?.readinessHaveByToolId ?? const {},
-            pendingCloseVerificationFailureModeId:
-                resume?.pendingCloseVerificationFailureModeId,
-            inspectReviewOnly: resume?.inspectReviewOnly == true,
-          );
+      final holdOpenInterview = shouldHoldUnansweredOpenInterviewOnResume(
+        onScreenTemplateId: pendingTemplateId,
+        onScreenStillOpen: storedOpenStillOpen,
+        hasRealClosePathProgress: resumeHasRealClosePathProgress(
+          choseRepair: resume?.choseRepair == true,
+          completedGuidanceStepIds:
+              resume?.completedGuidanceStepIds ?? const [],
+          guidanceStepIndex: resume?.guidanceStepIndex ?? 0,
+          readinessHaveByToolId: resume?.readinessHaveByToolId ?? const {},
+          pendingCloseVerificationFailureModeId:
+              resume?.pendingCloseVerificationFailureModeId,
+          inspectReviewOnly: resume?.inspectReviewOnly == true,
+        ),
+      );
       if (pendingTemplateId != null && package != null) {
         pendingPrompt = _templateById(
           package.evidenceTemplates,
@@ -549,7 +548,6 @@ class _SessionScreenState extends State<SessionScreen>
               recordedEvidence: decisionContext.evidence,
             ),
           ) &&
-          decisionContext.primaryFailureModeId == null &&
           !_choseRepair &&
           !closePathImpliesRepairChosen(_closePathPhase);
     } catch (_) {
@@ -567,9 +565,10 @@ class _SessionScreenState extends State<SessionScreen>
   /// Interview template the household is on, including ranking’s next question
   /// when the answer panel is showing suggested-next without a tapped chip.
   ///
-  /// On-screen open id wins over ranking next, empty-next, and close-path
-  /// guidance so Continue repair cannot swap lint-filter for motor-humming,
-  /// a blank panel, or safe-steps chrome after a cold reload.
+  /// On-screen open id wins over ranking next, empty-next, a named primary,
+  /// and close-path guidance so Continue repair cannot swap lint-filter for
+  /// motor-humming, most-likely-only chrome, a blank panel, or safe-steps
+  /// after a cold reload.
   String? _resumeOpenInterviewTemplateId() {
     try {
       final decisionContext =
@@ -2598,7 +2597,6 @@ class _SessionScreenState extends State<SessionScreen>
             recordedEvidence: decisionContext.evidence,
           ),
         ) &&
-        primaryFailureModeId == null &&
         !_choseRepair &&
         !closePathImpliesRepairChosen(_closePathPhase);
     final effectiveInvestigationStopped = investigationStopped &&

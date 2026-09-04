@@ -1,3 +1,15 @@
+## Resume open question v3 (2026-09-04)
+
+App **0.1.4+19**. Continue repair after a cold reload restores the
+**unanswered on-screen open observation** even when ranking has already
+named a primary (Most likely / Reviewing the likely cause). Lint-filter
+stays on screen; that chrome may still name the cause but must not steal
+or blank the open question. V2 gates stay: restore vs ranking-next, never
+blank to **No more questions for now**, never jump into **Following safe
+steps** while unanswered. Groq stays phrasing-only. GOLDEN **Call a pro**
+stays. Play listing stays out. Tests: `test/resume_open_q_v3_test.dart`
+(V1/V2 suites stay green).
+
 ## Resume open question v2 (2026-09-04)
 
 App **0.1.4+18**. Continue repair after a cold reload restores the

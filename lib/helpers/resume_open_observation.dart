@@ -5,7 +5,8 @@ import 'evidence_prompt_match.dart';
 
 /// Continue repair restores the observation that was on screen.
 ///
-/// Ranking’s suggested-next, empty-next (“No more questions for now”), and
+/// Ranking’s suggested-next, empty-next (“No more questions for now”),
+/// a named primary (Most likely / Reviewing the likely cause), and
 /// close-path guidance / safe-steps chrome must not steal that id while the
 /// household still has that question open (unanswered).
 String? preferOnScreenOpenObservationId({
@@ -24,6 +25,10 @@ String? preferOnScreenOpenObservationId({
 
 /// Unanswered on-screen interview wins over ranking next *and* over a null
 /// next (conclusion / skip / soft-cap would otherwise paint an empty panel).
+///
+/// A named primary is not an input: Most likely chrome must
+/// not blank the open question. I'll-repair / tools / guidance progress is
+/// gated separately via [shouldHoldUnansweredOpenInterviewOnResume].
 bool unansweredOpenObservationShouldStayOnScreen({
   required String? onScreenTemplateId,
   required bool onScreenStillOpen,
@@ -31,6 +36,24 @@ bool unansweredOpenObservationShouldStayOnScreen({
   return onScreenStillOpen &&
       onScreenTemplateId != null &&
       onScreenTemplateId.isNotEmpty;
+}
+
+/// Restore the unanswered on-screen interview after Continue repair.
+///
+/// Does **not** require a null primary. Ranking may already have named a
+/// cause; that chrome stays allowed, but it cannot steal the open question.
+/// Real close-path progress (I'll repair, tools marks, guidance, inspect
+/// review, pending close verification) still keeps the household on that path.
+bool shouldHoldUnansweredOpenInterviewOnResume({
+  required String? onScreenTemplateId,
+  required bool onScreenStillOpen,
+  required bool hasRealClosePathProgress,
+}) {
+  return unansweredOpenObservationShouldStayOnScreen(
+        onScreenTemplateId: onScreenTemplateId,
+        onScreenStillOpen: onScreenStillOpen,
+      ) &&
+      !hasRealClosePathProgress;
 }
 
 /// Mid-guidance resume stays valid only when there is no unanswered open
