@@ -342,17 +342,10 @@ void main() {
       ),
       'lint-filter-condition',
     );
-    expect(
-      interviewTemplateIsStillOpen(
-        templateId: 'lint-filter-condition',
-        templates: const [],
-        recordedEvidence: const [],
-      ),
-      isTrue,
-    );
     final restoreSource = _read('lib/ui/session_screen.dart');
     expect(restoreSource, contains('storedPendingTemplateId'));
-    expect(restoreSource, contains('_heldUnansweredOpenInterviewId'));
+    expect(restoreSource, contains('_hasUnansweredHeldObservationId'));
+    expect(restoreSource, contains('shouldBlockResumeAdvancePastUnansweredOpenInterview'));
   });
 
   test('named primary does not invent or drop unanswered open observation', () {
@@ -539,6 +532,65 @@ void main() {
 
       expect(_lintFilterQuestionIsOpen(), isTrue);
       expect(_drumTurnsQuestionIsOpen(), isFalse);
+      expect(find.textContaining('Following safe steps'), findsNothing);
+      expect(find.textContaining('No more questions for now'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Rex invent-A live: thermal fuse named + unanswered lint-filter — Continue does not invent clogged, skip to outside-vent, or reset to drum-turns',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 5, 11);
+      final first = AppDependencies(clock: () => clock, store: store);
+
+      await openDryerSession(
+        tester,
+        first,
+        'V5 Invent A Live House',
+        skipProblemStarter: false,
+      );
+      await confirmNoHeatStarter(tester);
+      if (!_lintFilterQuestionIsOpen()) {
+        await selectObservation(tester, 'lint-filter-condition');
+      }
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      await selectFailureMode(tester, 'thermal-fuse-open');
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      expect(_drumTurnsQuestionIsOpen(), isFalse);
+      expect(_outsideVentQuestionIsOpen(), isFalse);
+      _expectNoInventedLintFilterAnswer(
+        first.repairSessionRepository.evidenceForSession(
+          first.repairSessionRepository.listAllSessions().single.id,
+        ),
+      );
+
+      await tapVisible(tester, find.byKey(const Key('session-exit-button')));
+      expect(find.byType(SessionScreen), findsNothing);
+
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
+
+      final sessionId =
+          first.repairSessionRepository.listAllSessions().single.id;
+      final restored = AppDependencies(clock: () => clock, store: store);
+      await restored.restore();
+      expect(
+        restored.buildDecisionContext(sessionId).primaryFailureModeId,
+        'thermal-fuse-open',
+      );
+      _expectNoInventedLintFilterAnswer(
+        restored.repairSessionRepository.evidenceForSession(sessionId),
+      );
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      expect(_drumTurnsQuestionIsOpen(), isFalse);
+      expect(_outsideVentQuestionIsOpen(), isFalse);
+      expect(find.textContaining('Heavily clogged'), findsNothing);
       expect(find.textContaining('Following safe steps'), findsNothing);
       expect(find.textContaining('No more questions for now'), findsNothing);
     },

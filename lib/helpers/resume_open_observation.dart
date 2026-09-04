@@ -152,12 +152,7 @@ bool interviewTemplateIsStillOpen({
     }
   }
   if (template == null) {
-    // Missing package row must not drop a held id into ranking next /
-    // earlier interview (drum-turns). Unanswered by evidence id still holds.
-    return !isTemplateRecordedById(
-      templateId: templateId,
-      recordedEvidence: recordedEvidence,
-    );
+    return false;
   }
   return !isTemplateRecorded(
     template: template,
