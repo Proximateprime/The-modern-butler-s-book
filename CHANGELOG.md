@@ -1,3 +1,13 @@
+## Resume open question v2 (2026-09-04)
+
+App **0.1.4+18**. Continue repair after a cold reload restores the
+**unanswered on-screen open observation** even when ranking has no next
+question, conclusion would paint **No more questions for now**, or stored
+close-path would jump into **Following safe steps** / guidance chrome.
+Lint-filter stays on screen; clues stay as they were. Groq stays
+phrasing-only. GOLDEN **Call a pro** stays. Play listing stays out. Tests:
+`test/resume_open_q_v2_test.dart` (V1 suites stay green).
+
 ## Resume open question (2026-09-04)
 
 App **0.1.4+17**. Continue repair after a cold reload restores the **on-screen

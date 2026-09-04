@@ -10,6 +10,7 @@ import 'package:modern_butlers_book/helpers/evidence_prompt_match.dart';
 import 'package:modern_butlers_book/helpers/phrasing_request.dart';
 import 'package:modern_butlers_book/helpers/phrasing_service.dart';
 import 'package:modern_butlers_book/helpers/resume_open_observation.dart';
+import 'package:modern_butlers_book/helpers/user_facing_error.dart';
 import 'package:modern_butlers_book/main.dart';
 import 'package:modern_butlers_book/models/appliance.dart';
 import 'package:modern_butlers_book/models/evidence.dart';
@@ -44,6 +45,20 @@ bool _motorHummingQuestionIsOpen() {
   return _openQuestion('motor-audible').evaluate().isNotEmpty;
 }
 
+void _expectLintFilterRestored({required int clueCount}) {
+  expect(find.byType(SessionScreen), findsOneWidget);
+  expect(_lintFilterQuestionIsOpen(), isTrue);
+  expect(_motorHummingQuestionIsOpen(), isFalse);
+  expect(find.textContaining('motor humming'), findsNothing);
+  expect(find.text(UserFacingCopy.emptyFurtherQuestionsTitle), findsNothing);
+  expect(find.textContaining('No more questions for now'), findsNothing);
+  expect(find.byKey(const Key('suggested-next-empty')), findsNothing);
+  expect(find.byKey(const Key('observation-paused-message')), findsNothing);
+  expect(find.textContaining('Following safe steps'), findsNothing);
+  expect(find.textContaining('we were on the safe steps'), findsNothing);
+  expect(find.text(householdClueSummary(clueCount)), findsWidgets);
+}
+
 void _addInterviewClue({
   required AppDependencies deps,
   required String sessionId,
@@ -70,15 +85,14 @@ void _addInterviewClue({
   );
 }
 
-/// Six won't-start clues that leave lint-filter unanswered while ranking's
-/// next template is motor humming.
-void _seedSixCluesWontStartPath({
+void _seedStarter({
   required AppDependencies deps,
   required String sessionId,
   required String applianceId,
+  required String symptomId,
 }) {
   final resolution = resolveDryerStarter(
-    selectedSymptomIds: const {'will-not-start'},
+    selectedSymptomIds: {symptomId},
   );
   deps.sessionCoordinator.addEvidence(
     evidence: Evidence(
@@ -95,6 +109,21 @@ void _seedSixCluesWontStartPath({
       schemaVersion: '1.0',
     ),
     evidenceLinkId: deps.nextId('evidence-link'),
+  );
+}
+
+/// Six won't-start clues that leave lint-filter unanswered while ranking's
+/// next template is motor humming.
+void _seedSixCluesWontStartPath({
+  required AppDependencies deps,
+  required String sessionId,
+  required String applianceId,
+}) {
+  _seedStarter(
+    deps: deps,
+    sessionId: sessionId,
+    applianceId: applianceId,
+    symptomId: 'will-not-start',
   );
   _addInterviewClue(
     deps: deps,
@@ -150,12 +179,47 @@ void _seedSixCluesWontStartPath({
   );
 }
 
-const _lintFilterResume = SessionUiResumeState(
-  pendingObservationTemplateId: 'lint-filter-condition',
-  starterConfirmed: true,
-  starterSymptomIds: ['will-not-start'],
-  closePathPhase: ClosePathPhase.conclusion,
-);
+void _seedTwoCluesNoHeatPath({
+  required AppDependencies deps,
+  required String sessionId,
+  required String applianceId,
+}) {
+  _seedStarter(
+    deps: deps,
+    sessionId: sessionId,
+    applianceId: applianceId,
+    symptomId: 'no-heat',
+  );
+  _addInterviewClue(
+    deps: deps,
+    sessionId: sessionId,
+    applianceId: applianceId,
+    templateId: 'drum-turns',
+    observation: 'Does the drum turn during the cycle?',
+    answer: 'Turns normally',
+  );
+}
+
+Future<void> _continueAfterColdReload({
+  required WidgetTester tester,
+  required LocalDomainStore store,
+  required DateTime clock,
+}) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump();
+  final second = AppDependencies(clock: () => clock, store: store);
+  await second.restore();
+  await prepareTallSurface(tester);
+  await tester.pumpWidget(ModernButlerApp(dependencies: second));
+  await tester.pumpAndSettle();
+
+  expect(find.byType(SessionScreen), findsNothing);
+  expect(find.text('Continue repair'), findsOneWidget);
+  final restoredDryer = second.appliancesForCurrentHousehold().single;
+  await tester.tap(find.byKey(Key('continue-repair-${restoredDryer.id}')));
+  await tester.pumpAndSettle();
+  await dismissProblemStarterIfPresent(tester);
+}
 
 void main() {
   test('version is 0.1.4+18', () {
@@ -180,147 +244,65 @@ void main() {
     }
   });
 
-  test('on-screen open observation wins over ranking next', () {
+  test('unanswered open observation wins over empty ranking next', () {
     expect(
       preferOnScreenOpenObservationId(
         onScreenTemplateId: 'lint-filter-condition',
-        rankingSuggestedNextTemplateId: 'motor-audible',
+        rankingSuggestedNextTemplateId: null,
         onScreenStillOpen: true,
       ),
       'lint-filter-condition',
     );
     expect(
-      preferOnScreenOpenObservationId(
+      unansweredOpenObservationShouldStayOnScreen(
         onScreenTemplateId: 'lint-filter-condition',
-        rankingSuggestedNextTemplateId: 'motor-audible',
-        onScreenStillOpen: false,
+        onScreenStillOpen: true,
       ),
-      'motor-audible',
+      isTrue,
     );
   });
 
-  test(
-    'six wont-start clues rank motor humming next while lint-filter is still open',
-    () async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-      final store = LocalDomainStore(preferences: prefs);
-      final deps = AppDependencies(
-        clock: () => DateTime.utc(2026, 9, 4, 18),
-        store: store,
-      );
-      deps.createHousehold('Rank Next House');
-      final dryer = deps.addDryer(energySource: ApplianceEnergySource.electric);
-      final sessionId = deps.startOrResumeSession(dryer);
-      _seedSixCluesWontStartPath(
-        deps: deps,
-        sessionId: sessionId,
-        applianceId: dryer.id,
-      );
-      final context = deps.buildDecisionContext(sessionId);
-      final clues = interviewObservationsInOrder(context.evidence);
-      final ids = clues.map((item) => item.templateId).toList();
-      expect(ids, isNot(contains('lint-filter-condition')));
-      expect(ids, isNot(contains('motor-audible')));
-      expect(ids.length, greaterThanOrEqualTo(6));
-      expect(
-        interviewTemplateIsStillOpen(
-          templateId: 'lint-filter-condition',
-          templates: context.package!.evidenceTemplates,
-          recordedEvidence: context.evidence,
-        ),
-        isTrue,
-      );
-      final ranking = const DiagnosticReasoning().evaluateContext(
-        context,
-        starterMatchedSymptomIds: {'will-not-start'},
-        energySource: dryer.energySource,
-      );
-      expect(ranking?.suggestedNextTemplateId, 'motor-audible');
-      expect(ranking?.suggestedNextTemplateId, isNot('lint-filter-condition'));
-    },
-  );
+  test('unanswered open observation pins resume off stolen guidance', () {
+    expect(
+      resumeClosePathPhaseHonoringOpenObservation(
+        computed: ClosePathPhase.guidance,
+        unansweredOpenObservation: true,
+      ),
+      ClosePathPhase.conclusion,
+    );
+    expect(
+      resumeHasRealClosePathProgress(
+        choseRepair: true,
+        completedGuidanceStepIds: const [],
+        guidanceStepIndex: 0,
+        readinessHaveByToolId: const {},
+        pendingCloseVerificationFailureModeId: null,
+        inspectReviewOnly: false,
+      ),
+      isTrue,
+    );
+    expect(
+      resumeHasRealClosePathProgress(
+        choseRepair: false,
+        completedGuidanceStepIds: const [],
+        guidanceStepIndex: 0,
+        readinessHaveByToolId: const {},
+        pendingCloseVerificationFailureModeId: null,
+        inspectReviewOnly: false,
+      ),
+      isFalse,
+    );
+  });
 
   testWidgets(
-    'Continue repair keeps lint-filter when conclusion chrome and ranking next is motor humming',
+    'A: Continue restores lint-filter under conclusion, not motor humming',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final store = LocalDomainStore(preferences: prefs);
-      final clock = DateTime.utc(2026, 9, 4, 19);
+      final clock = DateTime.utc(2026, 9, 4, 21);
       final first = AppDependencies(clock: () => clock, store: store);
-      first.createHousehold('Open Q House');
-      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
-      final sessionId = first.startOrResumeSession(dryer);
-      _seedSixCluesWontStartPath(
-        deps: first,
-        sessionId: sessionId,
-        applianceId: dryer.id,
-      );
-      first.saveSessionUiResume(sessionId, _lintFilterResume);
-      await first.flushPersist();
-
-      final ranking = const DiagnosticReasoning().evaluateContext(
-        first.buildDecisionContext(sessionId),
-        starterMatchedSymptomIds: {'will-not-start'},
-        energySource: dryer.energySource,
-      );
-      expect(ranking?.suggestedNextTemplateId, 'motor-audible');
-
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
-      final second = AppDependencies(clock: () => clock, store: store);
-      await second.restore();
-      await prepareTallSurface(tester);
-      await tester.pumpWidget(ModernButlerApp(dependencies: second));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SessionScreen), findsNothing);
-      expect(find.text('Continue repair'), findsOneWidget);
-      final restoredDryer = second.appliancesForCurrentHousehold().single;
-      await tester.tap(find.byKey(Key('continue-repair-${restoredDryer.id}')));
-      await tester.pumpAndSettle();
-      await dismissProblemStarterIfPresent(tester);
-
-      expect(find.byType(SessionScreen), findsOneWidget);
-      expect(_lintFilterQuestionIsOpen(), isTrue);
-      expect(_motorHummingQuestionIsOpen(), isFalse);
-      expect(find.textContaining('motor humming'), findsNothing);
-      final banner = find.byKey(const Key('resume-knew-banner'));
-      if (banner.evaluate().isNotEmpty) {
-        final text = banner.evaluate().single.widget as Text;
-        final spoken = text.data ?? '';
-        expect(spoken, startsWith(kResumeKnewLead));
-        expect(resumeLineLeaksEngineeringPhase(spoken), isFalse);
-      }
-      final afterIds = interviewObservationsInOrder(
-        second.repairSessionRepository.evidenceForSession(
-          second.repairSessionRepository.listAllSessions().single.id,
-        ),
-      ).map((item) => item.templateId).toList();
-      expect(afterIds.length, greaterThanOrEqualTo(6));
-      expect(afterIds, isNot(contains('lint-filter-condition')));
-      expect(
-        second
-            .uiResumeForSession(
-              second.repairSessionRepository.listAllSessions().single.id,
-            )
-            ?.pendingObservationTemplateId,
-        'lint-filter-condition',
-      );
-      expect(find.text(householdClueSummary(afterIds.length)), findsWidgets);
-    },
-  );
-
-  testWidgets(
-    'Given lint-filter open and six clues, tap Continue after cold reload stays on lint-filter',
-    (tester) async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-      final store = LocalDomainStore(preferences: prefs);
-      final clock = DateTime.utc(2026, 9, 4, 20);
-      final first = AppDependencies(clock: () => clock, store: store);
-      first.createHousehold('Open Q Tap House');
+      first.createHousehold('V2 Conclusion House');
       final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
       final sessionId = first.startOrResumeSession(dryer);
       _seedSixCluesWontStartPath(
@@ -331,6 +313,7 @@ void main() {
       first.saveSessionUiResume(
         sessionId,
         const SessionUiResumeState(
+          pendingObservationTemplateId: 'lint-filter-condition',
           starterConfirmed: true,
           starterSymptomIds: ['will-not-start'],
           closePathPhase: ClosePathPhase.conclusion,
@@ -338,51 +321,127 @@ void main() {
       );
       await first.flushPersist();
 
-      await prepareTallSurface(tester);
-      await tester.pumpWidget(ModernButlerApp(dependencies: first));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(Key('continue-repair-${dryer.id}')));
-      await tester.pumpAndSettle();
-      await dismissProblemStarterIfPresent(tester);
+      final ranking = const DiagnosticReasoning().evaluateContext(
+        first.buildDecisionContext(sessionId),
+        starterMatchedSymptomIds: {'will-not-start'},
+        energySource: dryer.energySource,
+      );
+      expect(ranking?.suggestedNextTemplateId, 'motor-audible');
 
-      final beforeIds = interviewObservationsInOrder(
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
+
+      final clueCount = interviewObservationsInOrder(
         first.repairSessionRepository.evidenceForSession(sessionId),
-      ).map((item) => item.templateId).toList();
-      expect(beforeIds.length, greaterThanOrEqualTo(6));
-      expect(find.text(householdClueSummary(beforeIds.length)), findsWidgets);
-      if (!_lintFilterQuestionIsOpen()) {
-        await selectObservation(tester, 'lint-filter-condition');
-      }
-      expect(_lintFilterQuestionIsOpen(), isTrue);
-      expect(_motorHummingQuestionIsOpen(), isFalse);
+      ).length;
+      _expectLintFilterRestored(clueCount: clueCount);
+      expect(clueCount, greaterThanOrEqualTo(6));
+    },
+  );
 
-      await tester.pageBack();
-      await tester.pumpAndSettle();
+  testWidgets(
+    'B: Continue never paints No more questions while lint-filter is unanswered',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 4, 22);
+      final first = AppDependencies(clock: () => clock, store: store);
+      first.createHousehold('V2 Blank Panel House');
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
+      final sessionId = first.startOrResumeSession(dryer);
+      _seedTwoCluesNoHeatPath(
+        deps: first,
+        sessionId: sessionId,
+        applianceId: dryer.id,
+      );
+      first.saveSessionUiResume(
+        sessionId,
+        const SessionUiResumeState(
+          pendingObservationTemplateId: 'lint-filter-condition',
+          starterConfirmed: true,
+          starterSymptomIds: ['no-heat'],
+          closePathPhase: ClosePathPhase.conclusion,
+          skipToBestGuess: true,
+        ),
+      );
       await first.flushPersist();
 
-      final second = AppDependencies(clock: () => clock, store: store);
-      await second.restore();
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
-      await prepareTallSurface(tester);
-      await tester.pumpWidget(ModernButlerApp(dependencies: second));
-      await tester.pumpAndSettle();
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
 
-      final restoredDryer = second.appliancesForCurrentHousehold().single;
-      await tester.tap(find.byKey(Key('continue-repair-${restoredDryer.id}')));
-      await tester.pumpAndSettle();
-      await dismissProblemStarterIfPresent(tester);
+      _expectLintFilterRestored(clueCount: 2);
+      final banner = find.byKey(const Key('resume-knew-banner'));
+      if (banner.evaluate().isNotEmpty) {
+        final text = banner.evaluate().single.widget as Text;
+        final spoken = text.data ?? '';
+        expect(spoken, startsWith(kResumeKnewLead));
+        expect(spoken.toLowerCase(), contains('question'));
+        expect(resumeLineLeaksEngineeringPhase(spoken), isFalse);
+      }
+    },
+  );
 
-      expect(_lintFilterQuestionIsOpen(), isTrue);
-      expect(_motorHummingQuestionIsOpen(), isFalse);
-      expect(find.text(householdClueSummary(beforeIds.length)), findsWidgets);
-      expect(find.textContaining('motor humming'), findsNothing);
-      final afterIds = interviewObservationsInOrder(
-        second.repairSessionRepository.evidenceForSession(
-          second.repairSessionRepository.listAllSessions().single.id,
+  testWidgets(
+    'C: Continue never jumps unanswered lint-filter into guidance / safe-steps',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 4, 23);
+      final first = AppDependencies(clock: () => clock, store: store);
+      first.createHousehold('V2 Guidance Steal House');
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
+      final sessionId = first.startOrResumeSession(dryer);
+      _seedStarter(
+        deps: first,
+        sessionId: sessionId,
+        applianceId: dryer.id,
+        symptomId: 'no-heat',
+      );
+      _addInterviewClue(
+        deps: first,
+        sessionId: sessionId,
+        applianceId: dryer.id,
+        templateId: 'vent-hose-condition',
+        observation: 'vent hose',
+        answer: 'Yes, restricted',
+      );
+      first.saveSessionUiResume(
+        sessionId,
+        const SessionUiResumeState(
+          pendingObservationTemplateId: 'lint-filter-condition',
+          starterConfirmed: true,
+          starterSymptomIds: ['no-heat'],
+          closePathPhase: ClosePathPhase.guidance,
         ),
-      ).map((item) => item.templateId).toList();
-      expect(afterIds, beforeIds);
+      );
+      await first.flushPersist();
+
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
+
+      _expectLintFilterRestored(clueCount: 2);
+      expect(find.text('Now: Answering questions'), findsOneWidget);
+      expect(find.text('Now: Following safe steps'), findsNothing);
+      final banner = find.byKey(const Key('resume-knew-banner'));
+      expect(banner, findsOneWidget);
+      final spoken = (banner.evaluate().single.widget as Text).data ?? '';
+      expect(spoken, startsWith(kResumeKnewLead));
+      expect(spoken.toLowerCase(), isNot(contains('safe steps')));
+      expect(spoken, contains('vent hose'));
+      expect(spoken, contains('Yes, restricted'));
+      expect(resumeLineLeaksEngineeringPhase(spoken), isFalse);
+      expect(find.textContaining('I did this'), findsNothing);
     },
   );
 }
