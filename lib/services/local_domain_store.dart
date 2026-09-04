@@ -187,6 +187,7 @@ class DomainSnapshot {
     required this.hypothesisIdsBySession,
     required this.outcomes,
     this.sessionUiResumeBySessionId = const {},
+    this.foregroundSessionId,
     this.maintenanceReminders = const [],
     this.repairComfort = const RepairComfortProfile(),
     this.expertMode = false,
@@ -210,6 +211,12 @@ class DomainSnapshot {
   final Map<String, List<String>> hypothesisIdsBySession;
   final List<SessionOutcome> outcomes;
   final Map<String, SessionUiResumeState> sessionUiResumeBySessionId;
+
+  /// Session the user was looking at when the app last backgrounded.
+  ///
+  /// Null after they leave SessionScreen (Exit / back). Used to reopen that
+  /// repair after a lock/kill, not to invent a new session.
+  final String? foregroundSessionId;
   final List<MaintenanceReminder> maintenanceReminders;
   final RepairComfortProfile repairComfort;
   final bool expertMode;
@@ -241,6 +248,8 @@ class DomainSnapshot {
       'sessionUiResumeBySessionId': sessionUiResumeBySessionId.map(
         (key, value) => MapEntry(key, value.toJson()),
       ),
+      if (foregroundSessionId != null)
+        'foregroundSessionId': foregroundSessionId,
       'maintenanceReminders': maintenanceReminders
           .map((item) => item.toJson())
           .toList(),
@@ -329,6 +338,7 @@ class DomainSnapshot {
           ),
         ),
       ),
+      foregroundSessionId: json['foregroundSessionId'] as String?,
       maintenanceReminders: List<dynamic>.from(
         json['maintenanceReminders'] as List? ?? const [],
       )

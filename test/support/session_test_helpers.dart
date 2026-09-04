@@ -533,3 +533,23 @@ Future<void> expandEvidenceHistory(WidgetTester tester) async {
   }
   await tapVisible(tester, find.byKey(const Key('evidence-history-tile')));
 }
+
+/// Lock / home-button / process-pause: persist UI resume then return.
+Future<void> simulateAppPausedThenResumed(
+  WidgetTester tester,
+  AppDependencies dependencies,
+) async {
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+  await tester.pump();
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+  await tester.pump();
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+  await tester.pump();
+  await dependencies.persistForBackground();
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+  await tester.pump();
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+  await tester.pump();
+  tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+  await tester.pumpAndSettle();
+}

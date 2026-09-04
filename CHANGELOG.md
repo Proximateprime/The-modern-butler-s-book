@@ -1,3 +1,15 @@
+## Session resume (2026-09-04)
+
+App **0.1.4+12**. After lock, background, or a cold start, an in-progress
+dryer session returns to the same open question and the same verified
+**clues** count. Evidence and `SessionUiResumeState` stay in the existing
+local domain snapshot; lock/background flushes that snapshot after the
+session writes the current prompt. Leaving with Exit/back still shows
+**Continue repair** on home. Empty stores and completed sessions do not
+come back as in-progress. Groq stays phrasing-only. GOLDEN **Call a pro**
+stays. Play listing stays out. Tests: `test/session_resume_v1_test.dart`,
+`test/session_resume_test.dart`.
+
 ## Natural UI v2 honesty (2026-09-04)
 
 App **0.1.4+11**. Presentation and honesty only. Empty brand/model on a real

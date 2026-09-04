@@ -12,9 +12,9 @@ import 'package:modern_butlers_book/ui/app_dependencies.dart';
 import 'support/session_test_helpers.dart';
 
 void main() {
-  test('version is 0.1.4+11', () {
+  test('version is 0.1.4+12', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+11');
+    expect(kAppVersionLabel, '0.1.4+12');
   });
 
   test('hazard-observation prompt does not bundle repeated stopping', () {

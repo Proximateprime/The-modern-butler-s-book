@@ -24,6 +24,7 @@ DomainSnapshot emptyHouseBookSnapshot() {
     hypothesisIdsBySession: const {},
     outcomes: const [],
     sessionUiResumeBySessionId: const <String, SessionUiResumeState>{},
+    foregroundSessionId: null,
     maintenanceReminders: const <MaintenanceReminder>[],
     repairComfort: const RepairComfortProfile(),
     expertMode: false,

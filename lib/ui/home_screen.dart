@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../helpers/degraded_mode.dart';
@@ -47,6 +49,28 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _historyQuery = TextEditingController();
   SessionCloseKind? _historyOutcome;
   String? _historyApplianceId;
+  bool _didTryForegroundResume = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_tryForegroundResume());
+    });
+  }
+
+  Future<void> _tryForegroundResume() async {
+    if (_didTryForegroundResume || !mounted) {
+      return;
+    }
+    _didTryForegroundResume = true;
+    final appliance = widget.dependencies.applianceForForegroundResume();
+    if (appliance == null ||
+        !widget.dependencies.hasInProgressSession(appliance)) {
+      return;
+    }
+    await _continueRepair(appliance);
+  }
 
   @override
   void dispose() {

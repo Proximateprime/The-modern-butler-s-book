@@ -146,10 +146,14 @@ class _SessionScreenState extends State<SessionScreen>
   final ClosePathPolicyService _closePathPolicy =
       const ClosePathPolicyService();
 
+  void _flushUiForBackground() => _persistUiResume();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    widget.dependencies.setBeforeBackgroundFlush(_flushUiForBackground);
+    widget.dependencies.noteEnteredRepairSession(widget.sessionId);
     _restoreUiResume();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
@@ -165,14 +169,14 @@ class _SessionScreenState extends State<SessionScreen>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
-      _persistUiResume();
-      unawaited(widget.dependencies.flushPersist());
+      unawaited(widget.dependencies.persistForBackground());
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.dependencies.clearBeforeBackgroundFlush(_flushUiForBackground);
     _persistUiResume();
     unawaited(widget.dependencies.flushPersist());
     _starterFreeTextController.dispose();
@@ -2643,7 +2647,14 @@ class _SessionScreenState extends State<SessionScreen>
             ),
           );
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          widget.dependencies.noteLeftRepairSession(widget.sessionId);
+        }
+      },
+      child: Scaffold(
       appBar: SessionChromeBar(
         applianceName: widget.appliance.name,
         safetyKind: safetyKind,
@@ -3469,6 +3480,7 @@ class _SessionScreenState extends State<SessionScreen>
           ),
         ],
       ),
+    ),
     );
   }
 

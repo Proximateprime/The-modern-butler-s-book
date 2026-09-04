@@ -17,10 +17,10 @@ import 'support/session_test_helpers.dart';
 String _read(String path) => File(path).readAsStringSync();
 
 void main() {
-  test('version is 0.1.4+11', () {
+  test('version is 0.1.4+12', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+11');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+11'));
+    expect(kAppVersionLabel, '0.1.4+12');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+12'));
   });
 
   test('empty identity is Unknown, never a demo plate factory', () {
