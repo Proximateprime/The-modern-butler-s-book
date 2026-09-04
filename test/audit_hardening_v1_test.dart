@@ -24,11 +24,11 @@ import 'support/session_test_helpers.dart';
 String _read(String path) => File(path).readAsStringSync();
 
 void main() {
-  test('version is 0.1.4+24', () {
+  test('version is 0.1.4+25', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppBuildNumber, '24');
-    expect(kAppVersionLabel, '0.1.4+24');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+24'));
+    expect(kAppBuildNumber, '25');
+    expect(kAppVersionLabel, '0.1.4+25');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+25'));
   });
 
   test('GOLDEN Call a pro stays frozen', () {
@@ -167,6 +167,13 @@ void main() {
     expect(
       screen,
       contains('isTerminal || safetyStop != null || _voiceHazardConfirm'),
+    );
+    expect(
+      screen,
+      contains(
+        'final showProHandoff =\n'
+        '            diyPro && !_choseRepair && !showProWarning && safeChecksDone;',
+      ),
     );
   });
 
@@ -351,7 +358,9 @@ void main() {
       final deps = AppDependencies(clock: () => DateTime.utc(2026, 9, 4, 23, 10));
       await openDryerSession(tester, deps, 'Ill Repair No Lecture');
       await selectFailureMode(tester, 'thermal-fuse-open');
-      await advanceClosePathFromConclusionIfPresent(tester);
+      await tapVisible(tester, find.byKey(const Key('close-path-continue')));
+      expect(find.byKey(const Key('close-path-ill-repair')), findsOneWidget);
+      await tapVisible(tester, find.byKey(const Key('close-path-ill-repair')));
       await completeInspectStepsIfPresent(tester);
       expect(
         find.textContaining('A technician fits this part on this path'),
@@ -373,6 +382,10 @@ void main() {
         find.textContaining('A technician fits this part on this path'),
         findsNothing,
       );
+      await completeGuidanceStepsIfPresent(tester);
+      expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
+      expect(find.byKey(const Key('pro-handoff-why')), findsNothing);
+      expect(find.byKey(const Key('pro-handoff-understand')), findsNothing);
     },
   );
 }

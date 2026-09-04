@@ -25,11 +25,11 @@ import 'support/session_test_helpers.dart';
 String _read(String path) => File(path).readAsStringSync();
 
 void main() {
-  test('version is 0.1.4+24', () {
+  test('version is 0.1.4+25', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppBuildNumber, '24');
-    expect(kAppVersionLabel, '0.1.4+24');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+24'));
+    expect(kAppBuildNumber, '25');
+    expect(kAppVersionLabel, '0.1.4+25');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+25'));
   });
 
   test('GOLDEN Call a pro stays frozen', () {
