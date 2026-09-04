@@ -109,8 +109,9 @@ abstract final class UserFacingCopy {
       'copies stored here.';
   static const privacyWhatIsStored =
       'Stored here: household profiles, appliances, repair sessions and '
-      'outcomes, photos you attach, tools you list, reminders, and appearance. '
-      'Appliance guides are engineering packages, not personal data.';
+      'outcomes, photos you attach, tools you list, reminders, appearance, '
+      'and any “this was wrong” notes you save. Appliance guides are '
+      'engineering packages, not personal data.';
   static const privacyNoSkillProfiling =
       'Butler does not silently profile your skill. Tools and comfort are only '
       'what you choose to record. Skill never unlocks unsafe work.';
@@ -324,6 +325,22 @@ abstract final class UserFacingCopy {
   static const sessionObjectiveFigureOut = "Figure out what's wrong";
   static const sessionObjectiveRepairVsReplace = 'Decide repair vs replace';
   static const sessionObjectiveCallPro = 'Prepare to call a pro';
+  static const reportWrongTitle = 'Report a problem';
+  static const reportWrongThisWasWrong = 'This was wrong';
+  static const reportWrongSettingsSubtitle =
+      'Save a local note and open a support email draft';
+  static const reportWrongLead =
+      'If a diagnosis or step was wrong, write a short note. '
+      'The book does not decide what was wrong.';
+  static const reportWrongPrivacy =
+      'The note stays on this device. Opening email is optional and never '
+      'uploads photos, chats, or a floor plan.';
+  static const reportWrongNoteLabel = 'What was wrong (optional)';
+  static const reportWrongSaveEmail = 'Save note and open email';
+  static const reportWrongEmailOpened =
+      'Email draft opened. The note is also saved on this device.';
+  static const reportWrongEmailUnavailable =
+      'Email isn’t available on this device. The note is still saved here.';
 }
 
 /// Local household snapshot JSON could not be read.

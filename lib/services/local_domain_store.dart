@@ -167,6 +167,34 @@ class LocalDomainStore {
     await init();
     await _preferences!.setString(lastLightThemeKey, value);
   }
+
+  static const wrongReportsKey = 'modern_butler_wrong_reports_v1';
+
+  Future<List<Map<String, dynamic>>> loadWrongReports() async {
+    await init();
+    final raw = _preferences!.getString(wrongReportsKey);
+    if (raw == null || raw.isEmpty) {
+      return const [];
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) {
+        return const [];
+      }
+      return [
+        for (final item in decoded)
+          if (item is Map)
+            Map<String, dynamic>.from(item),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<void> saveWrongReports(List<Map<String, dynamic>> reports) async {
+    await init();
+    await _preferences!.setString(wrongReportsKey, jsonEncode(reports));
+  }
 }
 
 /// Serializable domain state for local persistence only.
