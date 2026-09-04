@@ -1,3 +1,14 @@
+## First-run whole-screen tap (2026-09-04)
+
+App **0.1.4+10**. Presentation only. First-run has no bottom Continue /
+Get started strip — the body is the advance tap (same action those
+buttons used). Skip stays a 48px first-tap target in the app bar and
+still does not acknowledge **I understand**. Layout uses SafeArea so
+content sits above the system nav bar. No Transform on the first-run
+tree; Pages `web/index.html` pointer mapping is unchanged. No engine,
+safety-gate, unmatched-starter, or Groq behavior changes. Details:
+[`docs/qa/FIRST_RUN.md`](docs/qa/FIRST_RUN.md).
+
 ## Unmatched starter honesty (2026-08-29)
 
 App **0.1.4+9**. Presentation/honesty only. Starter Other is Evidence

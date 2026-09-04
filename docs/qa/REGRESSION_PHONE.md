@@ -16,7 +16,7 @@ Use a device or emulator. Chrome is not this script (add-appliance scan and live
 
 ## Setup (once)
 
-If **What Butler does** appears (greeting, no **1 of 3**): **Skip**, or **Continue** through **What it doesn’t do** and **Your household stays here** → **Get started**. Then **Safety disclaimer** → **I understand**. Details: [`FIRST_RUN.md`](FIRST_RUN.md).
+If **What Butler does** appears (greeting, no **1 of 3**): **Skip**, or tap through **What it doesn’t do** and **Your household stays here**. Then **Safety disclaimer** → **I understand**. Details: [`FIRST_RUN.md`](FIRST_RUN.md).
 
 Starting a repair may show **Safety disclaimer**. Tap **I understand**.
 
