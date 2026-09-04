@@ -30,6 +30,7 @@ import '../helpers/repair_stakes.dart';
 import '../models/enrichment_note.dart';
 import '../helpers/investigation_stop.dart';
 import '../helpers/repair_readiness.dart';
+import '../helpers/tool_honesty.dart';
 import '../helpers/package_resolve.dart';
 import '../helpers/pro_scope.dart';
 import '../helpers/opportunistic_maintenance.dart';
@@ -658,9 +659,10 @@ class _SessionScreenState extends State<SessionScreen>
     final have = _haveByToolId(items);
     final missing = missingRequiredTools(items: items, haveByToolId: have);
     final ordered = _orderedGuidanceSteps(closePath);
-    final afterTools = guidanceStepsForToolsGate(
+    final afterTools = guidanceStepsForToolHonesty(
       steps: ordered,
-      missingRequiredTool: missing.isNotEmpty,
+      items: items,
+      haveByToolId: have,
       continueWithCaution: _readinessContinueWithCaution,
     );
     final easyAirflowActive = _needsEasyAirflowFirst(closePath);
@@ -742,10 +744,10 @@ class _SessionScreenState extends State<SessionScreen>
     final ordered = _orderedGuidanceSteps(closePath);
     final items = _readinessItemsFor(closePath.failureModeId);
     final have = _haveByToolId(items);
-    final missing = missingRequiredTools(items: items, haveByToolId: have);
-    final afterTools = guidanceStepsForToolsGate(
+    final afterTools = guidanceStepsForToolHonesty(
       steps: ordered,
-      missingRequiredTool: missing.isNotEmpty,
+      items: items,
+      haveByToolId: have,
       continueWithCaution: _readinessContinueWithCaution,
     );
     final inspectIncomplete = _hasIncompleteInspect(closePath);
