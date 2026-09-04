@@ -16,6 +16,7 @@ import 'package_manager_screen.dart';
 import 'permissions_help.dart';
 import 'product_chrome.dart';
 import 'profiles_picker.dart';
+import 'report_wrong_screen.dart';
 import 'safety_disclaimer_screen.dart';
 import 'tools_inventory_screen.dart';
 
@@ -654,6 +655,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              key: const Key('settings-report-wrong'),
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text(UserFacingCopy.reportWrongTitle),
+              subtitle: const Text(UserFacingCopy.reportWrongSettingsSubtitle),
+              onTap: () {
+                openReportWrongScreen(
+                  context: context,
+                  dependencies: widget.dependencies,
+                  sessionId: widget.dependencies.reportWrongSessionIdHint(),
+                );
+              },
             ),
             const SizedBox(height: 12),
             const BookSectionLabel('Camera and microphone'),

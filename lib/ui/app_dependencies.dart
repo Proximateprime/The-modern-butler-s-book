@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../app_info.dart';
 import '../helpers/demo_sample_home.dart';
 import '../helpers/device_online.dart';
 import '../helpers/dryer_energy_source.dart';
@@ -21,6 +22,7 @@ import '../helpers/local_backup.dart';
 import '../helpers/house_book_wipe.dart';
 import '../helpers/maintenance_reminder_copy.dart';
 import '../helpers/pro_handoff.dart';
+import '../helpers/report_wrong.dart';
 import '../helpers/safety_stop.dart';
 import '../helpers/stale_session.dart';
 import '../helpers/user_facing_error.dart';
@@ -195,6 +197,7 @@ class AppDependencies {
   String? _foregroundSessionId;
   VoidCallback? _beforeBackgroundFlush;
   final List<MaintenanceReminder> _maintenanceReminders = [];
+  final List<ReportWrongNote> _wrongReports = [];
   final List<EnrichmentNote> _enrichmentNotes = [];
   final Set<String> _dismissedPatternHintKeys = {};
   DateTime _lastTimestamp = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
@@ -258,6 +261,99 @@ class AppDependencies {
     await deleteLocalHouseholdPhotoFiles(photoPaths);
     _schedulePersist();
     await flushPersist();
+  }
+
+  /// Best session id for a report opened from Settings (current or last).
+  String? reportWrongSessionIdHint() {
+    final foreground = _foregroundSessionId;
+    if (foreground != null &&
+        repairSessionRepository.getSession(foreground) != null) {
+      return foreground;
+    }
+    final recent = recentSessionOutcomes(limit: 1);
+    if (recent.isNotEmpty) {
+      return recent.first.outcome.sessionId;
+    }
+    for (final session in repairSessionRepository.listAllSessions()) {
+      if (!_isTerminal(session.currentState) &&
+          _applianceInCurrentHousehold(session.applianceId)) {
+        return session.id;
+      }
+    }
+    return null;
+  }
+
+  ReportWrongContext reportWrongContextFor(String? sessionId) {
+    final resolved = sessionId ?? reportWrongSessionIdHint();
+    if (resolved == null) {
+      return const ReportWrongContext();
+    }
+    final session = repairSessionRepository.getSession(resolved);
+    final appliance = session == null
+        ? null
+        : applianceRepository.getById(session.applianceId);
+    KnowledgePackage? package;
+    try {
+      package = packageForSession(resolved);
+    } catch (_) {
+      package = null;
+    }
+    return buildReportWrongContext(
+      appliance: appliance,
+      package: package,
+      session: session,
+      outcome: outcomeForSession(resolved),
+      uiResume: uiResumeForSession(resolved),
+      evidence: repairSessionRepository.evidenceForSession(resolved),
+    );
+  }
+
+  List<ReportWrongNote> get wrongReports =>
+      List<ReportWrongNote>.unmodifiable(_wrongReports);
+
+  Future<void> loadWrongReports() async {
+    final store = _store;
+    if (store == null) {
+      return;
+    }
+    final loaded = await store.loadWrongReports();
+    _wrongReports
+      ..clear()
+      ..addAll(loaded.map(ReportWrongNote.fromJson));
+  }
+
+  Future<ReportWrongNote> saveWrongReport({
+    required String userNote,
+    String? sessionId,
+  }) async {
+    final trimmed = userNote.trim();
+    final clipped = trimmed.length > kReportWrongNoteMaxChars
+        ? trimmed.substring(0, kReportWrongNoteMaxChars)
+        : trimmed;
+    final ctx = reportWrongContextFor(sessionId);
+    final note = ReportWrongNote(
+      id: _nextId('wrong'),
+      recordedAt: nextTimestamp(),
+      userNote: clipped,
+      appVersionLabel: kAppVersionLabel,
+      applianceCategory: ctx.applianceCategory,
+      packageId: ctx.packageId,
+      packageVersion: ctx.packageVersion,
+      stopReason: ctx.stopReason,
+      lastQuestionId: ctx.lastQuestionId,
+      clueCount: ctx.clueCount,
+    );
+    _wrongReports.insert(0, note);
+    if (_wrongReports.length > kReportWrongStoredCap) {
+      _wrongReports.removeRange(kReportWrongStoredCap, _wrongReports.length);
+    }
+    final store = _store;
+    if (store != null) {
+      await store.saveWrongReports(
+        [for (final item in _wrongReports) item.toJson()],
+      );
+    }
+    return note;
   }
 
   Future<void> acknowledgeDisclaimer() async {
@@ -1889,6 +1985,7 @@ class AppDependencies {
     try {
       final snapshot = await store.load();
       overlay = await store.loadOwnedToolsOverlay();
+      await loadWrongReports();
       if (snapshot == null) {
         snapshotCorrupt = false;
         return;

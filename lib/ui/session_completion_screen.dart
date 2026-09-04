@@ -14,6 +14,7 @@ import 'how_we_got_here_tile.dart';
 import 'parts_cost_card.dart';
 import 'primary_cta.dart';
 import 'product_chrome.dart';
+import 'report_wrong_screen.dart';
 
 /// Post-Fixed wrap-up: conclusion, what you did, and short prevention.
 ///
@@ -362,6 +363,12 @@ class _SessionCompletionScreenState extends State<SessionCompletionScreen> {
                   ),
                 ],
                 const SizedBox(height: 24),
+                ReportWrongEntryCta(
+                  key: const Key('completion-report-wrong'),
+                  dependencies: widget.dependencies,
+                  sessionId: widget.outcome.sessionId,
+                ),
+                const SizedBox(height: 16),
                 PrimaryCta(
                   key: const Key('completion-save-home'),
                   label: 'Save & go home',

@@ -12,6 +12,7 @@ import 'app_dependencies.dart';
 import 'brand_mark.dart';
 import 'primary_cta.dart';
 import 'product_chrome.dart';
+import 'report_wrong_screen.dart';
 
 List<String> _completedGuidanceStepIdsFor(
   AppDependencies dependencies,
@@ -160,6 +161,12 @@ class ProHandoffScreen extends StatelessWidget {
                   style: PrimaryCtaStyle.outlined,
                   icon: Icons.copy_outlined,
                   onPressed: () => _copy(context),
+                ),
+                const SizedBox(height: 16),
+                ReportWrongEntryCta(
+                  key: const Key('pro-handoff-report-wrong'),
+                  dependencies: dependencies,
+                  sessionId: outcome.sessionId,
                 ),
                 const SizedBox(height: 24),
                 PrimaryCta(

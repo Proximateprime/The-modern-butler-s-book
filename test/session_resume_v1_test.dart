@@ -18,10 +18,10 @@ import 'support/session_test_helpers.dart';
 String _read(String path) => File(path).readAsStringSync();
 
 void main() {
-  test('version is 0.1.4+13', () {
+  test('version is 0.1.4+14', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+13');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+13'));
+    expect(kAppVersionLabel, '0.1.4+14');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+14'));
   });
 
   test('resume pack does not introduce Transform', () {

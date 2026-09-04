@@ -1,3 +1,15 @@
+## This was wrong (2026-09-04)
+
+App **0.1.4+14**. Testers can report a bad diagnosis or step from **Settings →
+Report a problem**, and from **This was wrong** on session completion and
+pro handoff. A short local note is saved on the device (appliance category,
+package/version, stop reason or last question id, clue count — no photos,
+floor plans, or household names). A `mailto:` stub can open a prefilled
+draft; if email isn’t available, the note still stays. No analytics vendor,
+no auto-upload of chats or photos. Groq stays phrasing-only and does not
+decide what was wrong. GOLDEN **Call a pro** stays. Play listing stays out.
+Tests: `test/report_wrong_v1_test.dart`.
+
 ## Tool honesty (2026-09-04)
 
 App **0.1.4+13**. After the session records **no tools**, or **I don’t** on a
