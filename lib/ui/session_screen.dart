@@ -415,10 +415,8 @@ class _SessionScreenState extends State<SessionScreen>
       if (pendingTemplateId != null &&
           (storedOpenStillOpen || package == null)) {
         _lastShownOpenInterviewTemplateId = pendingTemplateId;
-        if (storedOpenStillOpen &&
-            _pendingAnswerPrompt == null &&
-            package != null) {
-          _pendingAnswerPrompt = _templateById(
+        if (storedOpenStillOpen && package != null) {
+          _pendingAnswerPrompt ??= _templateById(
             package.evidenceTemplates,
             pendingTemplateId,
           );
@@ -538,18 +536,48 @@ class _SessionScreenState extends State<SessionScreen>
     }
   }
 
+  /// Painted / pending / stored unanswered id — never ranking next or an
+  /// earlier interview template (drum-turns).
+  String? _heldUnansweredOpenInterviewId({
+    required List<EvidenceTemplate> templates,
+    required List<Evidence> recorded,
+  }) {
+    bool stillOpen(String? id) => interviewTemplateIsStillOpen(
+          templateId: id,
+          templates: templates,
+          recordedEvidence: recorded,
+        );
+    final storedPendingId = widget.dependencies
+        .uiResumeForSession(widget.sessionId)
+        ?.pendingObservationTemplateId;
+    return preferOnScreenOpenObservationId(
+      onScreenTemplateId:
+          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+      rankingSuggestedNextTemplateId: null,
+      onScreenStillOpen: stillOpen(
+        _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+      ),
+      paintedTemplateId: _lastShownOpenInterviewTemplateId,
+      paintedStillOpen: stillOpen(_lastShownOpenInterviewTemplateId),
+      storedPendingTemplateId: storedPendingId,
+      storedPendingStillOpen: stillOpen(storedPendingId),
+    );
+  }
+
   bool _hasUnansweredOpenInterview() {
     try {
       final decisionContext =
           widget.dependencies.buildDecisionContext(widget.sessionId);
       final templates =
           decisionContext.package?.evidenceTemplates ?? const [];
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
+      final heldId = _heldUnansweredOpenInterviewId(
+        templates: templates,
+        recorded: decisionContext.evidence,
+      );
       return unansweredOpenObservationShouldStayOnScreen(
-            onScreenTemplateId: onScreenId,
+            onScreenTemplateId: heldId,
             onScreenStillOpen: interviewTemplateIsStillOpen(
-              templateId: onScreenId,
+              templateId: heldId,
               templates: templates,
               recordedEvidence: decisionContext.evidence,
             ),
@@ -557,11 +585,30 @@ class _SessionScreenState extends State<SessionScreen>
           !_choseRepair &&
           !closePathImpliesRepairChosen(_closePathPhase);
     } catch (_) {
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
+      final heldId = preferOnScreenOpenObservationId(
+        onScreenTemplateId:
+            _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+        rankingSuggestedNextTemplateId: null,
+        onScreenStillOpen: (_pendingAnswerPrompt?.id ??
+                    _lastShownOpenInterviewTemplateId) !=
+                null &&
+            (_pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId)!
+                .isNotEmpty,
+        paintedTemplateId: _lastShownOpenInterviewTemplateId,
+        paintedStillOpen: _lastShownOpenInterviewTemplateId != null &&
+            _lastShownOpenInterviewTemplateId!.isNotEmpty,
+        storedPendingTemplateId: widget.dependencies
+            .uiResumeForSession(widget.sessionId)
+            ?.pendingObservationTemplateId,
+        storedPendingStillOpen: (widget.dependencies
+                    .uiResumeForSession(widget.sessionId)
+                    ?.pendingObservationTemplateId ??
+                '')
+            .isNotEmpty,
+      );
       return unansweredOpenObservationShouldStayOnScreen(
-            onScreenTemplateId: onScreenId,
-            onScreenStillOpen: onScreenId != null && onScreenId.isNotEmpty,
+            onScreenTemplateId: heldId,
+            onScreenStillOpen: heldId != null && heldId.isNotEmpty,
           ) &&
           !_choseRepair &&
           !closePathImpliesRepairChosen(_closePathPhase);
@@ -578,10 +625,9 @@ class _SessionScreenState extends State<SessionScreen>
   /// Interview template the household is on, including ranking’s next question
   /// when the answer panel is showing suggested-next without a tapped chip.
   ///
-  /// On-screen open id wins over ranking next, empty-next, a named primary,
-  /// and close-path guidance so Continue repair cannot swap lint-filter for
-  /// motor-humming, most-likely-only chrome, a blank panel, or safe-steps
-  /// after a cold reload.
+  /// Unanswered painted / pending / stored open id wins over ranking next,
+  /// empty-next, a named primary, earlier interview (drum-turns), and
+  /// close-path guidance so Continue repair cannot reset lint-filter.
   String? _resumeOpenInterviewTemplateId() {
     try {
       final decisionContext =
@@ -589,13 +635,17 @@ class _SessionScreenState extends State<SessionScreen>
       final package = decisionContext.package;
       final templates = package?.evidenceTemplates ?? const [];
       final recorded = decisionContext.evidence;
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
-      final onScreenStillOpen = interviewTemplateIsStillOpen(
-        templateId: onScreenId,
-        templates: templates,
-        recordedEvidence: recorded,
-      );
+      final paintedId = _lastShownOpenInterviewTemplateId;
+      final pendingId = _pendingAnswerPrompt?.id;
+      final onScreenId = pendingId ?? paintedId;
+      final storedPendingId = widget.dependencies
+          .uiResumeForSession(widget.sessionId)
+          ?.pendingObservationTemplateId;
+      bool stillOpen(String? id) => interviewTemplateIsStillOpen(
+            templateId: id,
+            templates: templates,
+            recordedEvidence: recorded,
+          );
       String? rankingNextId;
       if (_pendingCloseVerification == null &&
           !_choseRepair &&
@@ -620,12 +670,24 @@ class _SessionScreenState extends State<SessionScreen>
       return preferOnScreenOpenObservationId(
         onScreenTemplateId: onScreenId,
         rankingSuggestedNextTemplateId: rankingNextId,
-        onScreenStillOpen: onScreenStillOpen,
+        onScreenStillOpen: stillOpen(onScreenId),
+        paintedTemplateId: paintedId,
+        paintedStillOpen: stillOpen(paintedId),
+        storedPendingTemplateId: storedPendingId,
+        storedPendingStillOpen: stillOpen(storedPendingId),
       );
     } catch (_) {
-      final onScreenId =
-          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId;
-      return onScreenId;
+      final paintedId = _lastShownOpenInterviewTemplateId;
+      if (paintedId != null && paintedId.isNotEmpty) {
+        return paintedId;
+      }
+      final pendingId = _pendingAnswerPrompt?.id;
+      if (pendingId != null && pendingId.isNotEmpty) {
+        return pendingId;
+      }
+      return widget.dependencies
+          .uiResumeForSession(widget.sessionId)
+          ?.pendingObservationTemplateId;
     }
   }
 
@@ -2625,13 +2687,15 @@ class _SessionScreenState extends State<SessionScreen>
           primaryFailureModeId: primaryFailureModeId,
         );
     final isRevisingEvidence = _revisingTemplateId != null;
+    final heldOpenInterviewId = _heldUnansweredOpenInterviewId(
+      templates: prompts,
+      recorded: decisionContext.evidence,
+    );
     final restoringOpenInterview =
         unansweredOpenObservationShouldStayOnScreen(
-          onScreenTemplateId:
-              _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+          onScreenTemplateId: heldOpenInterviewId,
           onScreenStillOpen: interviewTemplateIsStillOpen(
-            templateId:
-                _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+            templateId: heldOpenInterviewId,
             templates: prompts,
             recordedEvidence: decisionContext.evidence,
           ),
@@ -2701,11 +2765,16 @@ class _SessionScreenState extends State<SessionScreen>
         isRankedHeatOrNoiseInterviewTemplate(pendingForInterview.id)) {
       pendingForInterview = null;
     }
-    if (restoringOpenInterview && pendingForInterview == null) {
-      pendingForInterview = _templateById(
-        prompts,
-        _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
-      );
+    if (restoringOpenInterview) {
+      final heldPrompt = _templateById(prompts, heldOpenInterviewId);
+      if (heldPrompt != null) {
+        pendingForInterview = heldPrompt;
+      } else if (pendingForInterview == null) {
+        pendingForInterview = _templateById(
+          prompts,
+          _pendingAnswerPrompt?.id ?? _lastShownOpenInterviewTemplateId,
+        );
+      }
     }
     final showClosePath = effectiveInvestigationStopped &&
         closePath != null &&

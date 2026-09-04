@@ -42,6 +42,10 @@ bool _lintFilterQuestionIsOpen() {
           .isNotEmpty;
 }
 
+bool _drumTurnsQuestionIsOpen() {
+  return _openQuestion('drum-turns').evaluate().isNotEmpty;
+}
+
 bool _motorHummingQuestionIsOpen() {
   return _openQuestion('motor-audible').evaluate().isNotEmpty;
 }
@@ -57,6 +61,7 @@ bool _outsideVentQuestionIsOpen() {
 void _expectLintFilterRestored({required int clueCount}) {
   expect(find.byType(SessionScreen), findsOneWidget);
   expect(_lintFilterQuestionIsOpen(), isTrue);
+  expect(_drumTurnsQuestionIsOpen(), isFalse);
   expect(_motorHummingQuestionIsOpen(), isFalse);
   expect(_outsideVentQuestionIsOpen(), isFalse);
   expect(find.textContaining('motor humming'), findsNothing);
@@ -308,6 +313,40 @@ void main() {
     }
   });
 
+  test('unanswered open id wins over ranking next and earlier drum-turns', () {
+    expect(
+      preferOnScreenOpenObservationId(
+        onScreenTemplateId: null,
+        rankingSuggestedNextTemplateId: 'drum-turns',
+        onScreenStillOpen: false,
+        storedPendingTemplateId: 'lint-filter-condition',
+        storedPendingStillOpen: true,
+      ),
+      'lint-filter-condition',
+    );
+    expect(
+      preferOnScreenOpenObservationId(
+        onScreenTemplateId: 'drum-turns',
+        rankingSuggestedNextTemplateId: 'drum-turns',
+        onScreenStillOpen: true,
+        paintedTemplateId: 'lint-filter-condition',
+        paintedStillOpen: true,
+      ),
+      'lint-filter-condition',
+    );
+    expect(
+      interviewTemplateIsStillOpen(
+        templateId: 'lint-filter-condition',
+        templates: const [],
+        recordedEvidence: const [],
+      ),
+      isTrue,
+    );
+    final restoreSource = _read('lib/ui/session_screen.dart');
+    expect(restoreSource, contains('storedPendingTemplateId'));
+    expect(restoreSource, contains('_heldUnansweredOpenInterviewId'));
+  });
+
   test('named primary does not invent or drop unanswered open observation', () {
     expect(
       shouldKeepUnansweredOpenInterviewWhenPrimaryNamed(
@@ -409,6 +448,93 @@ void main() {
       ClosePathPhase.conclusion,
     );
   });
+
+  testWidgets(
+    'Rex: unanswered lint-filter Continue restores lint-filter, not drum-turns',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 5, 9);
+      final first = AppDependencies(clock: () => clock, store: store);
+      first.createHousehold('V5 Rex Drum Reset House');
+      final dryer = first.addDryer(energySource: ApplianceEnergySource.electric);
+      final sessionId = first.startOrResumeSession(dryer);
+      first.saveSessionUiResume(
+        sessionId,
+        const SessionUiResumeState(
+          pendingObservationTemplateId: 'lint-filter-condition',
+          starterConfirmed: true,
+          closePathPhase: ClosePathPhase.conclusion,
+        ),
+      );
+      await first.flushPersist();
+
+      final ranking = const DiagnosticReasoning().evaluateContext(
+        first.buildDecisionContext(sessionId),
+        energySource: dryer.energySource,
+      );
+      // Ranking may suggest drum-turns (or another unused template). Stored
+      // unanswered lint-filter must still win.
+      expect(ranking?.suggestedNextTemplateId, isNot('lint-filter-condition'));
+
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
+
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      expect(_drumTurnsQuestionIsOpen(), isFalse);
+      final restored = AppDependencies(clock: () => clock, store: store);
+      await restored.restore();
+      expect(
+        restored.uiResumeForSession(sessionId)?.pendingObservationTemplateId,
+        'lint-filter-condition',
+      );
+      _expectNoInventedLintFilterAnswer(
+        restored.repairSessionRepository.evidenceForSession(sessionId),
+      );
+    },
+  );
+
+  testWidgets(
+    'live no-heat: unanswered lint-filter Continue does not reset to drum-turns',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final store = LocalDomainStore(preferences: prefs);
+      final clock = DateTime.utc(2026, 9, 5, 10);
+      final first = AppDependencies(clock: () => clock, store: store);
+
+      await openDryerSession(
+        tester,
+        first,
+        'V5 Live Lint House',
+        skipProblemStarter: false,
+      );
+      await confirmNoHeatStarter(tester);
+      if (!_lintFilterQuestionIsOpen()) {
+        await selectObservation(tester, 'lint-filter-condition');
+      }
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      expect(_drumTurnsQuestionIsOpen(), isFalse);
+
+      await tapVisible(tester, find.byKey(const Key('session-exit-button')));
+      expect(find.byType(SessionScreen), findsNothing);
+
+      await _continueAfterColdReload(
+        tester: tester,
+        store: store,
+        clock: clock,
+      );
+
+      expect(_lintFilterQuestionIsOpen(), isTrue);
+      expect(_drumTurnsQuestionIsOpen(), isFalse);
+      expect(find.textContaining('Following safe steps'), findsNothing);
+      expect(find.textContaining('No more questions for now'), findsNothing);
+    },
+  );
 
   testWidgets(
     'Rex A-primary: named thermal fuse + unanswered lint-filter — Continue does not invent clogged or skip to outside-vent',

@@ -1,3 +1,16 @@
+## Resume open question v5 (2026-09-04)
+
+App **0.1.4+21**. Continue repair after a cold reload restores the
+**unanswered on-screen open observation** (lint-filter) and must **not
+reset** to drum-turns, ranking’s next template, or an earlier interview
+question. Persist must not overwrite a held open id with ranking next
+when in-memory pending/last-shown is empty. V4–V2 gates stay: no invent
+answer, no skip to outside-vent, restore vs ranking-next, never blank to
+**No more questions for now**, never jump into **Following safe steps**,
+named primary must not block hold/restore. Groq stays phrasing-only.
+GOLDEN **Call a pro** stays. Play listing stays out. Tests:
+`test/resume_open_q_v5_test.dart` (V1–V4 suites stay green).
+
 ## Resume open question v4 (2026-09-04)
 
 App **0.1.4+20**. Continue repair after a cold reload must **not invent an

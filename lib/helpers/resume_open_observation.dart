@@ -5,20 +5,37 @@ import 'evidence_prompt_match.dart';
 
 /// Continue repair restores the observation that was on screen.
 ///
-/// Ranking’s suggested-next, empty-next (“No more questions for now”),
-/// a named primary (Most likely / Reviewing the likely cause), and
-/// close-path guidance / safe-steps chrome must not steal that id while the
-/// household still has that question open (unanswered).
+/// Ranking’s suggested-next, an earlier interview template (drum-turns),
+/// empty-next (“No more questions for now”), a named primary (Most likely /
+/// Reviewing the likely cause), and close-path guidance / safe-steps chrome
+/// must not steal that id while the household still has that question open
+/// (unanswered).
 String? preferOnScreenOpenObservationId({
   required String? onScreenTemplateId,
   required String? rankingSuggestedNextTemplateId,
   required bool onScreenStillOpen,
+  String? paintedTemplateId,
+  bool paintedStillOpen = false,
+  String? storedPendingTemplateId,
+  bool storedPendingStillOpen = false,
 }) {
+  if (unansweredOpenObservationShouldStayOnScreen(
+    onScreenTemplateId: paintedTemplateId,
+    onScreenStillOpen: paintedStillOpen,
+  )) {
+    return paintedTemplateId;
+  }
   if (unansweredOpenObservationShouldStayOnScreen(
     onScreenTemplateId: onScreenTemplateId,
     onScreenStillOpen: onScreenStillOpen,
   )) {
     return onScreenTemplateId;
+  }
+  if (unansweredOpenObservationShouldStayOnScreen(
+    onScreenTemplateId: storedPendingTemplateId,
+    onScreenStillOpen: storedPendingStillOpen,
+  )) {
+    return storedPendingTemplateId;
   }
   return rankingSuggestedNextTemplateId;
 }
@@ -135,7 +152,12 @@ bool interviewTemplateIsStillOpen({
     }
   }
   if (template == null) {
-    return false;
+    // Missing package row must not drop a held id into ranking next /
+    // earlier interview (drum-turns). Unanswered by evidence id still holds.
+    return !isTemplateRecordedById(
+      templateId: templateId,
+      recordedEvidence: recordedEvidence,
+    );
   }
   return !isTemplateRecorded(
     template: template,
