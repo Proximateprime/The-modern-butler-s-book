@@ -726,3 +726,27 @@ failures are swallowed before `runApp`. Same seven ON hooks and pre-paint
 safety gate. In-memory rate limit stays parked. See
 [`PLAY_READY_GROQ.md`](PLAY_READY_GROQ.md).
 
+## First-run whole-screen tap — 0.1.4+10
+
+Presentation only. Off unmatched-starter HEAD. Do not reopen leftover PRs
+#1–#6. Do not change the session engine, safety gates, unmatched starter,
+pro handoff honesty, or Pages pointer mapping. Groq stays phrasing-only.
+
+App **0.1.4+10**. Tests: `test/first_run_tap_v1_test.dart`.
+
+1. **No bottom Continue.** The first-run body is the advance tap (`first-run-next-button` / `first-run-done-button` keys stay for that action).
+2. **SafeArea** (bottom) keeps content above the system home/back bar.
+3. **Skip** stays 48px and still completes on the first tap after splash.
+4. **I understand** cannot be skipped. Skip finishes first-run only; the Safety disclaimer still requires acknowledgment.
+5. **No Transform** on the first-run tree. `web/index.html` Pages hit-test lock stays.
+
+### Phone / Pages (Given / tap / expect)
+
+Phone or hosted Pages. Install **0.1.4+10**.
+
+- **Given** a fresh install (first-run showing).
+- **Tap** the page body (not Skip).
+- **Expect** **What it doesn’t do**, then privacy, then the Safety disclaimer.
+- **Tap** **Skip** on the first page instead.
+- **Expect** first-run is gone. **I understand** is next if the disclaimer is outstanding. Home does not appear until that acknowledgment.
+

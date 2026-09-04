@@ -35,6 +35,7 @@ const List<_FirstRunSlide> _firstRunSlides = [
 ];
 
 /// First-launch greeting. Skip and the last page both complete it for good.
+/// Skip never acknowledges the separate Safety disclaimer ("I understand").
 class FirstRunScreen extends StatefulWidget {
   const FirstRunScreen({required this.onFinished, super.key});
 
@@ -67,6 +68,8 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
     super.dispose();
   }
 
+  bool get _last => _page >= _firstRunSlides.length - 1;
+
   Future<void> _finish() async {
     if (_busy) {
       return;
@@ -82,9 +85,19 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
     }
   }
 
+  void _advance() {
+    if (_busy) {
+      return;
+    }
+    if (_last) {
+      _finish();
+      return;
+    }
+    setState(() => _page += 1);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final last = _page >= _firstRunSlides.length - 1;
     final slide = _firstRunSlides[_page];
 
     return Scaffold(
@@ -110,34 +123,32 @@ class _FirstRunScreenState extends State<FirstRunScreen> {
           ),
         ],
       ),
-      body: ButlerPageBody(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _FirstRunPage(
-                key: slide.pageKey,
-                title: slide.title,
-                body: slide.body,
-                showGreeting: _page == 0,
+      // Bottom inset only — AppBar already clears the status bar. No Transform:
+      // Flutter web pointer mapping must stay 1:1 with the painted surface.
+      body: SafeArea(
+        top: false,
+        child: Semantics(
+          key: _last
+              ? const Key('first-run-done-button')
+              : const Key('first-run-next-button'),
+          button: true,
+          label: _last
+              ? PrimaryCtaSemantics.start
+              : PrimaryCtaSemantics.continueAction,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _busy ? null : _advance,
+            child: SizedBox.expand(
+              child: ButlerPageBody(
+                child: _FirstRunPage(
+                  key: slide.pageKey,
+                  title: slide.title,
+                  body: slide.body,
+                  showGreeting: _page == 0,
+                ),
               ),
             ),
-            if (!last)
-              PrimaryCta(
-                key: const Key('first-run-next-button'),
-                label: UserFacingCopy.firstRunContinue,
-                semanticLabel: PrimaryCtaSemantics.continueAction,
-                style: PrimaryCtaStyle.outlined,
-                onPressed: _busy ? null : () => setState(() => _page += 1),
-              )
-            else
-              PrimaryCta(
-                key: const Key('first-run-done-button'),
-                label: 'Get started',
-                semanticLabel: PrimaryCtaSemantics.start,
-                onPressed: _busy ? null : _finish,
-              ),
-          ],
+          ),
         ),
       ),
     );
