@@ -1,3 +1,13 @@
+## Clues honesty v1 (2026-09-04)
+
+App **0.1.4+26**. Clues chrome count and the Clues list use the same
+filter (`householdCluesInOrder` / interview observations only) so count
+never disagrees with the list. Panel / invasive honesty treats
+**cover / housing / rear / back** the same as panel work, and still
+honors package `requiresPanelOff` tags. Groq stays phrasing-only.
+GOLDEN **Call a pro** stays. Play listing stays out. Tests:
+`test/red_clues_honesty_v1_test.dart` (prior suites stay green).
+
 ## DIY pro handoff gate v1 (2026-09-04)
 
 App **0.1.4+25**. After **I'll repair**, Pro-recommended / pro handoff

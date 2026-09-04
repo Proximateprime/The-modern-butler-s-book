@@ -3038,9 +3038,8 @@ class _SessionScreenState extends State<SessionScreen>
             templateId: activeObservation.id,
           );
 
-    final clueCount = interviewObservationsInOrder(
-      decisionContext.evidence,
-    ).length;
+    final clues = householdCluesInOrder(decisionContext.evidence);
+    final clueCount = clues.length;
     final offerAlreadyChecked = widget.dependencies
         .repairHistoryForAppliance(widget.appliance.id)
         .isNotEmpty;
@@ -3793,13 +3792,13 @@ class _SessionScreenState extends State<SessionScreen>
                                 ),
                           ),
                           subtitle: Text(
-                            decisionContext.evidence.isEmpty
+                            clues.isEmpty
                                 ? UserFacingCopy.emptyEvidence
                                 : 'Tap an answer to change it',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           children: [
-                            if (decisionContext.evidence.isEmpty)
+                            if (clues.isEmpty)
                               const ListTile(
                                 title: Text(
                                   UserFacingCopy.emptyEvidence,
@@ -3807,8 +3806,7 @@ class _SessionScreenState extends State<SessionScreen>
                                 ),
                               )
                             else
-                              for (final evidenceItem
-                                  in decisionContext.evidence.reversed)
+                              for (final evidenceItem in clues.reversed)
                                 ListTile(
                                   dense: true,
                                   enabled: !interactionsLocked &&

@@ -102,6 +102,9 @@ bool isPanelOffWorkStep(String step) {
       lower.contains('kick plate')) {
     return true;
   }
+  if (stepInstructsOpeningPanelInvasiveAccess(step)) {
+    return true;
+  }
   if ((lower.contains('open') || lower.contains('remove')) &&
       (lower.contains('panel') || lower.contains('cabinet'))) {
     return true;
