@@ -38,7 +38,7 @@ List<InspectReviewRow> inspectReviewRows({
 
 String inspectReviewAnswerLabel(InspectReviewRow row) {
   if (!row.answered) {
-    return 'Not recorded yet — still in Evidence history if you add it later';
+    return 'Not recorded yet — still in Clues if you add it later';
   }
   return row.recordedAnswer!;
 }

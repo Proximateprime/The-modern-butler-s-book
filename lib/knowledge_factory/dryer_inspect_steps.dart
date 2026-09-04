@@ -32,14 +32,11 @@ const InspectStep dryerLintFilterInspectStep = InspectStep(
   safetyPreamble:
       'Unplug the dryer before reaching into the filter slot. Do not open the '
       'cabinet or probe wiring.',
-  lookFor:
-      'Pull the rectangular mesh screen from the slot in the door opening '
+  lookFor: 'Pull the rectangular mesh screen from the slot in the door opening '
       '(or just inside the drum lip). Hold it up to a light and look through '
-      'both sides of the mesh for packed lint you cannot see through.',
-  okMeans:
-      'You can see through the mesh. It is clear or only lightly dusted.',
-  notOkMeans:
-      'The mesh is packed with lint you cannot see through, missing, or torn.',
+      'both sides of the mesh for packed lint that blocks light.',
+  okMeans: 'Light passes through the mesh. It is clear or only lightly dusted.',
+  notOkMeans: 'The mesh is packed solid with lint, missing, or torn.',
   diagramAsset: dryerFrontInspectAsset,
   cameraMode: InspectCameraMode.viewOnly,
   appliesTo: 'dryer',
@@ -118,8 +115,7 @@ const InspectStep dryerVentHoseInspectStep = InspectStep(
       'or a long thin plastic run.',
   okMeans:
       'The hose is short, round, and open — not crushed, kinked, or packed.',
-  notOkMeans:
-      'It is flattened, sharply bent, packed with lint, or a long thin '
+  notOkMeans: 'It is flattened, sharply bent, packed with lint, or a long thin '
       'plastic run that can sag and trap lint.',
   diagramAsset: dryerRearInspectAsset,
   cameraMode: InspectCameraMode.viewOnly,

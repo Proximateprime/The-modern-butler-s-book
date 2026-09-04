@@ -153,8 +153,15 @@ void main() {
       await openDryerSession(tester, dependencies, 'Stopping Rule House');
 
       expect(find.text('Current question'), findsOneWidget);
+      expect(find.byKey(const Key('skip-to-best-guess')), findsNothing);
+
+      await selectObservation(tester, 'heat-observed');
+      await tapVisible(
+        tester,
+        find.byKey(const Key('answer-choice-no-warmth')),
+      );
+
       expect(find.byKey(const Key('skip-to-best-guess')), findsOneWidget);
-      expect(find.byKey(const Key('recommended-primary-card')), findsNothing);
 
       await tapVisible(tester, find.byKey(const Key('skip-to-best-guess')));
 

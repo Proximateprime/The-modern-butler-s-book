@@ -84,8 +84,7 @@ class AppDependencies {
 
     final householdRepository = HouseholdRepository(onChanged: onChanged);
     final applianceRepository = ApplianceRepository(onChanged: onChanged);
-    final packages =
-        knowledgePackageRepository ?? KnowledgePackageRepository();
+    final packages = knowledgePackageRepository ?? KnowledgePackageRepository();
     final repairSessionRepository = RepairSessionRepository(
       onChanged: onChanged,
     );
@@ -107,8 +106,7 @@ class AppDependencies {
       disclaimerAcknowledged: disclaimerAcknowledged,
       photoPicker: photoPicker ?? ImagePickerEvidencePhotoPicker(),
       ratingPlateOcr: ratingPlateOcr ?? createRatingPlateOcr(),
-      barcodeScanner:
-          barcodeScanner ?? createApplianceBarcodeScanner(),
+      barcodeScanner: barcodeScanner ?? createApplianceBarcodeScanner(),
       voiceAnswer: voiceAnswer ?? const SilentVoiceAnswerListener(),
       isOnline: isOnline ?? () => true,
       onlineListenable: onlineListenable,
@@ -169,9 +167,9 @@ class AppDependencies {
     required this.maintenanceNotifier,
     required this.enrichmentProvider,
     required this.groqPhrasing,
-  }) : _store = store,
-       _clock = clock,
-       _isOnline = isOnline;
+  })  : _store = store,
+        _clock = clock,
+        _isOnline = isOnline;
 
   final HouseholdRepository householdRepository;
   final ApplianceRepository applianceRepository;
@@ -238,7 +236,8 @@ class AppDependencies {
       for (final appliance in applianceRepository.listAll())
         appliance.ratingLabelPhotoPath,
     ];
-    for (final reminder in List<MaintenanceReminder>.from(_maintenanceReminders)) {
+    for (final reminder
+        in List<MaintenanceReminder>.from(_maintenanceReminders)) {
       await maintenanceNotifier.cancel(reminder.id);
     }
     applyHouseholdSnapshot(emptyHouseBookSnapshot());
@@ -271,8 +270,7 @@ class AppDependencies {
     }
     themeChoice = AppThemeChoice.parse(await store.loadThemeChoice());
     final lastLight = AppThemeChoice.parse(await store.loadLastLightTheme());
-    lastLightTheme =
-        lastLight.isDark ? AppThemeChoice.butlersBook : lastLight;
+    lastLightTheme = lastLight.isDark ? AppThemeChoice.butlersBook : lastLight;
     if (!themeChoice.isDark) {
       lastLightTheme = themeChoice;
     }
@@ -680,7 +678,9 @@ class AppDependencies {
   void rememberOwnedTool(String toolId) {
     final household = currentHousehold;
     final id = toolId.trim();
-    if (household == null || id.isEmpty || household.ownedToolIds.contains(id)) {
+    if (household == null ||
+        id.isEmpty ||
+        household.ownedToolIds.contains(id)) {
       return;
     }
     final nextIds = [...household.ownedToolIds, id]..sort();
@@ -698,8 +698,8 @@ class AppDependencies {
     if (household == null || !household.ownedToolIds.contains(toolId)) {
       return;
     }
-    final nextIds =
-        household.ownedToolIds.where((id) => id != toolId).toList()..sort();
+    final nextIds = household.ownedToolIds.where((id) => id != toolId).toList()
+      ..sort();
     final updated = household.copyWith(
       ownedToolIds: List<String>.from(nextIds),
       ownedToolsGeneration: household.ownedToolsGeneration + 1,
@@ -720,11 +720,10 @@ class AppDependencies {
     String? ratingLabelPhotoPath,
     ApplianceEnergySource energySource = ApplianceEnergySource.unknown,
   }) {
-    return _addDemoAppliance(
+    return _addHouseholdAppliance(
       category: 'dryer',
       firstName: 'Laundry Room Dryer',
       numberedPrefix: 'Dryer',
-      modelPrefix: 'DEMO-DRYER',
       name: name,
       manufacturer: manufacturer,
       modelNumber: modelNumber,
@@ -748,11 +747,10 @@ class AppDependencies {
     String? ratingLabelPhotoPath,
     WasherLoadStyle washerLoadStyle = WasherLoadStyle.unknown,
   }) {
-    return _addDemoAppliance(
+    return _addHouseholdAppliance(
       category: 'washer',
       firstName: 'Laundry Room Washer',
       numberedPrefix: 'Washer',
-      modelPrefix: 'DEMO-WASHER',
       name: name,
       manufacturer: manufacturer,
       modelNumber: modelNumber,
@@ -775,11 +773,10 @@ class AppDependencies {
     int? estimatedAgeYears,
     String? ratingLabelPhotoPath,
   }) {
-    return _addDemoAppliance(
+    return _addHouseholdAppliance(
       category: 'fridge',
       firstName: 'Kitchen Fridge',
       numberedPrefix: 'Fridge',
-      modelPrefix: 'DEMO-FRIDGE',
       name: name,
       manufacturer: manufacturer,
       modelNumber: modelNumber,
@@ -802,11 +799,10 @@ class AppDependencies {
     int? estimatedAgeYears,
     String? ratingLabelPhotoPath,
   }) {
-    return _addDemoAppliance(
+    return _addHouseholdAppliance(
       category: 'dishwasher',
       firstName: 'Kitchen Dishwasher',
       numberedPrefix: 'Dishwasher',
-      modelPrefix: 'DEMO-DW',
       name: name,
       manufacturer: manufacturer,
       modelNumber: modelNumber,
@@ -819,11 +815,10 @@ class AppDependencies {
     );
   }
 
-  Appliance _addDemoAppliance({
+  Appliance _addHouseholdAppliance({
     required String category,
     required String firstName,
     required String numberedPrefix,
-    required String modelPrefix,
     String? name,
     String? manufacturer,
     String? modelNumber,
@@ -842,8 +837,7 @@ class AppDependencies {
     }
 
     final timestamp = nextTimestamp();
-    final number =
-        applianceRepository
+    final number = applianceRepository
             .listForHousehold(household.id)
             .where((item) => item.category == category)
             .length +
@@ -857,27 +851,18 @@ class AppDependencies {
       Appliance(
         id: _nextId('appliance'),
         householdId: household.id,
-        name:
-            (trimmedName != null && trimmedName.isNotEmpty)
-                ? trimmedName
-                : (number == 1 ? firstName : '$numberedPrefix $number'),
+        name: (trimmedName != null && trimmedName.isNotEmpty)
+            ? trimmedName
+            : (number == 1 ? firstName : '$numberedPrefix $number'),
         category: category,
-        manufacturer:
-            (trimmedBrand != null && trimmedBrand.isNotEmpty)
-                ? trimmedBrand
-                : 'Demo Manufacturer',
-        modelNumber:
-            (trimmedModel != null && trimmedModel.isNotEmpty)
-                ? trimmedModel
-                : '$modelPrefix-$number',
-        serialNumber:
-            (trimmedSerial != null && trimmedSerial.isNotEmpty)
-                ? trimmedSerial
-                : null,
-        location:
-            (trimmedLocation != null && trimmedLocation.isNotEmpty)
-                ? trimmedLocation
-                : defaultLocation,
+        manufacturer: householdApplianceIdentity(trimmedBrand),
+        modelNumber: householdApplianceIdentity(trimmedModel),
+        serialNumber: (trimmedSerial != null && trimmedSerial.isNotEmpty)
+            ? trimmedSerial
+            : null,
+        location: (trimmedLocation != null && trimmedLocation.isNotEmpty)
+            ? trimmedLocation
+            : defaultLocation,
         status: ApplianceStatus.active,
         schemaVersion: '1.0',
         createdAt: timestamp,
@@ -908,7 +893,8 @@ class AppDependencies {
   }) {
     final household = currentHousehold;
     if (household == null || household.id != appliance.householdId) {
-      throw StateError('The appliance does not belong to the active household.');
+      throw StateError(
+          'The appliance does not belong to the active household.');
     }
     final trimmedName = name.trim();
     final trimmedBrand = manufacturer.trim();
@@ -921,8 +907,8 @@ class AppDependencies {
         householdId: appliance.householdId,
         name: trimmedName.isNotEmpty ? trimmedName : appliance.name,
         category: appliance.category,
-        manufacturer: trimmedBrand,
-        modelNumber: trimmedModel,
+        manufacturer: householdApplianceIdentity(trimmedBrand),
+        modelNumber: householdApplianceIdentity(trimmedModel),
         serialNumber: trimmedSerial.isEmpty ? null : trimmedSerial,
         location:
             trimmedLocation.isNotEmpty ? trimmedLocation : appliance.location,
@@ -1047,9 +1033,8 @@ class AppDependencies {
     if (household == null) {
       throw StateError('Add a household to export an inventory.');
     }
-    final rows = appliancesForInventoryExport()
-        .map(_inventoryExportRow)
-        .toList();
+    final rows =
+        appliancesForInventoryExport().map(_inventoryExportRow).toList();
     return formatHouseholdInventoryExport(
       householdName: household.name,
       generatedAt: now,
@@ -1083,7 +1068,8 @@ class AppDependencies {
   void archiveAppliance(Appliance appliance) {
     final household = currentHousehold;
     if (household == null || household.id != appliance.householdId) {
-      throw StateError('The appliance does not belong to the active household.');
+      throw StateError(
+          'The appliance does not belong to the active household.');
     }
     if (!applianceIsListed(appliance.status)) {
       return;
@@ -1170,7 +1156,8 @@ class AppDependencies {
 
     final household = currentHousehold;
     if (household == null || household.id != current.householdId) {
-      throw StateError('The appliance does not belong to the active household.');
+      throw StateError(
+          'The appliance does not belong to the active household.');
     }
 
     final resolution = resolveKnowledgePackageForAppliance(
@@ -1225,8 +1212,9 @@ class AppDependencies {
 
   DecisionContext buildDecisionContext(String sessionId) {
     final session = repairSessionRepository.getSession(sessionId);
-    final appliance =
-        session == null ? null : applianceRepository.getById(session.applianceId);
+    final appliance = session == null
+        ? null
+        : applianceRepository.getById(session.applianceId);
     final tools = [
       for (final id in currentHousehold?.ownedToolIds ?? const <String>[])
         Tool(
@@ -1239,10 +1227,9 @@ class AppDependencies {
     final context = sessionCoordinator.buildDecisionContext(
       sessionId: sessionId,
       safetyLevel: 'not evaluated',
-      userComfortLevel:
-          appliance == null
-              ? 'not specified'
-              : repairComfort.levelFor(appliance.category).name,
+      userComfortLevel: appliance == null
+          ? 'not specified'
+          : repairComfort.levelFor(appliance.category).name,
       availableTools: tools,
     );
     if (appliance == null || context.package == null) {
@@ -1360,17 +1347,16 @@ class AppDependencies {
   List<MaintenanceReminder> maintenanceRemindersForAppliance(
     String applianceId,
   ) {
-    final items =
-        _maintenanceReminders
-            .where((item) => item.applianceId == applianceId)
-            .toList()
-          ..sort((a, b) {
-            final byDone = a.done == b.done ? 0 : (a.done ? 1 : -1);
-            if (byDone != 0) {
-              return byDone;
-            }
-            return a.remindOn.compareTo(b.remindOn);
-          });
+    final items = _maintenanceReminders
+        .where((item) => item.applianceId == applianceId)
+        .toList()
+      ..sort((a, b) {
+        final byDone = a.done == b.done ? 0 : (a.done ? 1 : -1);
+        if (byDone != 0) {
+          return byDone;
+        }
+        return a.remindOn.compareTo(b.remindOn);
+      });
     return List.unmodifiable(items);
   }
 
@@ -1380,20 +1366,19 @@ class AppDependencies {
     int limit = 3,
   }) {
     final householdId = currentHousehold?.id;
-    final items =
-        _maintenanceReminders.where((item) {
-            if (item.done) {
-              return false;
-            }
-            if (householdId == null || item.householdId != householdId) {
-              return false;
-            }
-            if (applianceId != null && item.applianceId != applianceId) {
-              return false;
-            }
-            return true;
-          }).toList()
-          ..sort((a, b) => a.remindOn.compareTo(b.remindOn));
+    final items = _maintenanceReminders.where((item) {
+      if (item.done) {
+        return false;
+      }
+      if (householdId == null || item.householdId != householdId) {
+        return false;
+      }
+      if (applianceId != null && item.applianceId != applianceId) {
+        return false;
+      }
+      return true;
+    }).toList()
+      ..sort((a, b) => a.remindOn.compareTo(b.remindOn));
     if (items.length <= limit) {
       return List.unmodifiable(items);
     }
@@ -1646,14 +1631,12 @@ class AppDependencies {
     if ((rankingLeaderId == null || rankingLeaderLabel == null) &&
         context.package != null) {
       final snapshot = const RankingService().evaluateContext(context);
-      rankingLeaderId ??=
-          snapshot.orderedFailureModes.isEmpty
-              ? null
-              : snapshot.orderedFailureModes.first.id;
-      rankingLeaderLabel ??=
-          snapshot.orderedFailureModes.isEmpty
-              ? null
-              : snapshot.orderedFailureModes.first.label;
+      rankingLeaderId ??= snapshot.orderedFailureModes.isEmpty
+          ? null
+          : snapshot.orderedFailureModes.first.id;
+      rankingLeaderLabel ??= snapshot.orderedFailureModes.isEmpty
+          ? null
+          : snapshot.orderedFailureModes.first.label;
     }
 
     final startSymptom = symptomForSession(evidence: context.evidence);
@@ -1686,9 +1669,8 @@ class AppDependencies {
           ];
     // Null means the caller omitted actions — seed from the package.
     // An explicit empty list means the household declined every suggestion.
-    var preventive = userPreventive ??
-        authoring?.preventionActions ??
-        const <String>[];
+    var preventive =
+        userPreventive ?? authoring?.preventionActions ?? const <String>[];
     final opportunistic =
         uiResumeForSession(sessionId)?.opportunisticAcceptedLabels ?? const [];
     if (opportunistic.isNotEmpty) {
@@ -1707,17 +1689,16 @@ class AppDependencies {
       sessionId: sessionId,
       resolutionStatus: status,
       closeKind: kind,
-      immediateCause:
-          (trimmedWhatFixed != null && trimmedWhatFixed.isNotEmpty)
-              ? trimmedWhatFixed
-              : stop != null
-                  ? (stop.reason.trim().isEmpty
-                      ? 'Needs a professional'
-                      : stop.reason)
-                  : authoring?.immediateCause ??
-                      primary?.label ??
-                      rankingLeaderLabel ??
-                      'No primary hypothesis was selected.',
+      immediateCause: (trimmedWhatFixed != null && trimmedWhatFixed.isNotEmpty)
+          ? trimmedWhatFixed
+          : stop != null
+              ? (stop.reason.trim().isEmpty
+                  ? 'Needs a professional'
+                  : stop.reason)
+              : authoring?.immediateCause ??
+                  primary?.label ??
+                  rankingLeaderLabel ??
+                  'No primary hypothesis was selected.',
       rootCause: rootCause != null
           ? (userRoot == null || userRoot.isEmpty ? null : userRoot)
           : authoring?.rootCause,
@@ -1728,7 +1709,8 @@ class AppDependencies {
       preventiveActions: preventive,
       verified: status == SessionResolutionStatus.resolved,
       schemaVersion: session.schemaVersion,
-      userNote: (trimmedNote == null || trimmedNote.isEmpty) ? null : trimmedNote,
+      userNote:
+          (trimmedNote == null || trimmedNote.isEmpty) ? null : trimmedNote,
       rankingLeaderFailureModeId: rankingLeaderId,
       rankingLeaderLabel: rankingLeaderLabel,
       startSymptom: startSymptom,
@@ -1868,10 +1850,9 @@ class AppDependencies {
       outcomes: snapshot.outcomes,
     );
     sessionCoordinator.importPackageRefs(snapshot.packageRefsBySession);
-    currentHousehold =
-        snapshot.currentHouseholdId == null
-            ? null
-            : householdRepository.getById(snapshot.currentHouseholdId!);
+    currentHousehold = snapshot.currentHouseholdId == null
+        ? null
+        : householdRepository.getById(snapshot.currentHouseholdId!);
     currentMemberId = snapshot.currentMemberId;
     _ensureHouseholdMembers();
     _maintenanceReminders
@@ -2086,17 +2067,16 @@ class AppDependencies {
     }
     final householdId = household.id;
     _schedulePersist();
-    _toolsPersistChain = (_toolsPersistChain ?? Future<void>.value())
-        .then((_) async {
-          final latest = householdRepository.getById(householdId);
-          await store.saveOwnedToolIds(
-            householdId,
-            List<String>.from(latest?.ownedToolIds ?? household.ownedToolIds),
-            generation:
-                latest?.ownedToolsGeneration ?? household.ownedToolsGeneration,
-          );
-        })
-        .catchError((_) {});
+    _toolsPersistChain =
+        (_toolsPersistChain ?? Future<void>.value()).then((_) async {
+      final latest = householdRepository.getById(householdId);
+      await store.saveOwnedToolIds(
+        householdId,
+        List<String>.from(latest?.ownedToolIds ?? household.ownedToolIds),
+        generation:
+            latest?.ownedToolsGeneration ?? household.ownedToolsGeneration,
+      );
+    }).catchError((_) {});
   }
 
   void _applyOwnedToolsOverlay(Map<String, OwnedToolsOverlayRecord> overlay) {
@@ -2136,19 +2116,17 @@ class AppDependencies {
       return;
     }
 
-    _persistChain = (_persistChain ?? Future<void>.value())
-        .then((_) async {
-          final snapshot = _captureSnapshot();
-          await store.save(snapshot);
-          for (final household in snapshot.households) {
-            await store.saveOwnedToolIds(
-              household.id,
-              List<String>.from(household.ownedToolIds),
-              generation: household.ownedToolsGeneration,
-            );
-          }
-        })
-        .catchError((_) {});
+    _persistChain = (_persistChain ?? Future<void>.value()).then((_) async {
+      final snapshot = _captureSnapshot();
+      await store.save(snapshot);
+      for (final household in snapshot.households) {
+        await store.saveOwnedToolIds(
+          household.id,
+          List<String>.from(household.ownedToolIds),
+          generation: household.ownedToolsGeneration,
+        );
+      }
+    }).catchError((_) {});
   }
 
   /// Waits for any queued local snapshot write to finish.

@@ -188,7 +188,12 @@ void main() {
     'no-heat path shows lint, hood, then hose inspect before guidance',
     (tester) async {
       final deps = AppDependencies(clock: () => DateTime.utc(2026, 8, 19, 13));
-      await openDryerSession(tester, deps, 'No Heat Inspect House');
+      await openDryerSession(
+        tester,
+        deps,
+        'No Heat Inspect House',
+        priorRepairHistory: true,
+      );
       await selectFailureMode(tester, 'thermal-fuse-open');
       await advanceClosePathFromConclusionIfPresent(tester);
 
@@ -208,7 +213,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('rectangular mesh screen'), findsOneWidget);
-      expect(find.textContaining('packed with lint'), findsOneWidget);
+      expect(find.textContaining('packed lint'), findsOneWidget);
       expect(find.byKey(const Key('inspect-diagram')), findsNothing);
       expect(find.byKey(const Key('inspect-frame-hint')), findsNothing);
       expect(find.byKey(const Key('inspect-location-icon')), findsNothing);
@@ -245,7 +250,9 @@ void main() {
       await completeRepairReadinessIfPresent(tester);
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
 
-      final session = deps.repairSessionRepository.listAllSessions().single;
+      final dryer = deps.appliancesForCurrentHousehold().single;
+      final sessionId = deps.startOrResumeSession(dryer);
+      final session = deps.repairSessionRepository.getSession(sessionId)!;
       final evidence =
           deps.repairSessionRepository.evidenceForSession(session.id);
       expect(

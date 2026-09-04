@@ -1,3 +1,17 @@
+/// Stored when brand or model was left blank on a real Save.
+const String kUnknownApplianceIdentity = 'Unknown';
+
+/// Empty typed identity becomes [kUnknownApplianceIdentity] — never a demo plate.
+String householdApplianceIdentity(String? raw) {
+  final trimmed = (raw ?? '').trim();
+  return trimmed.isEmpty ? kUnknownApplianceIdentity : trimmed;
+}
+
+/// True when brand/model is blank or the Unknown placeholder.
+bool isUnknownApplianceIdentity(String? raw) {
+  return householdApplianceIdentity(raw).toLowerCase() == 'unknown';
+}
+
 /// Lifecycle status for an appliance in the household.
 enum ApplianceStatus {
   active,
@@ -94,8 +108,10 @@ class Appliance {
   final ApplianceStatus status;
   final DateTime? installationDate;
   final int? estimatedAgeYears;
+
   /// On-device path to an optional rating-plate photo. Never uploaded.
   final String? ratingLabelPhotoPath;
+
   /// Dryer fuel. Missing JSON and non-dryers are [ApplianceEnergySource.unknown].
   final ApplianceEnergySource energySource;
 
@@ -137,18 +153,15 @@ class Appliance {
       schemaVersion: schemaVersion,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      installationDate:
-          clearInstallationDate
-              ? null
-              : (installationDate ?? this.installationDate),
-      estimatedAgeYears:
-          clearEstimatedAgeYears
-              ? null
-              : (estimatedAgeYears ?? this.estimatedAgeYears),
-      ratingLabelPhotoPath:
-          clearRatingLabelPhotoPath
-              ? null
-              : (ratingLabelPhotoPath ?? this.ratingLabelPhotoPath),
+      installationDate: clearInstallationDate
+          ? null
+          : (installationDate ?? this.installationDate),
+      estimatedAgeYears: clearEstimatedAgeYears
+          ? null
+          : (estimatedAgeYears ?? this.estimatedAgeYears),
+      ratingLabelPhotoPath: clearRatingLabelPhotoPath
+          ? null
+          : (ratingLabelPhotoPath ?? this.ratingLabelPhotoPath),
       energySource: energySource ?? this.energySource,
       washerLoadStyle: washerLoadStyle ?? this.washerLoadStyle,
     );

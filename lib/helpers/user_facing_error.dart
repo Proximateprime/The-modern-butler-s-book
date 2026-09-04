@@ -32,8 +32,7 @@ abstract final class UserFacingCopy {
   static const emptyFurtherQuestionsWithoutPrimary =
       'You can pick a likely cause below, or End Session as Unresolved.';
   static const emptyEvidence = 'No answers recorded yet';
-  static const emptyFailureModes =
-      'This guide doesn’t list causes yet.';
+  static const emptyFailureModes = 'This guide doesn’t list causes yet.';
   static const emptyHypotheses =
       'No working notes yet. They show up after you pick a most-likely cause.';
   static const emptyToolsNoHousehold =
@@ -44,8 +43,7 @@ abstract final class UserFacingCopy {
       'Add a household to keep a list of tools you own.';
   static const emptyMaintenance =
       'No upkeep reminders yet. You can add one when you like.';
-  static const sessionNotFound =
-      'This repair isn’t on this device anymore.';
+  static const sessionNotFound = 'This repair isn’t on this device anymore.';
   static const sessionAlreadyFinished = 'This repair is already finished.';
   static const reminderNeedsTitle = 'Add a short title for this reminder.';
   static const noDryersYet = 'No appliances in this house yet.';
@@ -120,8 +118,7 @@ abstract final class UserFacingCopy {
       'Some question and stop wording may be sent to Groq through the butler '
       'backend so the app can talk more clearly. Household records stay on '
       'this device. A language model never decides what is wrong.';
-  static const guideLoading =
-      'Loading the guide on this device…';
+  static const guideLoading = 'Loading the guide on this device…';
   static const brandTagline = 'A household repair book';
   static const backupExportTitle = 'Export household data';
   static const exportInventoryTitle = 'Export inventory';
@@ -136,7 +133,8 @@ abstract final class UserFacingCopy {
   static const backupFileInvalid =
       'This file isn’t a household backup from this app. Your current data is unchanged.';
   static const backupImported = 'Household data restored from the backup.';
-  static const backupExported = 'Household backup ready to save on this device.';
+  static const backupExported =
+      'Household backup ready to save on this device.';
   static const wipeHouseBookTitle = 'Delete household data';
   static const wipeHouseBookSubtitle =
       'Homes, appliances, sessions, photos, tools, and reminders on this device';
@@ -243,6 +241,12 @@ abstract final class UserFacingCopy {
   static const addApplianceLocationHint =
       'Room label only — not an address or map.';
   static const addApplianceAgeHint = 'Optional';
+  static const addApplianceEnergyHint =
+      'Electric, gas, or not sure. Not sure is fine — you can still save.';
+  static const problemStarterHelper =
+      'What you notice — sound, heat, smell, whether it starts. '
+      'These are observations, not a diagnosis.';
+  static const cluesListTitle = 'Clues';
   static const addApplianceKeepRatingPhoto = 'Keep a photo of the rating plate';
   static const addApplianceRatingPhotoStaysLocal =
       'The photo stays on this device. It is not used to diagnose.';
@@ -269,14 +273,13 @@ abstract final class UserFacingCopy {
       'Live camera works on a phone. Use the diagram and the buttons here.';
   static const inspectTabDiagram = 'Diagram';
   static const inspectTabCamera = 'Camera';
-  static const inspectTypicalAreaConfirm =
-      'Typical area — confirm on yours.';
+  static const inspectTypicalAreaConfirm = 'Typical area — confirm on yours.';
   static const inspectTypicalLocationCaption =
       'Typical location — confirm on yours.';
   static const inspectShowMeWhatToCheck = 'Review what you checked';
   static const inspectReviewIntro =
       'These are the looks already on this path. Changing an answer later '
-      'is in Evidence history — this does not start the interview over.';
+      'is in Clues — this does not start the interview over.';
   static const unmatchedStarterGuidance =
       'We’ll use what you typed; specific guidance may be limited.';
   static const unmatchedNoteHeardLead = 'Heard: ';
@@ -289,17 +292,19 @@ abstract final class UserFacingCopy {
       'This book does not have this machine’s plate.';
   static const inspectLookForHeading = 'LOOK FOR';
   static const inspectOkLooksLike = 'OK looks like';
-  static const inspectNotOkLooksLike = 'Not OK looks like';
+  static const inspectNotOkLooksLike = "Doesn't match looks like";
   static const whyAskThis = 'Why ask this?';
   static const bestMatchSoFar = 'Best match so far';
   static const bestMatchHumble =
       'This is the best match from your answers so far — not a certainty, '
       'and not a percentage.';
+
   /// One official hard-stop body. Chip, typed text, and voice must share this.
   static const safetyStopOfficial =
       'Stop. Unplug if it is safe, ventilate, and do not keep running the '
       'machine. Call a professional.';
   static const voiceHazardConfirm = safetyStopOfficial;
+
   /// Confirm ≠ Fixed packaged source of truth. Closest shipped line was
   /// thermal-fuse “Confirming no warmth is not a completed repair.”
   /// Groq may rephrase this; it must not flip eligibility or offer Fixed.

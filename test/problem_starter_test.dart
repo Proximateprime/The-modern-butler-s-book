@@ -175,7 +175,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text('Describe what you notice — not what you think is broken'),
+      find.text(UserFacingCopy.problemStarterHelper),
       findsWidgets,
     );
     expect(find.text('No heat'), findsWidgets);
@@ -199,7 +199,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('problem-starter-panel')), findsNothing);
-    expect(find.text('Evidence count: 1'), findsOneWidget);
+    expect(find.text('Evidence count: 1'), findsNothing);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('context-evidence-count'))).data,
+      isNot(contains('Evidence count')),
+    );
     expect(
       find.byKey(const Key('observation-prompt-heat-observed')),
       findsNothing,
@@ -254,7 +258,7 @@ void main() {
     await tester.tap(find.byKey(const Key('problem-starter-confirm')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Evidence count: 1'), findsOneWidget);
+    expect(find.text('Evidence count: 1'), findsNothing);
     expect(
       find.descendant(
         of: find.byKey(const Key('answer-choice-panel')),
@@ -274,6 +278,7 @@ void main() {
         tester,
         dependencies,
         'Starter Wont Start Easy',
+        priorRepairHistory: true,
       );
 
       await tester.tap(find.byKey(const Key('starter-chip-will-not-start')));
@@ -408,8 +413,9 @@ void main() {
 Future<void> openDryerSessionWithoutStarterSkip(
   WidgetTester tester,
   AppDependencies dependencies,
-  String householdName,
-) async {
+  String householdName, {
+  bool priorRepairHistory = false,
+}) async {
   await prepareTallSurface(tester);
   await tester.pumpWidget(ModernButlerApp(dependencies: dependencies));
   await tester.tap(find.byKey(const Key('create-household-button')));
@@ -423,6 +429,9 @@ Future<void> openDryerSessionWithoutStarterSkip(
   await tester.tap(find.byKey(const Key('add-dryer-button')));
   await tester.pumpAndSettle();
   await confirmAddAppliance(tester);
+  if (priorRepairHistory) {
+    seedPriorCompletedRepair(dependencies);
+  }
   await tester.tap(find.text('Laundry Room Dryer'));
   await tester.pumpAndSettle();
   await startRepairFromDetail(tester);

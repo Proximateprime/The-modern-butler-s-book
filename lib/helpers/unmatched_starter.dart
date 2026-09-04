@@ -1,5 +1,6 @@
 import '../models/evidence.dart';
 import '../models/knowledge_package.dart';
+import '../models/appliance.dart';
 import 'dryer_problem_starter.dart';
 import 'evidence_prompt_match.dart';
 import 'package_resolve.dart';
@@ -152,8 +153,7 @@ String unmatchedWhyAskBody({
     'panel-lights' =>
       'This records whether the panel or lights respond. It is an '
           'observation, not a diagnosis.',
-    _ =>
-      'This records what you notice. It is an observation, not a diagnosis.',
+    _ => 'This records what you notice. It is an observation, not a diagnosis.',
   };
 }
 
@@ -241,11 +241,13 @@ bool dryerHasMachinePlate(String? manufacturer, String? modelNumber) {
 }
 
 bool _isPlaceholderBrand(String brand) {
-  return brand.toLowerCase() == 'demo manufacturer';
+  final lower = brand.toLowerCase();
+  return lower == 'demo manufacturer' || isUnknownApplianceIdentity(brand);
 }
 
 bool _isPlaceholderModel(String model) {
-  return model.toUpperCase().startsWith('DEMO-');
+  final upper = model.toUpperCase();
+  return upper.startsWith('DEMO-') || isUnknownApplianceIdentity(model);
 }
 
 /// Starter families the Other keyword matcher must not auto-check.
@@ -274,9 +276,8 @@ Set<String> starterKeywordMatcherChipIds({
   );
   final chips = <String>{};
   for (final id in resolution.matchedSymptomIds) {
-    final chipId = id == 'squealing-or-thumping'
-        ? dryerStarterNoiseOrSmellId
-        : id;
+    final chipId =
+        id == 'squealing-or-thumping' ? dryerStarterNoiseOrSmellId : id;
     if (starterHeatOrNoiseFamilyIds.contains(id) ||
         starterHeatOrNoiseChipIds.contains(chipId)) {
       continue;
@@ -325,7 +326,8 @@ DryerStarterResolution resolutionWithoutHeatNoiseUnlessChecked({
   final userFamilies = canonicalizeStarterSelection(selectedSymptomIds);
   final keptIds = [
     for (final id in resolution.matchedSymptomIds)
-      if (!starterHeatOrNoiseFamilyIds.contains(id) || userFamilies.contains(id))
+      if (!starterHeatOrNoiseFamilyIds.contains(id) ||
+          userFamilies.contains(id))
         id,
   ];
   if (keptIds.length == resolution.matchedSymptomIds.length) {
