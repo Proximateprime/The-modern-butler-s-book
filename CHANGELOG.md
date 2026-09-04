@@ -1,3 +1,18 @@
+## Resume open question v6 (2026-09-04)
+
+App **0.1.4+22**. Continue repair after a **cold reload, every time**
+(not only the first walk) restores the unanswered on-screen open
+observation (lint-filter). It must **not invent** Heavily clogged, **not
+advance** to outside-vent, and must not reset to drum-turns / ranking
+next, blank to **No more questions for now**, or jump into **Following
+safe steps** — including when Thermal fuse / Most likely is named.
+Stored unanswered id wins over a painted ranking-next steal after
+restore settles. Invent-write and close-path advance stay blocked while
+that id is held. Clues stay honest. V5–V2 gates stay. Groq stays
+phrasing-only. GOLDEN **Call a pro** stays. Play listing stays out.
+Tests: `test/resume_open_q_v6_test.dart` (multi-reload invent coverage;
+V1–V5 suites stay green).
+
 ## Resume open question v5 (2026-09-04)
 
 App **0.1.4+21**. Continue repair after a cold reload restores the

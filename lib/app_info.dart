@@ -1,8 +1,8 @@
-/// App version from pubspec (`0.1.4+21`). Kept local so Settings needs no plugin.
+/// App version from pubspec (`0.1.4+22`). Kept local so Settings needs no plugin.
 const kAppVersion = '0.1.4';
 
 /// Full pubspec version, including build number — what Settings/About show.
-const kAppVersionLabel = '0.1.4+21';
+const kAppVersionLabel = '0.1.4+22';
 
 /// Calendar date of the feature freeze. After this, only bugfixes.
 const kFeatureFreezeDate = '2026-08-17';
