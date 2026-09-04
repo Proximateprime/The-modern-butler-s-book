@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/The-modern-butler-s-book/">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta
+    name="description"
+    content="A household repair book. Diagnosis stays on this device."
+  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#F3EDE3">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <link rel="manifest" href="manifest.json">
+  <title>The Modern Butler's Book</title>
+  <!--
+    Pages mouse hit-targets must match the painted Flutter surface.
+    Without a locked viewport, an oversized first-frame canvas (bitmap
+    pixels used as CSS size, often window height × devicePixelRatio)
+    makes the document scrollable. Focusing that bitmap then scroll-into-view
+    offsets pointer mapping by ~164px / 4 chip rows on a 656px pane at
+    125% DPR — Burning smell paints where Won't start still hits.
+    Keyboard Space is fine because it uses focus, not that pointer path.
+  -->
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background-color: #F3EDE3;
+    }
+    flutter-view {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    /* Raster only. Events stay on flutter-view (CSS box), not the bitmap. */
+    flutter-view canvas {
+      pointer-events: none !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    function bindFlutterPointerHost() {
+      var view = document.querySelector('flutter-view');
+      if (!view) {
+        return;
+      }
+      // First click (Skip, chips, Home CTAs) must reach Flutter widgets.
+      // Focus the view, never the canvas — canvas focus uses bitmap
+      // coordinates and can scroll the page under the AppBar.
+      if (typeof view.focus === 'function') {
+        view.focus({ preventScroll: true });
+      }
+      var canvases = view.querySelectorAll('canvas');
+      for (var i = 0; i < canvases.length; i++) {
+        var canvas = canvases[i];
+        canvas.style.pointerEvents = 'none';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.position = 'absolute';
+        canvas.style.left = '0';
+        canvas.style.top = '0';
+      }
+    }
+    window.addEventListener('flutter-first-frame', bindFlutterPointerHost);
+    window.addEventListener('resize', bindFlutterPointerHost);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', bindFlutterPointerHost);
+    }
+  </script>
+  <script src="flutter_bootstrap.js?v=0.1.4+27" async></script>
+</body>
+</html>
