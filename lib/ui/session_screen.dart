@@ -5027,7 +5027,8 @@ class _SessionScreenState extends State<SessionScreen>
             !_choseRepair &&
             !_proScopeAcknowledged &&
             _completedGuidanceStepIds.isEmpty;
-        final showProHandoff = diyPro && !showProWarning && safeChecksDone;
+        final showProHandoff =
+            diyPro && !_choseRepair && !showProWarning && safeChecksDone;
         return [
           KeyedSubtree(
             key: const Key('close-path-phase-guidance'),

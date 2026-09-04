@@ -65,17 +65,7 @@ void main() {
       expect(find.byKey(const Key('answer-photo-gallery')), findsNothing);
       expect(find.byKey(const Key('voice-answer-mic')), findsNothing);
 
-      await completeRepairReadinessIfPresent(tester);
-      await completeGuidanceStepsIfPresent(tester);
-      expect(find.byKey(const Key('answer-photo-gallery')), findsNothing);
-      expect(find.byKey(const Key('voice-answer-mic')), findsNothing);
-      expect(find.byKey(const Key('voice-answer-mic-close')), findsNothing);
-      expect(find.byKey(const Key('visual-guide-use-camera')), findsNothing);
-      expect(find.byKey(const Key('inspect-use-camera')), findsNothing);
-      expect(find.byKey(const Key('inspect-camera-on-phone')), findsNothing);
-
-      expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
-      await tapVisible(tester, find.byKey(const Key('pro-handoff-understand')));
+      await chooseCallAProFromDecision(tester);
       await saveSessionOutcome(
         tester,
         choiceKey: const Key('outcome-needs-professional'),

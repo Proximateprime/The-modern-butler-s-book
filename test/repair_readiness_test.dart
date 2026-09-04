@@ -200,7 +200,7 @@ void main() {
     expect(find.byKey(const Key('readiness-missing-critical-panel')), findsNothing);
     expect(find.text('You need a screwdriver for the next steps.'), findsNothing);
     await completeGuidanceStepsIfPresent(tester);
-    expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
+    expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
     expect(find.byKey(const Key('blocking-reason-line')), findsNothing);
   });
 

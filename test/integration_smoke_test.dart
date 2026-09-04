@@ -38,13 +38,7 @@ void main() {
         'cold-and-still-damp',
       );
       await selectFailureMode(tester, 'heating-element-failed');
-      await completeRepairReadinessIfPresent(tester);
-
-      expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
-      await completeGuidanceStepsIfPresent(tester);
-      expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
-
-      await tapVisible(tester, find.byKey(const Key('pro-handoff-understand')));
+      await chooseCallAProFromDecision(tester);
       await saveSessionOutcome(
         tester,
         choiceKey: const Key('outcome-needs-professional'),

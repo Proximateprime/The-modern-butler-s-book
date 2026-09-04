@@ -479,6 +479,15 @@ Future<void> reachClosePathVerificationIfPresent(WidgetTester tester) async {
   await completeGuidanceStepsIfPresent(tester);
 }
 
+/// Call a pro from the decision step (GOLDEN chrome). Does not go through I'll repair.
+Future<void> chooseCallAProFromDecision(WidgetTester tester) async {
+  final continueBtn = find.byKey(const Key('close-path-continue'));
+  if (continueBtn.evaluate().isNotEmpty) {
+    await tapVisible(tester, continueBtn);
+  }
+  await tapVisible(tester, find.byKey(const Key('close-path-call-pro')));
+}
+
 Future<void> selectObservation(WidgetTester tester, String templateId) async {
   final promptKey = Key('observation-prompt-$templateId');
   final alreadyActive = find

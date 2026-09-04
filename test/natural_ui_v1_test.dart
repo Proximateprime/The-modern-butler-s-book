@@ -13,9 +13,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'support/session_test_helpers.dart';
 
 void main() {
-  test('version is 0.1.4+24', () {
+  test('version is 0.1.4+25', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+24');
+    expect(kAppVersionLabel, '0.1.4+25');
   });
 
   test('first-run greeting uses book theme type, not a bare Georgia family', () {
@@ -196,8 +196,7 @@ void main() {
         find.byKey(const Key('answer-choice-no-warmth')),
       );
       await selectFailureMode(tester, 'heating-element-failed');
-      await reachClosePathVerificationIfPresent(tester);
-      await tapVisible(tester, find.byKey(const Key('pro-handoff-understand')));
+      await chooseCallAProFromDecision(tester);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('outcome-needs-professional')));

@@ -49,10 +49,10 @@ const _fuseSteps = [
 ];
 
 void main() {
-  test('version is 0.1.4+24', () {
+  test('version is 0.1.4+25', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+24');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+24'));
+    expect(kAppVersionLabel, '0.1.4+25');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+25'));
   });
 
   test('no tools / I don’t screwdriver does not offer panel-off as next step', () {
@@ -300,16 +300,14 @@ void main() {
       for (var i = 0; i < 20; i++) {
         expect(find.textContaining('heater service panel'), findsNothing);
         expect(find.textContaining('Open the heater service panel'), findsNothing);
-        if (find.byKey(const Key('pro-recommended-card')).evaluate().isNotEmpty) {
-          break;
-        }
+        expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
         final did = find.byKey(const Key('guidance-did-this'));
         if (did.evaluate().isEmpty) {
           break;
         }
         await tapVisible(tester, did);
       }
-      expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
+      expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
       expect(find.textContaining('heater service panel'), findsNothing);
     },
   );

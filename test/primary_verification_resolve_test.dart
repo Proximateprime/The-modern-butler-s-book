@@ -23,13 +23,7 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('answer-choice-no-warmth')));
 
     await selectFailureMode(tester, 'heating-element-failed');
-    await reachClosePathVerificationIfPresent(tester);
-
-    expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
-    expect(find.byKey(const Key('verification-card')), findsNothing);
-    expect(find.text('Hand off to a qualified technician'), findsNothing);
-
-    await tapVisible(tester, find.byKey(const Key('pro-handoff-understand')));
+    await chooseCallAProFromDecision(tester);
     expect(find.byKey(const Key('outcome-needs-professional')), findsOneWidget);
     await saveSessionOutcome(
       tester,
@@ -50,10 +44,7 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('answer-choice-no-warmth')));
 
     await selectFailureMode(tester, 'heating-element-failed');
-    await reachClosePathVerificationIfPresent(tester);
-
-    expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
-    await tapVisible(tester, find.byKey(const Key('pro-handoff-understand')));
+    await chooseCallAProFromDecision(tester);
 
     expect(find.byKey(const Key('outcome-resolved')), findsNothing);
     expect(find.byKey(const Key('outcome-needs-professional')), findsOneWidget);

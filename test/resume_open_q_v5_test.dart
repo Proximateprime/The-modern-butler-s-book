@@ -291,10 +291,10 @@ Future<void> _continueAfterColdReload({
 }
 
 void main() {
-  test('version is 0.1.4+24', () {
+  test('version is 0.1.4+25', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+24');
-    expect(_read('pubspec.yaml'), contains('version: 0.1.4+24'));
+    expect(kAppVersionLabel, '0.1.4+25');
+    expect(_read('pubspec.yaml'), contains('version: 0.1.4+25'));
   });
 
   test('resume pack does not introduce Transform', () {

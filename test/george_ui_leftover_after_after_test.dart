@@ -199,8 +199,8 @@ void main() {
 
         await completeRepairReadinessIfPresent(tester);
         await completeGuidanceStepsIfPresent(tester);
-        expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
-        expect(find.text('Pro recommended'), findsWidgets);
+        expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
+        expect(find.text('Pro recommended'), findsNothing);
         expect(find.byKey(const Key('outcome-resolved')), findsNothing);
         expect(find.text('Fixed'), findsNothing);
         expect(find.byKey(const Key('safety-stop-banner')), findsNothing);
@@ -282,8 +282,8 @@ void main() {
 
         await completeRepairReadinessIfPresent(tester);
         await completeGuidanceStepsIfPresent(tester);
-        expect(find.byKey(const Key('pro-recommended-card')), findsOneWidget);
-        expect(find.text('Pro recommended'), findsWidgets);
+        expect(find.byKey(const Key('pro-recommended-card')), findsNothing);
+        expect(find.text('Pro recommended'), findsNothing);
         expect(find.byKey(const Key('outcome-resolved')), findsNothing);
         expect(find.text('Fixed'), findsNothing);
       },
