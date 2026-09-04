@@ -1,3 +1,12 @@
+## Resume open question (2026-09-04)
+
+App **0.1.4+17**. Continue repair after a cold reload restores the **on-screen
+open observation** (for example lint-filter), not ranking’s suggested-next
+template (for example motor humming), even when close-path phase is
+conclusion and resume chrome says a most likely cause. Clues stay as they
+were. Groq stays phrasing-only. GOLDEN **Call a pro** stays. Play listing
+stays out. Tests: `test/resume_open_q_v1_test.dart`.
+
 ## Resume clues (2026-09-04)
 
 App **0.1.4+16**. Continue repair after a cold reload keeps the same open
