@@ -49,10 +49,10 @@ Evidence _unmatchedOtherEvidence(String note) {
 }
 
 void main() {
-  test('version is 0.1.4+19', () {
+  test('version is 0.1.4+20', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+19');
-    expect(File('pubspec.yaml').readAsStringSync(), contains('version: 0.1.4+19'));
+    expect(kAppVersionLabel, '0.1.4+20');
+    expect(File('pubspec.yaml').readAsStringSync(), contains('version: 0.1.4+20'));
   });
 
   test('KEEP 1: unmatched Other stores as Other / free-text evidence', () {

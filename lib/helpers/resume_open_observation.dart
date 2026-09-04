@@ -56,6 +56,37 @@ bool shouldHoldUnansweredOpenInterviewOnResume({
       !hasRealClosePathProgress;
 }
 
+/// Naming Most likely / confirming a primary must not drop the unanswered
+/// on-screen interview. Chrome may name the cause; it must not blank, skip,
+/// or invent a chip for that id.
+bool shouldKeepUnansweredOpenInterviewWhenPrimaryNamed({
+  required String? onScreenTemplateId,
+  required bool onScreenStillOpen,
+}) {
+  return unansweredOpenObservationShouldStayOnScreen(
+    onScreenTemplateId: onScreenTemplateId,
+    onScreenStillOpen: onScreenStillOpen,
+  );
+}
+
+/// Continue repair must not write a suggested, default, or inspect chip for
+/// an unanswered open observation (for example lint-filter → “Heavily
+/// clogged”) while restore is still settling.
+bool shouldBlockResumeInventedObservationWrite({
+  required bool resumeNotSettled,
+  required bool unansweredOpenInterview,
+}) {
+  return resumeNotSettled && unansweredOpenInterview;
+}
+
+/// Close-path Continue / inspect auto-advance must not skip an unanswered
+/// open interview (lint-filter must not jump to outside-vent).
+bool shouldBlockResumeAdvancePastUnansweredOpenInterview({
+  required bool unansweredOpenInterview,
+}) {
+  return unansweredOpenInterview;
+}
+
 /// Mid-guidance resume stays valid only when there is no unanswered open
 /// interview. An open observation pins Continue repair on conclusion so
 /// restore cannot jump into safe-steps chrome.
