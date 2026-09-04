@@ -191,6 +191,14 @@ List<Evidence> interviewObservationsInOrder(List<Evidence> recordedEvidence) {
       .toList(growable: false);
 }
 
+/// Household Clues chrome count and Clues list — one filter, same items.
+///
+/// Identical to [interviewObservationsInOrder]. Do not count a different set
+/// than the list paints.
+List<Evidence> householdCluesInOrder(List<Evidence> recordedEvidence) {
+  return interviewObservationsInOrder(recordedEvidence);
+}
+
 /// Latest recorded answer for [templateId], if any.
 String? answerForTemplate({
   required List<Evidence> recordedEvidence,

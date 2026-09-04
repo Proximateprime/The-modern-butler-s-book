@@ -122,6 +122,26 @@ ClosePathPhase resumeClosePathPhase({
   return stored;
 }
 
+/// Cover / housing / rear / back (word-bounded) plus panel / cabinet.
+bool stepMentionsPanelInvasiveAccessSite(String step) {
+  return RegExp(
+    r'\b(cover|housing|panel|cabinet|rear|back)\b',
+  ).hasMatch(step.toLowerCase());
+}
+
+/// Instructs opening or removing a panel / cover / housing / rear / back.
+bool stepInstructsOpeningPanelInvasiveAccess(String step) {
+  final lower = step.toLowerCase();
+  final opens = lower.contains('you may open') ||
+      lower.contains('you may remove') ||
+      lower.contains('take off') ||
+      RegExp(r'\b(open|remove|unfasten|unscrew)\b').hasMatch(lower);
+  if (!opens) {
+    return false;
+  }
+  return stepMentionsPanelInvasiveAccessSite(lower);
+}
+
 /// Panel / parts / fuse-replacement steps that a missing required tool blocks.
 bool isInvasiveGuidanceStep(String step) {
   final lower = step.toLowerCase();
@@ -135,6 +155,9 @@ bool isInvasiveGuidanceStep(String step) {
       lower.contains('heater service') ||
       lower.contains('access panel') ||
       lower.contains('kick plate')) {
+    return true;
+  }
+  if (stepInstructsOpeningPanelInvasiveAccess(step)) {
     return true;
   }
   if (lower.contains('open the') && lower.contains('panel')) {
