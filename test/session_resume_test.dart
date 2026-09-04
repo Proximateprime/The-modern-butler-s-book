@@ -41,6 +41,7 @@ void main() {
           completedGuidanceStepIds: ['0:lint', '1:hood'],
         ),
       },
+      foregroundSessionId: 'session-1',
     );
 
     final restored = DomainSnapshot.fromJson(snapshot.toJson());
@@ -54,6 +55,7 @@ void main() {
     expect(resume?.choseRepair, isTrue);
     expect(resume?.guidanceStepIndex, 2);
     expect(resume?.completedGuidanceStepIds, ['0:lint', '1:hood']);
+    expect(restored.foregroundSessionId, 'session-1');
   });
 
   test('repair session JSON keeps guidance step progress', () {

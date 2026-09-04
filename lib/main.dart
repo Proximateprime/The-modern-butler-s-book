@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'services/butler_supabase.dart';
@@ -78,7 +80,7 @@ class _ModernButlerAppState extends State<ModernButlerApp>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
-      widget.dependencies.flushPersist();
+      unawaited(widget.dependencies.persistForBackground());
     }
   }
 

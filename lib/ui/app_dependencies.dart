@@ -192,6 +192,8 @@ class AppDependencies {
 
   final Map<String, String> _sessionIdByApplianceId = {};
   final Map<String, SessionUiResumeState> _sessionUiResumeBySessionId = {};
+  String? _foregroundSessionId;
+  VoidCallback? _beforeBackgroundFlush;
   final List<MaintenanceReminder> _maintenanceReminders = [];
   final List<EnrichmentNote> _enrichmentNotes = [];
   final Set<String> _dismissedPatternHintKeys = {};
@@ -343,6 +345,7 @@ class AppDependencies {
       _sessionUiResumeBySessionId.remove(session.id);
       _sessionIdByApplianceId.remove(session.applianceId);
     }
+    _clearForegroundIfDead();
     _scrubDeadOpenSessionState();
     _schedulePersist();
   }
@@ -373,6 +376,9 @@ class AppDependencies {
     );
     _sessionUiResumeBySessionId.remove(session.id);
     _sessionIdByApplianceId.remove(session.applianceId);
+    if (_foregroundSessionId == session.id) {
+      _foregroundSessionId = null;
+    }
     _schedulePersist();
   }
 
@@ -649,6 +655,18 @@ class AppDependencies {
       final session = repairSessionRepository.getSession(sessionId);
       return session == null || _isTerminal(session.currentState);
     });
+    _clearForegroundIfDead();
+  }
+
+  void _clearForegroundIfDead() {
+    final sessionId = _foregroundSessionId;
+    if (sessionId == null) {
+      return;
+    }
+    final session = repairSessionRepository.getSession(sessionId);
+    if (session == null || _isTerminal(session.currentState)) {
+      _foregroundSessionId = null;
+    }
   }
 
   void _recordClosedSampleSession({
@@ -1111,6 +1129,69 @@ class AppDependencies {
   /// Ephemeral session UI fields that survive leaving SessionScreen.
   SessionUiResumeState? uiResumeForSession(String sessionId) {
     return _sessionUiResumeBySessionId[sessionId];
+  }
+
+  /// SessionScreen registers this so lock/background flushes the open question
+  /// even if the app observer runs before the session observer.
+  void setBeforeBackgroundFlush(VoidCallback? callback) {
+    _beforeBackgroundFlush = callback;
+  }
+
+  void clearBeforeBackgroundFlush(VoidCallback callback) {
+    if (_beforeBackgroundFlush == callback) {
+      _beforeBackgroundFlush = null;
+    }
+  }
+
+  /// Writes UI resume via [setBeforeBackgroundFlush], then drains local save.
+  Future<void> persistForBackground() async {
+    _beforeBackgroundFlush?.call();
+    await flushPersist();
+  }
+
+  /// The in-progress session the user was on when the app last backgrounded.
+  String? get foregroundSessionId => _foregroundSessionId;
+
+  /// Marks [sessionId] as the on-screen repair so a cold start can reopen it.
+  void noteEnteredRepairSession(String sessionId) {
+    final session = repairSessionRepository.getSession(sessionId);
+    if (session == null || _isTerminal(session.currentState)) {
+      return;
+    }
+    if (_foregroundSessionId == sessionId) {
+      return;
+    }
+    _foregroundSessionId = sessionId;
+    _schedulePersist();
+  }
+
+  /// Clears the on-screen repair marker after Exit / back. Does not end the
+  /// session — Continue repair still works from home.
+  void noteLeftRepairSession(String sessionId) {
+    if (_foregroundSessionId != sessionId) {
+      return;
+    }
+    _foregroundSessionId = null;
+    _schedulePersist();
+  }
+
+  /// Appliance for [foregroundSessionId] when that session is still open.
+  Appliance? applianceForForegroundResume() {
+    _clearForegroundIfDead();
+    final sessionId = _foregroundSessionId;
+    if (sessionId == null) {
+      return null;
+    }
+    final session = repairSessionRepository.getSession(sessionId);
+    if (session == null || _isTerminal(session.currentState)) {
+      return null;
+    }
+    final appliance = applianceRepository.getById(session.applianceId);
+    if (appliance == null || appliance.status != ApplianceStatus.active) {
+      _foregroundSessionId = null;
+      return null;
+    }
+    return appliance;
   }
 
   /// Persists pending question / close-verification panel for [sessionId].
@@ -1744,6 +1825,9 @@ class AppDependencies {
     );
     _sessionIdByApplianceId.removeWhere((_, id) => id == sessionId);
     _sessionUiResumeBySessionId.remove(sessionId);
+    if (_foregroundSessionId == sessionId) {
+      _foregroundSessionId = null;
+    }
     _schedulePersist();
     return recorded;
   }
@@ -1839,6 +1923,7 @@ class AppDependencies {
     _sessionUiResumeBySessionId
       ..clear()
       ..addAll(snapshot.sessionUiResumeBySessionId);
+    _foregroundSessionId = snapshot.foregroundSessionId;
     householdRepository.replaceAll(snapshot.households);
     applianceRepository.replaceAll(snapshot.appliances);
     repairSessionRepository.replacePersistedState(
@@ -1869,6 +1954,7 @@ class AppDependencies {
       ..addAll(snapshot.dismissedPatternHintKeys);
     _reconcileOpenSessionIndex();
     _rebindOpenSessionPackages();
+    _clearForegroundIfDead();
   }
 
   /// Maps saved 0.1.0-era package refs onto bundled guides. Does not drop
@@ -2049,6 +2135,7 @@ class AppDependencies {
       sessionUiResumeBySessionId: Map<String, SessionUiResumeState>.from(
         _sessionUiResumeBySessionId,
       ),
+      foregroundSessionId: _foregroundSessionId,
       maintenanceReminders: List<MaintenanceReminder>.from(
         _maintenanceReminders,
       ),
@@ -2131,10 +2218,18 @@ class AppDependencies {
 
   /// Waits for any queued local snapshot write to finish.
   Future<void> flushPersist() async {
-    await Future.wait([
-      _persistChain ?? Future<void>.value(),
-      _toolsPersistChain ?? Future<void>.value(),
-    ]);
+    while (true) {
+      final persist = _persistChain;
+      final tools = _toolsPersistChain;
+      await Future.wait([
+        persist ?? Future<void>.value(),
+        tools ?? Future<void>.value(),
+      ]);
+      if (identical(_persistChain, persist) &&
+          identical(_toolsPersistChain, tools)) {
+        return;
+      }
+    }
   }
 
   void _advanceToPreventiveRecommendation(String sessionId) {
