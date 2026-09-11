@@ -45,16 +45,9 @@ void main() {
       find.byKey(const Key('answer-choice-does-not-turn')),
     );
 
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('answer-choice-panel')),
-        matching: find.byKey(const Key('observation-prompt-heat-observed')),
-      ),
-      findsNothing,
-    );
-
-    await tapVisible(tester, find.byKey(const Key('evidence-history-tile')));
+    await expandEvidenceHistory(tester);
     expect(find.text('Answer: Does not turn'), findsOneWidget);
+    expect(find.text('Answer: Turns normally'), findsNothing);
     expect(find.text('Answer: No warmth'), findsNothing);
   });
 

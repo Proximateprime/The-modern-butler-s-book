@@ -416,10 +416,7 @@ class _SessionScreenState extends State<SessionScreen>
           !_choseRepair) {
         final nextId = _resumeOpenInterviewTemplateId();
         if (nextId != null) {
-          _pendingAnswerPrompt = _templateById(
-            package.evidenceTemplates,
-            nextId,
-          );
+          _pendingAnswerPrompt = _interviewTemplateById(package, nextId);
         }
       }
       if (pendingTemplateId != null &&
@@ -428,8 +425,8 @@ class _SessionScreenState extends State<SessionScreen>
         if (storedOpenStillOpen &&
             _pendingAnswerPrompt == null &&
             package != null) {
-          _pendingAnswerPrompt = _templateById(
-            package.evidenceTemplates,
+          _pendingAnswerPrompt = _interviewTemplateById(
+            package,
             pendingTemplateId,
           );
         }
@@ -712,7 +709,10 @@ class _SessionScreenState extends State<SessionScreen>
         );
   }
 
-  bool _shouldBlockUserObservationWrite({required String? promptId}) {
+  bool _shouldBlockUserObservationWrite({
+    required String? promptId,
+    bool allowAdditionalInterviewWrite = false,
+  }) {
     if (promptId == 'hazard-observation') {
       return false;
     }
@@ -727,6 +727,12 @@ class _SessionScreenState extends State<SessionScreen>
     if (promptId == heldId) {
       return false;
     }
+    if (_revisingTemplateId != null && promptId == _revisingTemplateId) {
+      return false;
+    }
+    if (allowAdditionalInterviewWrite) {
+      return false;
+    }
     return shouldBlockUnansweredOpenInterviewInventWrite(
       unansweredOpenInterview: true,
     );
@@ -739,6 +745,13 @@ class _SessionScreenState extends State<SessionScreen>
   /// empty-next, a named primary, earlier interview (drum-turns), and
   /// close-path guidance so Continue repair cannot reset lint-filter.
   String? _resumeOpenInterviewTemplateId() {
+    // Skip to best guess cleared the painted question. Do not resurrect
+    // ranking-next or a stale stored id as a new hold.
+    if (_skipToBestGuess &&
+        _pendingAnswerPrompt == null &&
+        _lastShownOpenInterviewTemplateId == null) {
+      return null;
+    }
     try {
       final decisionContext =
           widget.dependencies.buildDecisionContext(widget.sessionId);
@@ -2049,9 +2062,6 @@ class _SessionScreenState extends State<SessionScreen>
   }
 
   void _markFreeObservationSuggestion(FreeObservationSuggestion suggestion) {
-    if (_shouldBlockResumeInventedObservationWrite()) {
-      return;
-    }
     final package = widget.dependencies.packageForSession(widget.sessionId);
     if (package == null) {
       return;
@@ -2068,6 +2078,7 @@ class _SessionScreenState extends State<SessionScreen>
       prompt: template,
       answer: suggestion.suggestedAnswer,
       keepCurrentQuestion: keepCurrent,
+      allowAdditionalInterviewWrite: true,
     );
     setState(() {
       _freeObservationSuggestions = _freeObservationSuggestions
@@ -2334,8 +2345,12 @@ class _SessionScreenState extends State<SessionScreen>
     required EvidenceTemplate prompt,
     required String answer,
     bool keepCurrentQuestion = false,
+    bool allowAdditionalInterviewWrite = false,
   }) {
-    if (_shouldBlockUserObservationWrite(promptId: prompt.id)) {
+    if (_shouldBlockUserObservationWrite(
+      promptId: prompt.id,
+      allowAdditionalInterviewWrite: allowAdditionalInterviewWrite,
+    )) {
       return false;
     }
     final session = widget.dependencies.repairSessionRepository
@@ -2735,6 +2750,26 @@ class _SessionScreenState extends State<SessionScreen>
     return null;
   }
 
+  /// Interview templates with washer lid/door overlay from the stored appliance.
+  EvidenceTemplate? _interviewTemplateById(
+    KnowledgePackage? package,
+    String? id,
+  ) {
+    if (package == null || id == null || id.isEmpty) {
+      return null;
+    }
+    final appliance =
+        widget.dependencies.applianceRepository.getById(widget.appliance.id) ??
+            widget.appliance;
+    final templates = appliance.category == 'washer'
+        ? washerLatchInterviewTemplates(
+            package.evidenceTemplates,
+            appliance.washerLoadStyle,
+          )
+        : package.evidenceTemplates;
+    return _templateById(templates, id);
+  }
+
   Widget _guideUnavailableScaffold() {
     return Scaffold(
       key: const Key('missing-guide-scaffold'),
@@ -2860,10 +2895,10 @@ class _SessionScreenState extends State<SessionScreen>
       }
       return _guideUnavailableScaffold();
     }
-    final prompts = widget.appliance.category == 'washer'
+    final prompts = appliance.category == 'washer'
         ? washerLatchInterviewTemplates(
             package.evidenceTemplates,
-            widget.appliance.washerLoadStyle,
+            appliance.washerLoadStyle,
           )
         : package.evidenceTemplates;
     final sessionObjective = session.sessionObjective;
@@ -2969,6 +3004,13 @@ class _SessionScreenState extends State<SessionScreen>
           recordedEvidence: decisionContext.evidence,
         );
     var pendingForInterview = _pendingAnswerPrompt;
+    if (pendingForInterview != null) {
+      pendingForInterview = _interviewTemplateById(
+            package,
+            pendingForInterview.id,
+          ) ??
+          pendingForInterview;
+    }
     if (pendingForInterview != null &&
         !isRevisingEvidence &&
         isTemplateRecorded(

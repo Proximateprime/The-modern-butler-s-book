@@ -147,6 +147,12 @@ ClosePathPhase resumeClosePathPhaseHonoringOpenObservation({
   required bool unansweredOpenObservation,
 }) {
   if (unansweredOpenObservation) {
+    // Don't jump forward into inspect / tools / guidance. Decision is
+    // already past conclusion — Keep I'll repair on screen.
+    if (computed == ClosePathPhase.decision ||
+        computed == ClosePathPhase.conclusion) {
+      return computed;
+    }
     return ClosePathPhase.conclusion;
   }
   return computed;

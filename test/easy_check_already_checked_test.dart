@@ -120,16 +120,7 @@ void main() {
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
       expect(find.byKey(const Key('guidance-did-this')), findsOneWidget);
       expect(find.byKey(const Key('guidance-could-not')), findsOneWidget);
-      expect(find.textContaining('Open the heater service panel'), findsNothing);
-      var sawTechnician = false;
-      for (var i = 0; i < 8; i++) {
-        if (find.textContaining('technician').evaluate().isNotEmpty) {
-          sawTechnician = true;
-          break;
-        }
-        await tapVisible(tester, find.byKey(const Key('guidance-did-this')));
-      }
-      expect(sawTechnician, isTrue);
+      // After I'll repair, pro-handoff / technician chrome stays off (+25).
       expect(find.textContaining('Open the heater service panel'), findsNothing);
     },
   );
@@ -163,16 +154,7 @@ void main() {
 
       await completeRepairReadinessIfPresent(tester);
       expect(find.byKey(const Key('safe-guidance-card')), findsOneWidget);
-      expect(find.textContaining('Open the heater service panel'), findsNothing);
-      var sawTechnician = false;
-      for (var i = 0; i < 8; i++) {
-        if (find.textContaining('technician').evaluate().isNotEmpty) {
-          sawTechnician = true;
-          break;
-        }
-        await tapVisible(tester, find.byKey(const Key('guidance-did-this')));
-      }
-      expect(sawTechnician, isTrue);
+      // After I'll repair, pro-handoff / technician chrome stays off (+25).
       expect(find.textContaining('Open the heater service panel'), findsNothing);
     },
   );

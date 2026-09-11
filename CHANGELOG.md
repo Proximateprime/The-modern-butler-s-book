@@ -1,3 +1,12 @@
+## Private-tester ship fixes (2026-09-11)
+
+App **0.1.4+28**. Bugfixes only (feature freeze). Skip to best guess no
+longer resurrects the next interview question. Free-note keyword chips
+and Back/revise writes are not blocked by the open-question hold.
+Continue repair before I'll repair stays on the decision screen. Top-load
+washer interview uses lid copy from the stored appliance. Groq stays
+phrasing-only. GOLDEN **Call a pro** stays. Play listing stays out.
+
 ## Typed hazard v2 (2026-09-04)
 
 App **0.1.4+27**. Typed Other (starter + interview) and free notes that
