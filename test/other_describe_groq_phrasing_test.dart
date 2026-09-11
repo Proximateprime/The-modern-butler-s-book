@@ -87,9 +87,9 @@ Evidence _dryerResponseEvidence(String answer) {
 }
 
 void main() {
-  test('version is 0.1.4+27', () {
+  test('version is 0.1.4+28', () {
     expect(kAppVersion, '0.1.4');
-    expect(kAppVersionLabel, '0.1.4+27');
+    expect(kAppVersionLabel, '0.1.4+28');
   });
 
   test('optional describe extras ride the same payload and missing extras stay packaged',

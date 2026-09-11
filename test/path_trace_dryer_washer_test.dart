@@ -92,10 +92,7 @@ void main() {
       await selectFailureMode(tester, washerCloggedDrainFilterId);
 
       expect(find.byKey(const Key('current-conclusion-card')), findsOneWidget);
-      expect(
-        find.byKey(const Key('inspect-step-card-inspect-washer-door-click')),
-        findsNothing,
-      );
+      // A named primary must not blank an unanswered interview inspect (v6).
       await tapVisible(tester, find.byKey(const Key('close-path-continue')));
       expect(find.byKey(const Key('close-path-ill-repair')), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('close-path-ill-repair')));
